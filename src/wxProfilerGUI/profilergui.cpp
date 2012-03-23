@@ -261,7 +261,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	//------------------------------------------------------------------------
 	//create the profiler thread
 	//------------------------------------------------------------------------
-	// DE: 20090325 attaches to specific a list of threads
+	// DE: 20090325 attaches to a specific list of threads
 	ProfilerThread* profilerthread = new ProfilerThread( 
 		info->process_handle,
 		info->thread_handles,
