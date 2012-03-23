@@ -62,7 +62,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 };
 
 wxIcon sleepy_icon;
-std::wstring cmdline_load, cmdline_save;
+std::wstring cmdline_load, cmdline_save, cmdline_run;
 long cmdline_timeout = 0;
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
@@ -510,6 +510,30 @@ void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
 
 	SetExitOnFrameDelete(false);
 
+	if (!cmdline_run.empty())
+	{
+		std::wstring tmp_filename;
+
+		AttachInfo *info = RunProcess(cmdline_run, L"");
+		if ( !info )
+		{
+			loop->Exit(1);
+			return;
+		}
+
+		bool ok = LaunchProfiler(info, tmp_filename);
+		TerminateProcess(info->process_handle, 0);
+		delete info;
+
+		if (!ok)
+		{
+			loop->Exit(1);
+			return;
+		}
+
+		cmdline_load = tmp_filename;
+	}
+
 	std::wstring filename = ObtainProfileData();
 	if (filename.empty())
 	{
@@ -558,7 +582,6 @@ void ProfilerGUI::OnInitCmdLine(wxCmdLineParser& parser)
 bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 {
 	wxString param;
-	std::wstring run_cmd, tmp_filename;
 
 	if (parser.Found("q"))
 		wxLog::EnableLogging(false);
@@ -577,24 +600,8 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		cmdline_save = param.c_str();
 	if (!parser.Found("t", &cmdline_timeout))
 		cmdline_timeout = 0;
-
 	if (parser.Found("r", &param))
-	{
-		run_cmd = param.c_str();
-
-		AttachInfo *info = RunProcess(run_cmd, L"");
-		if ( !info )
-			return false;
-
-		bool ok = LaunchProfiler(info, tmp_filename);
-		TerminateProcess(info->process_handle, 0);
-		delete info;
-
-		if (!ok)
-			return false;
-
-		cmdline_load = tmp_filename;
-	}
+		cmdline_run = param.c_str();
 
 	return true;
 }
