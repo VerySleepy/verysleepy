@@ -301,12 +301,18 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	profilerthread->commit_suicide = true;
 
 	{
-		wxProgressDialog dlg("Sleepy", "Please wait while symbols are queried...", 100);
+		wxProgressDialog dlg("Sleepy", "Waiting for symbol query to start...", 1000, NULL,
+			wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT);
+
 		while(true)
 		{
-			int percent = profilerthread->getSymbolsPercent();
-			if (percent >= 100 || profilerthread->getFailed())
+			int permille;
+			std::wstring stage;
+			profilerthread->getSymbolsProgress(&permille, &stage);
+			if (profilerthread->getDone() || profilerthread->getFailed())
 				break;
+			if (!dlg.Update(permille, stage))
+				profilerthread->cancel();
 			profilerthread->waitFor(100);
 		}
 		profilerthread->waitFor();

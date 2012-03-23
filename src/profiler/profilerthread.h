@@ -64,11 +64,13 @@ public:
 	virtual void run();
 
 	int getNumThreadsRunning() const { return numThreadsRunning; }
+	bool getDone() const { return done; }
 	bool getFailed() const { return failed; }
 	int getSampleProgress() const { return numsamplessofar; }
-	int getSymbolsPercent() const { return symbolsPercent; }
+	void getSymbolsProgress(int *permille, std::wstring *stage) const { *permille = symbolsPermille; *stage = symbolsStage; }
 	const std::wstring &getFilename() const { return filename; }
 	void setPaused(bool paused_) { paused = paused_; }
+	void cancel() { cancelled = true; }
 
 	void sample(SAMPLE_TYPE timeSpent);//for internal use.
 private:
@@ -77,6 +79,11 @@ private:
 
 	void sampleLoop();
 	void saveData();
+
+	std::wstring symbolsStage;
+	int symbolsPermille, symbolsDone, symbolsTotal;
+	void beginProgress(std::wstring stage, int total=0);
+	bool updateProgress();
 
 	// DE: 20090325 callstacks and flatcounts are shared for all threads to profile
 	std::map<CallStack, SAMPLE_TYPE> callstacks;
@@ -88,9 +95,10 @@ private:
 	//int numsamples;
 	int numsamplessofar;
 	int numThreadsRunning;
-	int symbolsPercent;
+	bool done;
 	bool paused;
 	bool failed;
+	bool cancelled;
 	HANDLE target_process;
 	std::wstring filename;
 	SymbolInfo *sym_info;

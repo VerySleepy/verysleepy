@@ -48,9 +48,11 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 		profilers.push_back(Profiler(target_process_, *it, callstacks, flatcounts));
 	}
 	numsamplessofar = 0;
+	done = false;
 	failed = false;
 	paused = false;
-	symbolsPercent = 0;
+	cancelled = false;
+	symbolsPermille = 0;
 	numThreadsRunning = (int)target_threads.size();
 
 	filename = wxFileName::CreateTempFileName(wxEmptyString);
@@ -183,6 +185,8 @@ void ProfilerThread::saveData()
 
 	zip.PutNextEntry(_T("IPCounts.txt"));
 
+	beginProgress(L"Summarizing results");
+
 	// Build up addr->procedure symbol table.
 	std::map<PROFILER_ADDR, bool> used_addresses;
 	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
@@ -211,6 +215,8 @@ void ProfilerThread::saveData()
 
 	txt << totalCounts << "\n";
 
+	beginProgress(L"Saving samples", flatcounts.size());
+
 	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
 		i != flatcounts.end(); ++i)
 	{
@@ -224,12 +230,15 @@ void ProfilerThread::saveData()
 
 		txt << ::toHexString(addr) << " " << count << 
 			"         \"" << addr_file << "\" " << addr_line << "\n";
+
+		if (updateProgress())
+			return;
 	}
 
 	zip.PutNextEntry(_T("Symbols.txt"));
 
-	int done = 0;
-	int used_total = static_cast<int>(used_addresses.size());
+	beginProgress(L"Querying symbols", used_addresses.size());
+
 	for (std::map<PROFILER_ADDR, bool>::iterator i = used_addresses.begin(); i != used_addresses.end(); i++)
 	{
 		int proclinenum;
@@ -245,9 +254,11 @@ void ProfilerThread::saveData()
 
 		symbols[addr] = symbolidtable[full_proc_name];
 
-		symbolsPercent = MulDiv(done, 100, used_total);
-		done++;
+		if (updateProgress())
+			return;
 	}
+
+	beginProgress(L"Saving symbols", symbolidtable.size());
 
 	for(std::map<std::wstring, int>::const_iterator i = symbolidtable.begin(); i != symbolidtable.end(); ++i)
 	{
@@ -255,12 +266,17 @@ void ProfilerThread::saveData()
 		int id = i->second;
 
 		txt << "sym" << id << " " << str << "\n";
+
+		if (updateProgress())
+			return;
 	}
 
 	//------------------------------------------------------------------------
 	//write callstack counts to disk
 	//------------------------------------------------------------------------
 	zip.PutNextEntry(_T("Callstacks.txt"));
+
+	beginProgress(L"Saving callstacks", callstacks.size());
 
 	for(std::map<CallStack, SAMPLE_TYPE>::const_iterator i = callstacks.begin(); 
 		i != callstacks.end(); ++i)
@@ -274,6 +290,9 @@ void ProfilerThread::saveData()
 			txt << " sym" << symbols[callstack.addr[d]];
 		}
 		txt << "\n";
+
+		if (updateProgress())
+			return;
 	}
 
 	zip.PutNextEntry(L"Version " VERSION L" required");
@@ -317,7 +336,7 @@ void ProfilerThread::run()
 
 	saveData();
 
-	symbolsPercent = 100;
+	done = true;
 }
 
 
@@ -327,4 +346,24 @@ void ProfilerThread::error(const std::wstring& what)
 	std::cerr << "ProfilerThread Error: " << what << std::endl;
 
 	::MessageBox(NULL, std::wstring(L"Error: " + what).c_str(), L"Profiler Error", MB_OK);
+}
+
+void ProfilerThread::beginProgress(std::wstring stage, int total)
+{
+	symbolsStage = stage;
+	symbolsDone = 0;
+	symbolsTotal = total;
+	symbolsPermille = 0;
+}
+
+bool ProfilerThread::updateProgress()
+{
+	symbolsDone++;
+	symbolsPermille = MulDiv(symbolsDone, 1000, symbolsTotal);
+	if (cancelled)
+	{
+		failed = true;
+		return true;
+	}
+	return false;
 }
