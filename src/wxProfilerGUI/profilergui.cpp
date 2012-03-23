@@ -300,6 +300,13 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 
 	profilerthread->commit_suicide = true;
 
+	if (aborted)
+	{
+		profilerthread->cancel();
+		profilerthread->waitFor();
+		return false;
+	}
+
 	{
 		wxProgressDialog dlg("Sleepy", "Waiting for symbol query to start...", 1000, NULL,
 			wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT);
@@ -325,9 +332,6 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	profilerthread = NULL;
 
 	if (failed)
-		return false;
-
-	if (aborted)
 		return false;
 
 	if (output_filename.empty())

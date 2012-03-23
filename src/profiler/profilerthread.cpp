@@ -328,6 +328,9 @@ void ProfilerThread::run()
 		numThreadsRunning = 0;
 	}
 
+	if (cancelled)
+		return;
+
 	setPriority(THREAD_PRIORITY_NORMAL);
 
 	DWORD endTick = GetTickCount();
