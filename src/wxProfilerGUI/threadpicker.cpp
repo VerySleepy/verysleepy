@@ -176,12 +176,14 @@ ThreadPicker::ThreadPicker()
 	ok_button->SetBitmap(LoadPngResource(L"button_profilesel"));
 	ok_button->SetBitmapPosition(wxRIGHT);
 	ok_button->SetBitmapMargins(-1,-1);
+	ok_button->SetToolTip("Begins profiling selected threads.");
 	wxButton *all_button = new wxButton(panel, wxID_SELECTALL,"Profile &All", wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT);
 	all_button->SetBitmap(LoadPngResource(L"button_profileall"));
 	all_button->SetBitmapPosition(wxRIGHT);
 	all_button->SetBitmapMargins(-1,-1);
 	all_button->Disable();
 	all_button->SetDefault();
+	all_button->SetToolTip("Begins profiling all threads in the selected process.");
 
 	// DE: 20090325 one list for processes and one list for selected process threads
 	threadlist = new ThreadList(panel, wxDefaultPosition, wxDefaultSize, ok_button, all_button);
