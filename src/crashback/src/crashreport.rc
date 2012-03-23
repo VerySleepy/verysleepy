@@ -1,0 +1,19 @@
+#include <windows.h>
+#include "resource.h"
+
+IDD_CRASH DIALOG										0, 0, 250, 115
+STYLE									DS_MODALFRAME | DS_CENTER | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Error Reporter"
+FONT 8, "MS Shell Dlg"
+BEGIN
+	CONTROL			"",					ID_ICON,		STATIC, SS_ICON,			10, 10, 32, 32
+	LTEXT			"The program has stopped working.\nWould you like to send an error report to the developer?\n\nNo personal information is contained, only the state of the program at the time of the crash.\n\nThese reports actually do help, so please send one!\n",
+										-1,				40, 10, 190, 100
+
+	CONTROL			"",					ID_PROGRESS,	"msctls_progress32", 0x8,	40, 75, 203, 12
+
+	CONTROL			"Examine...",		ID_EXAMINE,		"LINK", 0, 10, 98, 50, 14 
+
+	DEFPUSHBUTTON   "Send",				IDOK,			138, 95, 50, 14
+	PUSHBUTTON		"Don't send",		IDCANCEL,		193, 95, 50, 14
+END

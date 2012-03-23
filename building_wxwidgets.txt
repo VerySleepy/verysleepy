@@ -1,0 +1,23 @@
+Sleepy uses wxWidgets 2.9.2 currently.
+
+To build wxWidgets:
+===================
+Run one of the Microsoft batch files to set up Visual Studio:
+   cd C:\Program Files\Microsoft Visual Studio 9.0\VC\bin
+   vcvars32.bat		// for a regular 32-bit compile
+   vcvars64.bat		// for a regular 64-bit build
+   vcvarsx86_amd64.bat	// for a 64-bit cross-compile
+
+Now, from the wxWidgets "build\msw" directory:
+
+   nmake -f makefile.vc BUILD=debug SHARED=0 RUNTIME_LIBS=static
+
+NMAKE is part of Visual Studio, so vcvars should have added it to your path.
+
+You may need to add a WXWIN environment variable (pointing to the wxWidgets directory),
+so that Sleepy knows where you've installed it.
+
+Options
+=======
+For a release build, use BUILD=release instead
+For 64-bit, add TARGET_CPU=AMD64

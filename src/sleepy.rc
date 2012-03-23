@@ -1,0 +1,13 @@
+#define wxUSE_NO_MANIFEST 1
+#include "wx/msw/wx.rc"
+
+sleepy ICON "sleepy.ico"
+
+button_next PNG "Button-Next.png"
+button_prev PNG "Button-Previous.png"
+button_download PNG "Button-Download.png"
+button_refresh PNG "Button-Refresh.png"
+button_profileall PNG "Button-ProfileAll.png"
+button_profilesel PNG "Button-ProfileSel.png"
+button_pause PNG "Button-Pause.png"
+button_go PNG "Button-Go.png"
