@@ -75,7 +75,7 @@ void Debugger::Detach()
 	assert( process );
 
 	debuggerThread->commit_suicide = true;
-	WaitForSingleObject( debuggerThread->getHandle(), INFINITE );
+	debuggerThread->waitFor();
 	delete debuggerThread;
 
 	hThreads.clear();

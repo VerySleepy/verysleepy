@@ -49,9 +49,9 @@ public:
 
 	HANDLE launch(bool autodelete, int priority);
 
-	HANDLE getHandle(){ return thread_handle; }
+	void waitFor(DWORD dwMilliseconds = INFINITE){ WaitForSingleObject(thread_handle, dwMilliseconds); }
 
-
+	void setPriority(int priority) { SetThreadPriority(thread_handle, priority); }
 
 	void killThread();
 

@@ -309,6 +309,8 @@ void ProfilerThread::run()
 		numThreadsRunning = 0;
 	}
 
+	setPriority(THREAD_PRIORITY_NORMAL);
+
 	DWORD endTick = GetTickCount();
 	int diff = endTick - startTick;
 	duration = diff / 1000.0;
