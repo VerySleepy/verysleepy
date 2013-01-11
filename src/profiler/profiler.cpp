@@ -180,7 +180,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 		if(!result){
 			// DE: 20090325: If GetThreadContext fails we must be sure to resume thread again
 			ResumeThread(target_thread);
-			throw ProfilerExcep(L"GetThreadContext failed.");
+			return false;
 		}
 
 		ip = threadcontext64.Rip;
@@ -204,7 +204,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 		if(!result){
 			// DE: 20090325: If GetThreadContext fails we must be sure to resume thread again
 			ResumeThread(target_thread);
-			throw ProfilerExcep(L"GetThreadContext failed.");
+			return false;
 		}
 
 		ip = threadcontext32.Eip;
@@ -230,7 +230,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 	if(!result){
 		// DE: 20090325: If GetThreadContext fails we must be sure to resume thread again
 		ResumeThread(target_thread);
-		throw ProfilerExcep(L"GetThreadContext failed.");
+		return false;
 	}
 
 	applyHacks(target_process, threadcontext32);
