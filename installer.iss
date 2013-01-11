@@ -27,29 +27,29 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 ; 32-bit version
-Source: "S:\Projects\sleepy\obj\Win32\Release\sleepy.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "S:\Projects\sleepy\src\crashback\bin\Win32\Release\crashreport.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x86\dbghelp.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x86\dbghelpw.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x86\symsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x86\srcsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x86\symsrv.yes"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "obj\Win32\Release\sleepy.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "src\crashback\bin\Win32\Release\crashreport.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "dbghelp_x86\dbghelp.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "dbghelp_x86\dbghelpw.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "dbghelp_x86\symsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "dbghelp_x86\srcsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "dbghelp_x86\symsrv.yes"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
 
 ; 64-bit version
-Source: "S:\Projects\sleepy\obj\x64\Release\sleepy.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\src\crashback\bin\x64\Release\crashreport.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x64\dbghelp.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x64\dbghelpw.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x64\dbghelpw_wow64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x64\symsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x64\srcsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "S:\Projects\sleepy\dbghelp_x64\symsrv.yes"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "obj\x64\Release\sleepy.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "src\crashback\bin\x64\Release\crashreport.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x64\dbghelp.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x64\dbghelpw.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x64\dbghelpw_wow64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x64\symsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x64\srcsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x64\symsrv.yes"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
 
 ; Other bits
-Source: "S:\Projects\sleepy\keywords.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "S:\Projects\sleepy\license.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "S:\Projects\sleepy\osfunctions.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "S:\Projects\sleepy\osmodules.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "keywords.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "license.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "osfunctions.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "osmodules.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
