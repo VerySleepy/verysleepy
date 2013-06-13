@@ -7,4 +7,6 @@
 *.ncb
 *.log 
 *.DS_Store
+*.opensdf
+*.sdf
 [Tt]humbs.db 
