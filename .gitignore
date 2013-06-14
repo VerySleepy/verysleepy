@@ -1,0 +1,14 @@
+[Oo]bj
+[Bb]in
+ipch
+*.user
+*.suo
+*.[Cc]ache
+*.bak
+*.ncb
+*.log 
+*.DS_Store
+*.opensdf
+*.sdf
+*.aps
+[Tt]humbs.db 

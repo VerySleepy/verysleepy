@@ -221,7 +221,7 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 	public:
 		CallStackPtrComp(CallStack *_p): p(_p) {}
 		bool operator <(const CallStackPtrComp b) const { return p->stack < b.p->stack; }
-		CallStack *Get() { return p; }
+		CallStack *Get() const { return p; }
 	};
 
 	std::set<CallStackPtrComp> callstackSet;

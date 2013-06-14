@@ -28,6 +28,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "processlist.h"
 #include <vector>
 
+#include <wx/valnum.h>
+
 // DE: 20090325 Include for list to pick thread(s)
 #include "threadlist.h"
 
@@ -104,11 +106,16 @@ public:
 	void OnCopy(wxCommandEvent& event);
 	void OnClearLog(wxCommandEvent& event);
 	void OnSelectAll(wxCommandEvent& event);
+	void OnTimeCheck(wxCommandEvent& event);
 	void OnIdle(wxIdleEvent& event);
 
 	AttachInfo *attach_info;
 	std::wstring run_filename, run_cwd, open_filename;
 	wxTextCtrl *log;
+	wxCheckBox *time_check;
+	wxTextCtrl *time_ctrl;
+	int time_value;
+	wxIntegerValidator<int>* time_validator;
 
 private:
 	ProcessList* processlist;
