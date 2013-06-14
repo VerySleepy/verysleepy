@@ -10,4 +10,5 @@ ipch
 *.DS_Store
 *.opensdf
 *.sdf
+*.aps
 [Tt]humbs.db 
