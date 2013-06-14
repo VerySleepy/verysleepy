@@ -29,6 +29,9 @@ enum {
 	ID_COLLAPSE_FUNC=2001,
 	ID_COLLAPSE_MOD,
 	ID_SET_ROOT,
+	ID_FILTER_FUNC,
+	ID_FILTER_MODULE,
+	ID_FILTER_SOURCE
 };
 
 class FunctionMenuWindow: public wxWindow
@@ -48,21 +51,34 @@ BEGIN_EVENT_TABLE(FunctionMenuWindow, wxWindow)
 EVT_MENU(ID_COLLAPSE_FUNC, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_COLLAPSE_MOD, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_SET_ROOT, FunctionMenuWindow::OnMenu)
+EVT_MENU(ID_FILTER_FUNC, FunctionMenuWindow::OnMenu)
+EVT_MENU(ID_FILTER_MODULE, FunctionMenuWindow::OnMenu)
+EVT_MENU(ID_FILTER_SOURCE, FunctionMenuWindow::OnMenu)
 END_EVENT_TABLE()
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database)
+void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters)
 {
 	FunctionMenuWindow funcWindow(window);
 	wxMenu *menu = new wxMenu;
 
 	wxString mod = sym->module.c_str();
 	wxString function = sym->procname.c_str();
+	wxString source = sym->sourcefile.c_str();
 
-	mod.UpperCase();
+	wxString modUpper = mod;
+	modUpper.UpperCase();
 
 	menu->AppendCheckItem(ID_COLLAPSE_FUNC,"Collapse child calls")->Check(IsOsFunction(function));
-	menu->AppendCheckItem(ID_COLLAPSE_MOD,wxString::Format("Collapse all %s calls", mod))->Check(IsOsModule(mod));
+	menu->AppendCheckItem(ID_COLLAPSE_MOD,wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
 	menu->AppendCheckItem(ID_SET_ROOT,wxString::Format("Set root to %s", function));
+
+	if( filters )
+	{
+		menu->AppendSeparator();
+		menu->AppendCheckItem(ID_FILTER_FUNC,wxString::Format("Filter functions to %s", function));
+		menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
+		menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
+	}
 
 	funcWindow.PopupMenu(menu);
 	switch(funcWindow.option) {
@@ -81,6 +97,18 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 	case ID_SET_ROOT:
 		database->setRoot(sym);
 		theMainWin->Reset();
+		break;
+
+	case ID_FILTER_FUNC:
+		filters->GetProperty("procname")->SetValueFromString(function);
+		break;
+
+	case ID_FILTER_MODULE:
+		filters->GetProperty("module")->SetValueFromString(mod);
+		break;
+
+	case ID_FILTER_SOURCE:
+		filters->GetProperty("sourcefile")->SetValueFromString(source);
 		break;
 	}
 }

@@ -29,6 +29,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/sortlist.h"
 #include "CallstackView.h"
 
+#include <wx/propgrid/propgrid.h>
+
 class SourceView;
 
 /*=====================================================================
@@ -65,6 +67,8 @@ public:
 	void showCallees(const Database::Symbol *symbol);
 	void selectSymbol(const Database::Symbol *symbol);
 
+	void setFilters(wxPropertyGrid *filters);
+
 	Database::List list;
 private:
 	enum ColumnType
@@ -94,6 +98,8 @@ private:
 
     DECLARE_EVENT_TABLE()
 
+	bool isroot;
+
 	SourceView* sourceview;
 	ProcList *parentview, *callersview, *calleesview;
 	CallstackView *callStackView;
@@ -102,12 +108,16 @@ private:
 	SortType sort_dir;
 	wxString curToolTip;
 
+	wxPropertyGrid *filters;
+
 	Column columns[MAX_COLUMNS];
 
 	void setupColumn(ColumnType id, int width, SortType defsort, const wxString &name);
 	void setColumnValue(int row, ColumnType id, const wchar_t *value);
 	void sortList();
 	void showList(int highlight);
+
+	bool matchesFilters(const Database::Item& item);
 };
 
 

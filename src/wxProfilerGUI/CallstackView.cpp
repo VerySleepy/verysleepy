@@ -236,6 +236,6 @@ void CallstackView::OnRClickItem(wxListEvent& event)
 {
 	const Database::Symbol *sym = (const Database::Symbol *)listCtrl->GetItemData(event.GetIndex());
 	
-	FunctionMenu(this, sym, database);
+	FunctionMenu(this, sym, database, NULL);
 }
 
