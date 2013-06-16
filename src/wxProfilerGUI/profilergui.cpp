@@ -265,7 +265,9 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	ProfilerThread* profilerthread = new ProfilerThread( 
 		info->process_handle,
 		info->thread_handles,
-		info->sym_info
+		info->sym_info,
+		// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
+		info->limit_profile_time
 		);
 
 
@@ -274,7 +276,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	//------------------------------------------------------------------------
 	bool aborted = false;
 	{
-		CaptureWin *captureWin = new CaptureWin;
+		CaptureWin *captureWin = new CaptureWin(info->limit_profile_time);
 		captureWin->Show();
 		captureWin->Update();
 
@@ -350,6 +352,7 @@ AttachInfo::AttachInfo()
 {
 	process_handle = NULL;
 	sym_info = NULL;
+	limit_profile_time = -1;  // -1 means profile until cancelled
 }
 
 AttachInfo::~AttachInfo()

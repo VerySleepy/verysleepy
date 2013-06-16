@@ -55,7 +55,8 @@ public:
 
 	=====================================================================*/
 	// DE: 20090325 Profiler thread now has a vector of threads to profile
-	ProfilerThread(HANDLE target_process, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info);
+	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
+	ProfilerThread(HANDLE target_process, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info, int limit_profile_time);
 
 	virtual ~ProfilerThread();
 
@@ -102,6 +103,11 @@ private:
 	HANDLE target_process;
 	std::wstring filename;
 	SymbolInfo *sym_info;
+
+	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
+	int limit_profile_time;
+
+	DWORD startTick;
 };
 
 

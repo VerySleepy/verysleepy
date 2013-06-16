@@ -36,6 +36,8 @@ enum
 	ProcWin_Launch,
 	ProcWin_Options,
 	ProcWin_Log,
+	ProcWin_TimeCtrl,
+	ProcWin_TimeCheck,
 
 	// it is important for the id corresponding to the "About" command to have
 	// this standard value as otherwise it won't be handled properly under Mac
@@ -62,6 +64,7 @@ EVT_COMMAND_CONTEXT_MENU(ProcWin_Log,ThreadPicker::OnContextMenu)
 EVT_MENU(wxID_COPY, ThreadPicker::OnCopy)
 EVT_MENU(wxID_CLEAR, ThreadPicker::OnClearLog)
 EVT_MENU(wxID_SELECTALL, ThreadPicker::OnSelectAll)
+EVT_CHECKBOX(ProcWin_TimeCheck, ThreadPicker::OnTimeCheck)
 EVT_IDLE(ThreadPicker::OnIdle)
 END_EVENT_TABLE()
 
@@ -185,6 +188,16 @@ ThreadPicker::ThreadPicker()
 	all_button->SetDefault();
 	all_button->SetToolTip("Begins profiling all threads in the selected process.");
 
+	// RM: 20110614 Set time for profiler to run for
+	time_value = 100;
+	time_validator = new wxIntegerValidator<int>(&time_value);
+	time_validator->SetMin(0);
+	time_check = new wxCheckBox(panel, ProcWin_TimeCheck, "Profile for set time (s)");
+	time_ctrl = new wxTextCtrl(panel, ProcWin_TimeCtrl, "100", wxDefaultPosition, wxSize(60,20), 0, *time_validator );
+	time_ctrl->Disable();
+	time_ctrl->SetToolTip("When enabled, this will limit the profile to run for a set time in seconds.");
+	time_validator->SetWindow(time_ctrl);
+
 	// DE: 20090325 one list for processes and one list for selected process threads
 	threadlist = new ThreadList(panel, wxDefaultPosition, wxDefaultSize, ok_button, all_button);
 	processlist = new ProcessList(panel, wxDefaultPosition, wxDefaultSize, threadlist);
@@ -209,11 +222,14 @@ ThreadPicker::ThreadPicker()
 	downloadButton->SetToolTip("Downloads symbols from a remote symbol server.");
 
 	wxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
-	buttons->Add(refreshButton,										0, wxALIGN_LEFT  | wxRIGHT,			5);
-	buttons->Add(downloadButton,									0, wxALIGN_LEFT,					0);
+	buttons->Add(refreshButton,										0, wxALIGN_LEFT  | wxRIGHT,					5);
+	buttons->Add(downloadButton,									0, wxALIGN_LEFT,							0);
 	buttons->AddStretchSpacer();
-	buttons->Add(all_button,										0, wxALIGN_RIGHT,					0);
-	buttons->Add(ok_button,											0, wxALIGN_RIGHT | wxLEFT,			5);
+	buttons->Add(time_check,										0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL,	0);
+	buttons->Add(time_ctrl,											0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL,	0);
+	buttons->AddStretchSpacer();
+	buttons->Add(all_button,										0, wxALIGN_RIGHT,							0);
+	buttons->Add(ok_button,											0, wxALIGN_RIGHT | wxLEFT,					5);
 
 	bottomsizer->Add(buttons, 0, wxLEFT|wxRIGHT|wxEXPAND, 10);
 	bottomsizer->AddSpacer(8);
@@ -365,6 +381,17 @@ void ThreadPicker::OnAbout(wxCommandEvent& event)
 	ProfilerGUI::ShowAboutBox();
 }
 
+void ThreadPicker::OnTimeCheck(wxCommandEvent& event)
+{
+	if( time_check->IsChecked() )
+	{
+		time_ctrl->Enable();
+	}
+	else
+	{
+		time_ctrl->Disable();
+	}
+}
 
 ThreadPicker::~ThreadPicker()
 {
@@ -402,6 +429,16 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 	else
 	{
 		config.Write("PrevProcess",processInfo->getName().c_str());
+	}
+
+	// RM: 20130614 Check if the user wants the profile to run for a set time period
+	if (time_check->IsChecked() && time_validator->TransferFromWindow() )
+	{
+		attach_info->limit_profile_time = time_value;
+	}
+	else
+	{
+		attach_info->limit_profile_time = -1; // run until cancelled
 	}
 
 	//------------------------------------------------------------------------

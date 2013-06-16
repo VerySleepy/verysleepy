@@ -28,7 +28,8 @@ http://www.gnu.org/copyleft/gpl.html.
 class CaptureWin : public wxDialog
 {
 public:
-	CaptureWin();
+	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
+	CaptureWin(int limitProfileTime);
 	virtual ~CaptureWin();
 
 	bool UpdateProgress( int numSamples, int numThreads );
@@ -48,6 +49,10 @@ private:
 	wxStaticText *progressText;
 	wxStopWatch stopwatch;
 	class wxBitmapToggleButton *pauseButton;
+
+	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
+	int limitProfileTime;
+	int progressMax;
 
 	class ITaskbarList3 *win7taskBar;
 

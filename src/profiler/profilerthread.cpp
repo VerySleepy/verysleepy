@@ -37,10 +37,12 @@ http://www.gnu.org/copyleft/gpl.html..
 #pragma comment(lib, "winmm.lib")
 
 // DE: 20090325: Profiler has a list of threads to profile
-ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_)
+// RM: 20130614: Profiler time can now be limited (-1 = until cancelled)
+ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_, int limit_profile_time_)
 :	profilers(),
 	target_process(target_process_),
-	sym_info(sym_info_)
+	sym_info(sym_info_),
+	limit_profile_time(limit_profile_time_)
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	profilers.reserve(target_threads.size());
@@ -143,6 +145,18 @@ void ProfilerThread::sampleLoop()
 		sample(t);
 		
 		prev = now;
+
+		// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
+		if( limit_profile_time != -1 )
+		{
+			DWORD endTick = GetTickCount();
+			int diff = endTick - startTick;
+			double duration = diff / 1000.0;
+			if( duration >= (double)limit_profile_time )
+			{
+				commit_suicide = true;
+			}
+		}
 	}
 }
 
@@ -308,7 +322,7 @@ void ProfilerThread::saveData()
 
 void ProfilerThread::run()
 {
-	DWORD startTick = GetTickCount();
+	startTick = GetTickCount();
 
 	try
 	{

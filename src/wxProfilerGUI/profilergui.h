@@ -60,6 +60,7 @@ struct AttachInfo
 	HANDLE process_handle;
 	std::vector<HANDLE> thread_handles;
 	SymbolInfo *sym_info;
+	int limit_profile_time;
 };
 
 wxBitmap LoadPngResource(const wchar_t *szName);

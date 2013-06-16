@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="profiler">
+      <UniqueIdentifier>{0b392257-64bc-4b73-a7f5-7100f4c390f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{57966723-4255-4d11-8764-499e1103944d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wxProfilerGUI">
+      <UniqueIdentifier>{a577d76d-8518-47ba-b7af-33421dd274a6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\profiler\processinfo.cpp">
+      <Filter>profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\profiler\profiler.cpp">
+      <Filter>profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\profiler\profilerthread.cpp">
+      <Filter>profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\profiler\symbolinfo.cpp">
+      <Filter>profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\profiler\threadinfo.cpp">
+      <Filter>profiler</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\dbginterface.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\mythread.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\osutils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\sortlist.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\stringutils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\WoW64.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\CallstackView.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\capturewin.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\contextmenu.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\database.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\launchdlg.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\lineinfo.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\mainwin.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\optionsdlg.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\processlist.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\proclist.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\profilergui.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\sourceview.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\threadlist.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\threadpicker.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\profiler\processinfo.h">
+      <Filter>profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler\profiler.h">
+      <Filter>profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler\profilerthread.h">
+      <Filter>profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler\symbolinfo.h">
+      <Filter>profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler\threadinfo.h">
+      <Filter>profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\dbginterface.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\mythread.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\osutils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\sortlist.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\stringutils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\WoW64.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\CallstackView.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\capturewin.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\contextmenu.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\database.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\launchdlg.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\lineinfo.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\mainwin.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\optionsdlg.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\processlist.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\proclist.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\profilergui.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\sourceview.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\threadlist.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\threadpicker.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="keywords.txt" />
+    <None Include="osfunctions.txt" />
+    <None Include="osmodules.txt" />
+    <None Include="src\sleepy.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\sleepy.rc" />
+  </ItemGroup>
+</Project>
