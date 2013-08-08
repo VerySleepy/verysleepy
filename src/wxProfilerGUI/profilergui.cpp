@@ -71,6 +71,7 @@ wxConfig config(APPNAME L" " VERSION, VENDORNAME);
 ProfilerGUI::ProfilerGUI()
 {
 	initialized = false;
+	captureWin = NULL;
 }
 
 
@@ -256,6 +257,19 @@ wxString ProfilerGUI::PromptOpen(wxWindow *parent)
 		return wxEmptyString;
 }
 
+void ProfilerGUI::CreateProgressWindow(const AttachInfo *info)
+{
+	captureWin = new CaptureWin(info ? info->limit_profile_time : -1);
+	captureWin->Show();
+	captureWin->Update();
+}
+
+void ProfilerGUI::DestroyProgressWindow()
+{
+	delete captureWin;
+	captureWin = NULL;
+}
+
 bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_filename)
 {
 	//------------------------------------------------------------------------
@@ -276,9 +290,8 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	//------------------------------------------------------------------------
 	bool aborted = false;
 	{
-		CaptureWin *captureWin = new CaptureWin(info->limit_profile_time);
-		captureWin->Show();
-		captureWin->Update();
+		if (!captureWin)
+			CreateProgressWindow(info);
 
 		wxStopWatch timer;
 		timer.Start();
@@ -297,7 +310,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 				break;
 		}
 		aborted = captureWin->Cancelled();
-		delete captureWin;
+		DestroyProgressWindow();
 	}
 
 	profilerthread->commit_suicide = true;
@@ -467,9 +480,16 @@ try_again:
 		break;
 
 	case ThreadPicker::RUN:
+		// Create the window before we create the process,
+		// so we don't steal focus from it.
+		CreateProgressWindow(NULL);
+
 		info = RunProcess(run_filename,run_cwd);
 		if (!info)
+		{
+			DestroyProgressWindow();
 			goto try_again;
+		}
 
 		ok = LaunchProfiler(info, tmp_filename);
 		TerminateProcess(info->process_handle, 0);

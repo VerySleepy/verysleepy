@@ -89,7 +89,7 @@ CaptureWin::CaptureWin(int limitProfileTime_)
 
 	wxStaticText *text1 = new wxStaticText( panel, -1, "Profiling application..." );
 	wxStaticText *text2 = new wxStaticText( panel, -1, "Press OK to stop profiling and display collected results." );
-	progressText = new wxStaticText( panel, -1, "-" );
+	progressText = new wxStaticText( panel, -1, "Waiting..." );
 	progressBar = new wxGauge( panel, -1, 0, wxDefaultPosition, wxSize(100,18) );
 	progressBar->SetRange(progressMax);
 
