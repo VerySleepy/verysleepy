@@ -94,7 +94,9 @@ OptionsDlg::OptionsDlg()
 	throttle->SetTickFreq(10);
 	throttlesizer->Add(new wxStaticText(this, -1, 
 		"Adjusts the sample rate speed. Useful for doing longer captures\n"
-		"where you wish to reduce the profiler overhead."), 0, wxALL, 5);
+		"where you wish to reduce the profiler overhead.\n"
+		"Higher values poll more often; lower values result in better\n"
+		"performance."), 0, wxALL, 5);
 	throttlesizer->Add(throttle, 0, wxEXPAND|wxLEFT|wxTOP, 5);
 	
 	topsizer->Add(symsizer, 0, wxEXPAND|wxALL, 0);
