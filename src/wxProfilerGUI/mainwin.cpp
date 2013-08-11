@@ -91,7 +91,7 @@ MainWin::MainWin(const wxString& title,
 
 	// View options and layout.
 	wxMenu *menuView = new wxMenu;
-	menuView->Append(MainWin_View_Stats,_T("Show Profiling Sstatistics"), _T("Shows any extra information logged while profiling")); 
+	menuView->Append(MainWin_View_Stats,_T("Show Profiling Statistics"), _T("Shows any extra information logged while profiling"));
 	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls")); 
 	collapseOSCalls->Check(config.Read("MainWinCollapseOS",1)!=0);
 	menuView->Append(MainWin_ResetToRoot , _T("Reset Profile &Root"), _T("Resets the root so that the entire profile is shown"));
