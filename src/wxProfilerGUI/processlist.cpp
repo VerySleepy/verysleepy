@@ -91,7 +91,11 @@ void ProcessList::reloadSymbols(bool download)
 	//------------------------------------------------------------------------
 	try
 	{
-		HANDLE process_handle = getSelectedProcess()->getProcessHandle(); 
+		const ProcessInfo* process_info = getSelectedProcess();
+		if (!process_info)
+			throw SymbolInfoExcep(L"No process selected");
+
+		HANDLE process_handle = process_info->getProcessHandle();
 		if (process_handle)
 		{
 			syminfo->loadSymbols(process_handle, download);
