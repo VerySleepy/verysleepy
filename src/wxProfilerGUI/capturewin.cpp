@@ -163,24 +163,20 @@ bool CaptureWin::UpdateProgress(int numSamples, int numThreads)
 		{
 			// RM: 20130614 Run forever, until cancelled
 			sprintf(tmp, "%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
-			// Simple logarithmic progress.
-			n = (int)(100 * log(numSamples+1.0f));
-			if (n > (MAX_RANGE-1))
-			n = MAX_RANGE;
+			progressBar->Pulse();
 		}
 		else
 		{
 			// RM: 20130614 Run for set time
 			sprintf(tmp, "%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, limitProfileTime, numThreads);
 			n = elapsed*10;
-		}
-		progressText->SetLabel(tmp);
-		progressBar->SetValue(n);
+			progressBar->SetValue(n);
 
-		if (win7taskBar)
-		{
-			win7taskBar->SetProgressValue(GetHandle(), n, progressMax);
+			if (win7taskBar)
+				win7taskBar->SetProgressValue(GetHandle(), n, progressMax);
 		}
+
+		progressText->SetLabel(tmp);
 
 		// RM: 20130614 Close if enough time has elapsed
 		if( limitProfileTime != -1 && elapsed > (double)limitProfileTime )
