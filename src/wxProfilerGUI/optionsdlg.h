@@ -35,8 +35,17 @@ public:
 
 private:
 	void OnOk( wxCommandEvent & event );
+
+	void UpdateSymPathButtons();
+	void OnSymPath( wxCommandEvent & event );
+	void OnSymPathAdd( wxCommandEvent & event );
+	void OnSymPathRemove( wxCommandEvent & event );
+	void OnSymPathMoveUp( wxCommandEvent & event );
+	void OnSymPathMoveDown( wxCommandEvent & event );
 	void OnUseSymServer( wxCommandEvent & event );
 
+	wxListBox *symPaths;
+	wxButton *symPathAdd, *symPathRemove, *symPathMoveUp, *symPathMoveDown;
 	wxCheckBox *useSymServer;
 	wxDirPickerCtrl *symCacheDir;
 	wxTextCtrl *symServer;

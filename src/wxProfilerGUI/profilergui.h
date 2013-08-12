@@ -75,15 +75,23 @@ public:
 		throttle = 100;
 	}
 
+	wxString symSearchPath;
 	bool useSymServer;
 	wxString symCacheDir;
 	wxString symServer;
 	bool saveMinidump;
 	int throttle;
 
-	// Add the symbol server if enabled.
+	// Add any configured search paths, and the symbol server if enabled.
 	void AdjustSymbolPath(std::wstring &sympath, bool download)
 	{
+		if (!symSearchPath.empty())
+		{
+			if (!sympath.empty())
+				sympath += L";";
+			sympath += symSearchPath;
+		}
+
 		if (useSymServer)
 		{
 			if (!sympath.empty())

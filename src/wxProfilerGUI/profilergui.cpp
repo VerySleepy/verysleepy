@@ -540,6 +540,7 @@ bool ProfilerGUI::OnInit()
 	// Make a default cache in their user directory.
 	wxString symCache = wxStandardPaths::Get().GetUserLocalDataDir();
 
+	prefs.symSearchPath = config.Read("SymbolSearchPath", "");
 	prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
 	prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
 	prefs.symCacheDir = config.Read("SymbolCache", symCache);
@@ -619,6 +620,7 @@ void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
 
 int ProfilerGUI::OnExit()
 {
+	config.Write("SymbolSearchPath", prefs.symSearchPath);
 	config.Write("UseSymbolServer", prefs.useSymServer);
 	config.Write("SymbolServer", prefs.symServer);
 	config.Write("SymbolCache", prefs.symCacheDir);
