@@ -185,9 +185,6 @@ bool CaptureWin::UpdateProgress(int numSamples, int numThreads)
 		}
 	}
 
-	Update();
-	wxYieldIfNeeded();
-	
 	return !stopped;
 }
 

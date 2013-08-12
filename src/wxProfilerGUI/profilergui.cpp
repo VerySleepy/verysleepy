@@ -293,21 +293,40 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 		if (!captureWin)
 			CreateProgressWindow(info);
 
-		wxStopWatch timer;
-		timer.Start();
+		wxStopWatch stopwatch;
+		stopwatch.Start();
 
 		profilerthread->launch(false, THREAD_PRIORITY_TIME_CRITICAL);
 
-		while(captureWin->UpdateProgress(profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning()))
+		class : public wxTimer
 		{
-			Sleep(100);
+		public:
+			bool fired;
+			void Notify() { fired = true; }
+		} timer;
+		timer.fired = false;
+		timer.Start(100);
+
+		while (true)
+		{
+			wxYieldIfNeeded();
+
+			if (timer.fired)
+			{
+				timer.fired = false;
+				if (!captureWin->UpdateProgress(profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning()))
+					break;
+			}
+
 			profilerthread->setPaused(captureWin->Paused());
-			
+
 			if (profilerthread->getNumThreadsRunning() <= 0)
 				break;
 
-			if (cmdline_timeout > 0 && timer.Time() >= cmdline_timeout*1000)
+			if (cmdline_timeout > 0 && stopwatch.Time() >= cmdline_timeout*1000)
 				break;
+
+			WaitMessage(); // in lieu of a wxWaitForEvent
 		}
 		aborted = captureWin->Cancelled();
 		DestroyProgressWindow();
