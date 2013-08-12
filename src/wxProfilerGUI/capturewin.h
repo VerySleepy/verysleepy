@@ -54,7 +54,7 @@ private:
 	int limitProfileTime;
 	int progressMax;
 
-	class ITaskbarList3 *win7taskBar;
+	struct ITaskbarList3 *win7taskBar;
 
 	DECLARE_EVENT_TABLE()
 };
