@@ -63,7 +63,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 
 wxIcon sleepy_icon;
 std::wstring cmdline_load, cmdline_save, cmdline_run;
-long cmdline_timeout = 0;
+long cmdline_timeout = -1;  // -1 means profile until cancelled
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
 wxConfig config(APPNAME L" " VERSION, VENDORNAME);
@@ -257,9 +257,9 @@ wxString ProfilerGUI::PromptOpen(wxWindow *parent)
 		return wxEmptyString;
 }
 
-void ProfilerGUI::CreateProgressWindow(const AttachInfo *info)
+void ProfilerGUI::CreateProgressWindow()
 {
-	captureWin = new CaptureWin(info ? info->limit_profile_time : -1);
+	captureWin = new CaptureWin();
 	captureWin->Show();
 	captureWin->Update();
 }
@@ -279,9 +279,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	ProfilerThread* profilerthread = new ProfilerThread( 
 		info->process_handle,
 		info->thread_handles,
-		info->sym_info,
-		// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
-		info->limit_profile_time
+		info->sym_info
 		);
 
 
@@ -291,12 +289,12 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	bool aborted = false;
 	{
 		if (!captureWin)
-			CreateProgressWindow(info);
+			CreateProgressWindow();
+
+		profilerthread->launch(false, THREAD_PRIORITY_TIME_CRITICAL);
 
 		wxStopWatch stopwatch;
 		stopwatch.Start();
-
-		profilerthread->launch(false, THREAD_PRIORITY_TIME_CRITICAL);
 
 		class : public wxTimer
 		{
@@ -314,7 +312,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 			if (timer.fired)
 			{
 				timer.fired = false;
-				if (!captureWin->UpdateProgress(profilerthread->getStatus(), profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning()))
+				if (!captureWin->UpdateProgress(profilerthread->getStatus(), profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning(), info->limit_profile_time))
 					break;
 			}
 
@@ -323,7 +321,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 			if (profilerthread->getNumThreadsRunning() <= 0)
 				break;
 
-			if (cmdline_timeout > 0 && stopwatch.Time() >= cmdline_timeout*1000)
+			if (info->limit_profile_time >= 0 && stopwatch.Time() >= info->limit_profile_time*1000)
 				break;
 
 			WaitMessage(); // in lieu of a wxWaitForEvent
@@ -385,7 +383,7 @@ AttachInfo::AttachInfo()
 {
 	process_handle = NULL;
 	sym_info = NULL;
-	limit_profile_time = -1;  // -1 means profile until cancelled
+	limit_profile_time = cmdline_timeout;
 }
 
 AttachInfo::~AttachInfo()
@@ -502,7 +500,7 @@ try_again:
 	case ThreadPicker::RUN:
 		// Create the window before we create the process,
 		// so we don't steal focus from it.
-		CreateProgressWindow(NULL);
+		CreateProgressWindow();
 
 		info = RunProcess(run_filename,run_cwd);
 		if (!info)

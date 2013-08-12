@@ -70,7 +70,7 @@ END_EVENT_TABLE()
 
 unsigned WM_TASKBARBUTTONCREATED = RegisterWindowMessage(L"TaskbarButtonCreated");
 
-CaptureWin::CaptureWin(int limitProfileTime_)
+CaptureWin::CaptureWin()
 :	wxDialog(NULL, -1, wxString(APPNAME _T(" - profiling")),
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_DIALOG_STYLE)
@@ -85,13 +85,9 @@ CaptureWin::CaptureWin(int limitProfileTime_)
 
 	wxPanel *panel = new wxPanel(this);
 
-	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
-	limitProfileTime = limitProfileTime_;
-	progressMax = limitProfileTime==-1 ? MAX_RANGE : limitProfileTime*10;
-
 	progressText = new wxStaticText( panel, -1, "Waiting..." );
 	progressBar = new wxGauge( panel, -1, 0, wxDefaultPosition, wxSize(100,18) );
-	progressBar->SetRange(progressMax);
+	progressBar->SetRange(MAX_RANGE);
 
 	wxBitmap pause = LoadPngResource(L"button_pause");
 	pauseButton = new wxBitmapToggleButton(
@@ -152,7 +148,7 @@ WXLRESULT CaptureWin::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lPara
 	}
 }
 
-bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numThreads)
+bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numThreads, int timeout)
 {
 	if (!paused)
 	{
@@ -167,7 +163,7 @@ bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numTh
 		{
 			char tmp[256];
 			int n=0;
-			if( limitProfileTime == -1 )
+			if( timeout == -1 )
 			{
 				// RM: 20130614 Run forever, until cancelled
 				sprintf(tmp, "%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
@@ -176,21 +172,15 @@ bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numTh
 			else
 			{
 				// RM: 20130614 Run for set time
-				sprintf(tmp, "%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, limitProfileTime, numThreads);
-				n = elapsed*10;
+				sprintf(tmp, "%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, timeout, numThreads);
+				n = elapsed / timeout * MAX_RANGE;
 				progressBar->SetValue(n);
 
 				if (win7taskBar)
-					win7taskBar->SetProgressValue(GetHandle(), n, progressMax);
+					win7taskBar->SetProgressValue(GetHandle(), n, MAX_RANGE);
 			}
 
 			progressText->SetLabel(tmp);
-		}
-
-		// RM: 20130614 Close if enough time has elapsed
-		if( limitProfileTime != -1 && elapsed > (double)limitProfileTime )
-		{
-			stopped = true;
 		}
 	}
 

@@ -127,7 +127,7 @@ protected:
 	virtual void OnInitCmdLine(wxCmdLineParser& parser);
 	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
 
-	void CreateProgressWindow(const AttachInfo *info);
+	void CreateProgressWindow();
 	void DestroyProgressWindow();
 
 	bool LaunchProfiler(const AttachInfo *info, std::wstring &output_filename);
