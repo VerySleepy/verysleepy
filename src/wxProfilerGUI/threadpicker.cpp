@@ -35,7 +35,6 @@ enum
 	ProcWin_Download,
 	ProcWin_Launch,
 	ProcWin_Options,
-	ProcWin_Log,
 	ProcWin_TimeCtrl,
 	ProcWin_TimeCheck,
 
@@ -60,77 +59,19 @@ EVT_BUTTON(ProcWin_Refresh, ThreadPicker::OnRefresh)
 EVT_BUTTON(ProcWin_Download, ThreadPicker::OnDownload)
 EVT_CLOSE(ThreadPicker::OnClose)
 EVT_BUTTON(ProcWin_Exit, ThreadPicker::OnQuit)
-EVT_COMMAND_CONTEXT_MENU(ProcWin_Log,ThreadPicker::OnContextMenu)
-EVT_MENU(wxID_COPY, ThreadPicker::OnCopy)
-EVT_MENU(wxID_CLEAR, ThreadPicker::OnClearLog)
-EVT_MENU(wxID_SELECTALL, ThreadPicker::OnSelectAll)
 EVT_CHECKBOX(ProcWin_TimeCheck, ThreadPicker::OnTimeCheck)
-EVT_IDLE(ThreadPicker::OnIdle)
 END_EVENT_TABLE()
 
 ThreadPicker *cur_picker = NULL;
 wxProgressDialog *g_symProgress = NULL;
-int g_symProgressAmount = 0;
 
 void symLogCallback(const wchar_t *text)
 {
-	wxString str = text;
+	wxLogMessage(L"%s", text);
 
-	// dbghelp likes to add ASCII backspaces in. (sigh)
-	// convert them out into newlines.
-	int backspaceat = -1;
-	size_t len = str.length();
-	for (size_t n=0;n<len;n++)
-	{
-		if (str[n] == 8)
-		{
-			if (backspaceat == -1)
-				backspaceat = (int)n;
-			str[n] = '.';
-		}
-	}
-
-	bool forceupdate = false;
-	if (backspaceat != -1)
-	{
-		str[backspaceat] = '\n';
-		forceupdate = true;
-	}
-		
-	// We don't want to constantly update the log, or it turns into
-	// one of those hilarious situations where outputing the progress takes more
-	// time than the operation itself. So we freeze it, and update either
-	// when we hit the idle, or every now and again here.
-	if (!cur_picker->log->IsFrozen())
-		cur_picker->log->Freeze();
-	cur_picker->log->AppendText(str);
-	cur_picker->log->ShowPosition(-1);
-
-	// Simple logarithmic progress. We have no idea how long dbghelp will take,
-	// but it's nice to at least show something.
+	// Pulse the progress bar, if there is one.
 	if (g_symProgress)
-	{
-		size_t n = (int)(5 * log(g_symProgressAmount+1.0f));
-		if (n>99)
-			n=99;
-		g_symProgress->Update((int)n);
-		g_symProgressAmount += (int)len;
-	}
-
-	// Update if it's been more than N seconds since our last one.
-	static DWORD prev = 0;
-	DWORD now = GetTickCount();
-	DWORD diff = now - prev;
-	if (diff > 500)
-		forceupdate = true;
-
-	if (forceupdate)
-	{
-		prev = now;
-		if (cur_picker->log->IsFrozen())
-			cur_picker->log->Thaw();
-		cur_picker->log->Update();
-	}
+		g_symProgress->Pulse();
 }
 
 ThreadPicker::ThreadPicker()
@@ -234,7 +175,7 @@ ThreadPicker::ThreadPicker()
 	bottomsizer->Add(buttons, 0, wxLEFT|wxRIGHT|wxEXPAND, 10);
 	bottomsizer->AddSpacer(8);
 
-	log = new wxTextCtrl(panel, ProcWin_Log, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY);
+	log = new LogView(panel);
 	bottomsizer->Add(log, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 10);
 
 	topsizer->Add(leftsizer, 1, wxEXPAND | wxLEFT, 10);
@@ -256,38 +197,6 @@ ThreadPicker::ThreadPicker()
 
 	g_symLog = symLogCallback;
 	cur_picker = this;
-}
-
-void ThreadPicker::OnIdle(wxIdleEvent& event)
-{
-	if (log->IsFrozen())
-		log->Thaw();
-}
-
-void ThreadPicker::OnContextMenu(wxContextMenuEvent& event)
-{
-	wxMenu *menu = new wxMenu;
-	menu->Append(wxID_COPY, _("&Copy"));
-	menu->Append(wxID_SELECTALL, _("Select &All"));
-	menu->Append(wxID_CLEAR, _("Clear &Log"));
-
-	PopupMenu(menu);
-	delete menu;
-}
-
-void ThreadPicker::OnCopy(wxCommandEvent& event)
-{
-	log->Copy();
-}
-
-void ThreadPicker::OnClearLog(wxCommandEvent& event)
-{
-	log->Clear();
-}
-
-void ThreadPicker::OnSelectAll(wxCommandEvent& event)
-{
-	log->SetSelection(-1, -1);
 }
 
 void ThreadPicker::OnOpen(wxCommandEvent& event)
@@ -350,7 +259,6 @@ void ThreadPicker::OnOptions(wxCommandEvent& event)
 void ThreadPicker::OnDownload(wxCommandEvent& event)
 {
 	g_symProgress = new wxProgressDialog("Sleepy", "Downloading symbols...", 100, this);
-	g_symProgressAmount = 0;
 	processlist->reloadSymbols(true);
 	delete g_symProgress;
 	g_symProgress = NULL;
@@ -397,6 +305,7 @@ ThreadPicker::~ThreadPicker()
 {
 	g_symLog = NULL;
 	cur_picker = NULL;
+	delete log;
 }
 
 /*

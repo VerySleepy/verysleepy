@@ -493,6 +493,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\wxProfilerGUI\logview.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\wxProfilerGUI\logview.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\wxProfilerGUI\mainwin.cpp"
 				>
 			</File>
