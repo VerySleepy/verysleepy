@@ -56,6 +56,7 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 	cancelled = false;
 	symbolsPermille = 0;
 	numThreadsRunning = (int)target_threads.size();
+	status = L"Initializing";
 
 	filename = wxFileName::CreateTempFileName(wxEmptyString);
 }
@@ -340,8 +341,12 @@ void ProfilerThread::run()
 	startTick = GetTickCount();
 
 	if (prefs.saveMinidump)
+	{
+		status = L"Saving minidump";
 		minidump = sym_info->saveMinidump();
+	}
 
+	status = NULL;
 	try
 	{
 		sampleLoop();
@@ -359,6 +364,8 @@ void ProfilerThread::run()
 
 		numThreadsRunning = 0;
 	}
+
+	status = L"Exiting";
 
 	if (cancelled)
 		return;

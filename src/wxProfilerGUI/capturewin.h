@@ -32,7 +32,7 @@ public:
 	CaptureWin(int limitProfileTime);
 	virtual ~CaptureWin();
 
-	bool UpdateProgress( int numSamples, int numThreads );
+	bool UpdateProgress(const wchar_t *status, int numSamples, int numThreads);
 
 	bool Paused() { return paused; }
 	bool Cancelled() { return cancelled; }

@@ -67,6 +67,7 @@ public:
 	int getNumThreadsRunning() const { return numThreadsRunning; }
 	bool getDone() const { return done; }
 	bool getFailed() const { return failed; }
+	const wchar_t* getStatus() const { return status; }
 	int getSampleProgress() const { return numsamplessofar; }
 	void getSymbolsProgress(int *permille, std::wstring *stage) const { *permille = symbolsPermille; *stage = symbolsStage; }
 	const std::wstring &getFilename() const { return filename; }
@@ -94,6 +95,7 @@ private:
 	std::vector<Profiler> profilers;
 	double duration;
 	//int numsamples;
+	const wchar_t* status;
 	int numsamplessofar;
 	int numThreadsRunning;
 	bool done;

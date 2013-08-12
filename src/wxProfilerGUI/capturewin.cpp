@@ -152,31 +152,40 @@ WXLRESULT CaptureWin::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lPara
 	}
 }
 
-bool CaptureWin::UpdateProgress(int numSamples, int numThreads)
+bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numThreads)
 {
 	if (!paused)
 	{
 		double elapsed = stopwatch.Time() / 1000.0f;
-		char tmp[256];
-		int n=0;
-		if( limitProfileTime == -1 )
+
+		if (status)
 		{
-			// RM: 20130614 Run forever, until cancelled
-			sprintf(tmp, "%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
+			progressText->SetLabel(status);
 			progressBar->Pulse();
 		}
 		else
 		{
-			// RM: 20130614 Run for set time
-			sprintf(tmp, "%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, limitProfileTime, numThreads);
-			n = elapsed*10;
-			progressBar->SetValue(n);
+			char tmp[256];
+			int n=0;
+			if( limitProfileTime == -1 )
+			{
+				// RM: 20130614 Run forever, until cancelled
+				sprintf(tmp, "%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
+				progressBar->Pulse();
+			}
+			else
+			{
+				// RM: 20130614 Run for set time
+				sprintf(tmp, "%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, limitProfileTime, numThreads);
+				n = elapsed*10;
+				progressBar->SetValue(n);
 
-			if (win7taskBar)
-				win7taskBar->SetProgressValue(GetHandle(), n, progressMax);
+				if (win7taskBar)
+					win7taskBar->SetProgressValue(GetHandle(), n, progressMax);
+			}
+
+			progressText->SetLabel(tmp);
 		}
-
-		progressText->SetLabel(tmp);
 
 		// RM: 20130614 Close if enough time has elapsed
 		if( limitProfileTime != -1 && elapsed > (double)limitProfileTime )

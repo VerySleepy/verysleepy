@@ -314,7 +314,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 			if (timer.fired)
 			{
 				timer.fired = false;
-				if (!captureWin->UpdateProgress(profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning()))
+				if (!captureWin->UpdateProgress(profilerthread->getStatus(), profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning()))
 					break;
 			}
 
