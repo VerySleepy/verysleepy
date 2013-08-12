@@ -71,7 +71,7 @@ END_EVENT_TABLE()
 unsigned WM_TASKBARBUTTONCREATED = RegisterWindowMessage(L"TaskbarButtonCreated");
 
 CaptureWin::CaptureWin(int limitProfileTime_)
-:	wxDialog(NULL, -1, wxString(_T("Sleepy")), 
+:	wxDialog(NULL, -1, wxString(APPNAME _T(" - profiling")),
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_DIALOG_STYLE)
 {
@@ -81,14 +81,14 @@ CaptureWin::CaptureWin(int limitProfileTime_)
 	wxBoxSizer *rootsizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL);
 
+	rootsizer->SetMinSize(400, 0);
+
 	wxPanel *panel = new wxPanel(this);
 
 	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
 	limitProfileTime = limitProfileTime_;
 	progressMax = limitProfileTime==-1 ? MAX_RANGE : limitProfileTime*10;
 
-	wxStaticText *text1 = new wxStaticText( panel, -1, "Profiling application..." );
-	wxStaticText *text2 = new wxStaticText( panel, -1, "Press OK to stop profiling and display collected results." );
 	progressText = new wxStaticText( panel, -1, "Waiting..." );
 	progressBar = new wxGauge( panel, -1, 0, wxDefaultPosition, wxSize(100,18) );
 	progressBar->SetRange(progressMax);
@@ -97,8 +97,10 @@ CaptureWin::CaptureWin(int limitProfileTime_)
 	pauseButton = new wxBitmapToggleButton(
 		panel, CaptureWin_Pause, pause, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT );
 
-	wxButton *okButton = new wxButton(panel, wxID_OK);
-	wxButton *cancelButton = new wxButton(panel, wxID_CANCEL);
+	wxButton *okButton = new wxButton(panel, wxID_OK, "Stop");
+	okButton->SetToolTip("Stop profiling and display collected results.");
+	wxButton *cancelButton = new wxButton(panel, wxID_CANCEL, "Abort");
+	cancelButton->SetToolTip("Stop profiling, discard collected results, and exit.");
 
 	int border = ConvertDialogToPixels(wxSize(2, 0)).x;
 	wxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
@@ -107,8 +109,6 @@ CaptureWin::CaptureWin(int limitProfileTime_)
 	buttons->Add(okButton,					0, wxALIGN_RIGHT | wxLEFT|wxRIGHT,	border);
 	buttons->Add(cancelButton,				0, wxALIGN_RIGHT | wxLEFT,			border);
 
-	panelsizer->Add(text1, 0, wxBOTTOM, 2);
-	panelsizer->Add(text2, 0, wxBOTTOM, 6);
 	panelsizer->Add(progressText, 0, wxBOTTOM, 3);
 	panelsizer->Add(progressBar, 0, wxBOTTOM|wxEXPAND, 10);
 	panelsizer->Add(buttons, 0, wxEXPAND);
@@ -203,7 +203,7 @@ void CaptureWin::OnPause(wxCommandEvent& event)
 		pauseButton->SetBitmapLabel(LoadPngResource(L"button_pause"));
 	}
 
-	SetTitle(paused ? "Sleepy - paused" : "Sleepy");
+	SetTitle(paused ? APPNAME L" - paused" : APPNAME L" - profiling");
 
 	if (win7taskBar)
 	{
