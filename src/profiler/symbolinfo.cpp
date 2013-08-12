@@ -457,7 +457,8 @@ struct DebugOutputCallbacksWide : public IDebugOutputCallbacksWide
 
 	HRESULT	STDMETHODCALLTYPE Output(__in ULONG Mask, __in PCWSTR Text)
 	{
-		OutputDebugStringW(Text);
+		//OutputDebugStringW(Text);
+		wxLogMessage(L"%s", Text);
 		return S_OK;
 	}
 };

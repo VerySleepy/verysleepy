@@ -150,16 +150,21 @@ MainWin::MainWin(const wxString& title,
 		.CaptionVisible(true)
 		);
 
-	aui->AddPane(sourceview, wxAuiPaneInfo()
-		.Name(wxT("Source"))
-		.Caption(wxT("Source"))
+	sourceAndLog = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
+	aui->AddPane(sourceAndLog, wxAuiPaneInfo()
+		.Name(wxT("SourceAndLog"))
+		.CaptionVisible(false)
 		.CloseButton(false)
 		.Bottom()
 		.Layer(0)
 		.BestSize(clientSize.GetWidth() * 2/3, clientSize.GetHeight() * 1/3)
 		);
 
-	
+	sourceAndLog->AddPage(sourceview,wxT("Source"));
+	log = new LogView(sourceAndLog);
+	//wxTextCtrl *log = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY);
+	sourceAndLog->AddPage(log,wxT("Log"));
+
 	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
 
 	callViews->AddPage(splitWindow,wxT("Averages"));
@@ -337,6 +342,9 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 
 void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 {
+	// Open the log tab, so the user sees output from the debug engine.
+	sourceAndLog->SetSelection(1);
+
 	// Symbols loaded from the minidump persist across reload calls.
 	// Thus, we need to call reload with loadMinidump==true only once
 	// (as opposed to remembering whether we want to see minidump symbols).

@@ -28,6 +28,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "proclist.h"
 #include "sourceview.h"
 #include "CallstackView.h"
+#include "logview.h"
 
 /*=====================================================================
 MainWin
@@ -73,6 +74,7 @@ private:
 	ProcList* callees;
 	CallstackView* callStack;
 	SourceView* sourceview;
+	LogView* log;
 	Database *database;
 	std::wstring profilepath;
 
@@ -86,6 +88,7 @@ private:
 	wxString contentString;
 
 	wxAuiNotebook *callViews;
+	wxAuiNotebook *sourceAndLog;
 
 	wxMenuItem *collapseOSCalls;
 };
