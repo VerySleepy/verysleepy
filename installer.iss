@@ -45,6 +45,15 @@ Source: "dbghelp_x64\symsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check:
 Source: "dbghelp_x64\srcsrv.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
 Source: "dbghelp_x64\symsrv.yes"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
 
+; 32-bit version for 64-bit systems
+Source: "obj\Win32\Release\sleepy.exe"; DestDir: "{app}\32"; DestName: "sleepy.exe"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x86\dbghelp.dll"; DestDir: "{app}\32"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x86\dbghelpw.dll"; DestDir: "{app}\32"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x86\symsrv.dll"; DestDir: "{app}\32"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x86\srcsrv.dll"; DestDir: "{app}\32"; Flags: ignoreversion; Check: Is64BitInstallMode
+Source: "dbghelp_x86\symsrv.yes"; DestDir: "{app}\32"; Flags: ignoreversion; Check: Is64BitInstallMode
+
+
 ; Other bits
 Source: "keywords.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "license.txt"; DestDir: "{app}"; Flags: ignoreversion
@@ -54,6 +63,7 @@ Source: "osmodules.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Very Sleepy"; Filename: "{app}\sleepy.exe"
+Name: "{group}\Very Sleepy (32-bit)"; Filename: "{app}\32\sleepy.exe"; Check: Is64BitInstallMode
 
 [Run]
 Filename: "{app}\sleepy.exe"; Description: "{cm:LaunchProgram,Very Sleepy}"; Flags: nowait postinstall skipifsilent
