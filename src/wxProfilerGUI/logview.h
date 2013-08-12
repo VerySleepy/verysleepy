@@ -25,26 +25,24 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/wx.h>
 #include <wx/config.h>
 #include <wx/textctrl.h>
-#include <wx/log.h>
 
-class LogView :	public wxTextCtrl, public wxLog
+class LogView :	public wxTextCtrl
 {
+	friend class LogViewLog;
+
 public:
 	LogView(wxWindow *parent);
 	virtual ~LogView();
 
-	// wxTextCtrl
 	void OnContextMenu(wxContextMenuEvent& event);
 	void OnCopy(wxCommandEvent& event);
 	void OnClearLog(wxCommandEvent& event);
 	void OnSelectAll(wxCommandEvent& event);
 	void OnIdle(wxIdleEvent& event);
 
-	// wxLog
-	void DoLogText(const wxString& msg);
-
 private:
-	wxLog *previous_log;
+	class wxLog *previous_log;
+	LogViewLog *log;
 
 	DECLARE_EVENT_TABLE()
 };
