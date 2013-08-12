@@ -225,7 +225,7 @@ void AboutDlg::AddText(const wxString& text)
 void ProfilerGUI::ShowAboutBox()
 {
 	wxAboutDialogInfo info;
-	info.SetName(_T("Very Sleepy"));
+	info.SetName(APPNAME);
 	info.SetVersion(VERSION);
 	info.SetDescription("Open-source CPU profiler");
 	info.AddDeveloper("Richard Mitton (maintainer)");
@@ -241,7 +241,7 @@ void ProfilerGUI::ShowAboutBox()
 		"This program is released under the GNU Public License.\n"
 		"See LICENSE.TXT for more information."
 		);
-	info.SetWebSite(_T("http://www.codersnotes.com/sleepy"), _T("Very Sleepy web site"));
+	info.SetWebSite(_T("http://www.codersnotes.com/sleepy"), APPNAME _T(" web site"));
 
 	AboutDlg dlg(info);
 	dlg.ShowModal();
@@ -249,7 +249,7 @@ void ProfilerGUI::ShowAboutBox()
 
 wxString ProfilerGUI::PromptOpen(wxWindow *parent)
 {
-	wxFileDialog dlg(parent, "Open File", "", "", "Sleepy Profiles (*.sleepy)|*.sleepy", 
+	wxFileDialog dlg(parent, "Open File", "", "", APPNAME L"Profiles (*.sleepy)|*.sleepy", 
 		wxFD_OPEN);
 	if (dlg.ShowModal() != wxID_CANCEL)
 		return dlg.GetPath();
@@ -343,7 +343,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	}
 
 	{
-		wxProgressDialog dlg("Sleepy", "Waiting for symbol query to start...", 1000, NULL,
+		wxProgressDialog dlg(APPNAME, "Waiting for symbol query to start...", 1000, NULL,
 			wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT);
 
 		while(true)
@@ -458,7 +458,7 @@ bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
 	if ( !database->loadFromPath(filename,config.Read("MainWinCollapseOS",1)!=0,false) )
 		return false;
 
-	MainWin *frame = new MainWin(_T("Sleepy"), filename, database);
+	MainWin *frame = new MainWin(APPNAME, filename, database);
 
 	frame->Show(TRUE);
 	frame->Update();

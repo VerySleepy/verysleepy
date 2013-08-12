@@ -217,7 +217,7 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 {
 	wxTextInputStream str(file);
 
-	wxProgressDialog progressdlg("Sleepy", "Loading profile database...",
+	wxProgressDialog progressdlg(APPNAME, "Loading profile database...",
 		(int)file.GetSize(), theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
@@ -350,7 +350,7 @@ void Database::scanMainList()
 {
 	std::map<const Symbol *, double> exclusive, inclusive;
 
-	wxProgressDialog progressdlg("Sleepy", "Scanning profile database...",
+	wxProgressDialog progressdlg(APPNAME, "Scanning profile database...",
 		(int)callstacks.size(), theMainWin,
 		wxPD_APP_MODAL|wxPD_REMAINING_TIME);
 

@@ -75,7 +75,7 @@ void symLogCallback(const wchar_t *text)
 }
 
 ThreadPicker::ThreadPicker()
-:	wxModalFrame(NULL, -1, wxString(_T("Sleepy")), 
+:	wxModalFrame(NULL, -1, wxString(APPNAME), 
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_FRAME_STYLE)
 {
@@ -258,7 +258,7 @@ void ThreadPicker::OnOptions(wxCommandEvent& event)
 
 void ThreadPicker::OnDownload(wxCommandEvent& event)
 {
-	g_symProgress = new wxProgressDialog("Sleepy", "Downloading symbols...", 100, this);
+	g_symProgress = new wxProgressDialog(APPNAME, "Downloading symbols...", 100, this);
 	processlist->reloadSymbols(true);
 	delete g_symProgress;
 	g_symProgress = NULL;

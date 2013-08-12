@@ -306,7 +306,7 @@ void MainWin::ResetToRootUpdate(wxUpdateUIEvent& event)
 
 void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
-	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", "Sleepy Profiles (*.sleepy)|*.sleepy", 
+	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", APPNAME L" Profiles (*.sleepy)|*.sleepy", 
 		wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 	if (dlg.ShowModal() != wxID_CANCEL)
 	{
