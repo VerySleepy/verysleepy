@@ -333,6 +333,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	}
 
 	profilerthread->commit_suicide = true;
+	wxLog::FlushActive();
 
 	if (aborted)
 	{
@@ -565,6 +566,12 @@ void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
 	initialized = true;
 
 	SetExitOnFrameDelete(false);
+
+	// Explicitly create and set the default logger, so other threads use it.
+	// Otherwise, wxWidgets will create a default logger on request,
+	// but only by the request of the main thread.
+	// Log messages for other threads will be discarded.
+	wxLog::SetActiveTarget(new wxLogGui);
 
 	if (!cmdline_run.empty())
 	{

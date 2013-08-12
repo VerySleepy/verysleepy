@@ -338,6 +338,8 @@ void ProfilerThread::saveData()
 
 void ProfilerThread::run()
 {
+	wxLog::EnableLogging();
+
 	startTick = GetTickCount();
 
 	if (prefs.saveMinidump)
