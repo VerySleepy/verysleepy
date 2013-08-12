@@ -505,7 +505,9 @@ try_again:
 
 bool ProfilerGUI::OnInit()
 {
+#ifndef _DEBUG
 	cbStartup();
+#endif
 	wxInitAllImageHandlers();
 	EnableDebugPrivilege();
 	if (!dbgHelpInit())
