@@ -435,7 +435,7 @@ AttachInfo *ProfilerGUI::RunProcess(std::wstring run_cmd,std::wstring run_cwd)
 bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
 {
 	Database *database = new Database();
-	if ( !database->loadFromPath(filename,config.Read("MainWinCollapseOS",1)!=0) )
+	if ( !database->loadFromPath(filename,config.Read("MainWinCollapseOS",1)!=0,false) )
 		return false;
 
 	MainWin *frame = new MainWin(_T("Sleepy"), filename, database);
@@ -524,6 +524,7 @@ bool ProfilerGUI::OnInit()
 	prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
 	prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
 	prefs.symCacheDir = config.Read("SymbolCache", symCache);
+	prefs.saveMinidump = config.Read("SaveMinidump", 0L) != 0;
 	prefs.throttle = config.Read("SpeedThrottle", 100);
 	if (prefs.throttle < 1)
 		prefs.throttle = 1;
@@ -602,6 +603,7 @@ int ProfilerGUI::OnExit()
 	config.Write("UseSymbolServer", prefs.useSymServer);
 	config.Write("SymbolServer", prefs.symServer);
 	config.Write("SymbolCache", prefs.symCacheDir);
+	config.Write("SaveMinidump", prefs.saveMinidump);
 	config.Write("SpeedThrottle", prefs.throttle);
 
 	return wxApp::OnExit();

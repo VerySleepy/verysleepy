@@ -143,6 +143,17 @@ struct DbgHelp
 	(WINAPI *SymSetDbgPrint)(
 		 void (*fn)(const char *str)
 		 );
+
+	BOOL
+	(WINAPI *MiniDumpWriteDump)(
+		__in HANDLE hProcess,
+		__in DWORD ProcessId,
+		__in HANDLE hFile,
+		__in MINIDUMP_TYPE DumpType,
+		__in_opt PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
+		__in_opt PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
+		__in_opt PMINIDUMP_CALLBACK_INFORMATION CallbackParam
+		);
 };
 
 extern DbgHelp dbgHelpMs;

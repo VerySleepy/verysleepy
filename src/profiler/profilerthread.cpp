@@ -180,6 +180,20 @@ void ProfilerThread::saveData()
 	}
 
 	//------------------------------------------------------------------------
+	//copy minidump
+	//------------------------------------------------------------------------
+	if (!minidump.empty())
+	{
+		zip.PutNextEntry(_T("minidump.dmp"));
+		beginProgress(L"Copying minidump", 100);
+		{
+			wxFFileInputStream stream(minidump);
+			zip.Write(stream);
+		}
+		wxRemoveFile(minidump);
+	}
+
+	//------------------------------------------------------------------------
 	//save instruction pointer count results
 	//------------------------------------------------------------------------
 
@@ -309,6 +323,7 @@ void ProfilerThread::saveData()
 			return;
 	}
 
+
 	zip.PutNextEntry(L"Version " VERSION L" required");
 	txt << VERSION << "\n";
 
@@ -323,6 +338,9 @@ void ProfilerThread::saveData()
 void ProfilerThread::run()
 {
 	startTick = GetTickCount();
+
+	if (prefs.saveMinidump)
+		minidump = sym_info->saveMinidump();
 
 	try
 	{

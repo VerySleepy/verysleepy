@@ -71,13 +71,29 @@ public:
 	Prefs()
 	{
 		useSymServer = false;
+		saveMinidump = false;
 		throttle = 100;
 	}
 
 	bool useSymServer;
 	wxString symCacheDir;
 	wxString symServer;
+	bool saveMinidump;
 	int throttle;
+
+	// Add the symbol server if enabled.
+	void AdjustSymbolPath(std::wstring &sympath, bool download)
+	{
+		if (useSymServer)
+		{
+			if (!sympath.empty())
+				sympath += L";";
+			sympath += L"SRV*";
+			sympath += symCacheDir;
+			if ( download )
+				sympath += std::wstring(L"*") + symServer;
+		}
+	}
 };
 
 /*=====================================================================

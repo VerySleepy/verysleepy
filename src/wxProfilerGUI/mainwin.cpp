@@ -38,6 +38,7 @@ enum
 	MainWin_Open,
 	MainWin_SaveAs,
 	MainWin_ExportAsCsv,
+	MainWin_LoadMinidumpSymbols,
 	MainWin_View_Collapse_OS,
 	MainWin_View_Stats,
 	MainWin_ResetToRoot,
@@ -86,6 +87,9 @@ MainWin::MainWin(const wxString& title,
 	menuFile->Append(MainWin_Open, _T("&Open..."), _T("Opens an existing profile"));
 	menuFile->Append(MainWin_SaveAs, _T("Save &As..."), _T("Saves the profile data to a file"));
 	menuFile->Append(MainWin_ExportAsCsv, _T("&Export as CSV..."), _T("Export the profile data to a CSV file"));
+	menuFile->AppendSeparator();
+	menuFile->Append(MainWin_LoadMinidumpSymbols,_T("Load symbols from minidump"), _T("Loads symbols for modules recorded in the minidump included with this capture."))
+		->Enable(database->has_minidump);
 	menuFile->AppendSeparator();
 	menuFile->Append(MainWin_Quit, _T("E&xit\tAlt-X"), _T("Quit this program"));
 
@@ -241,6 +245,7 @@ EVT_MENU(MainWin_Quit,  MainWin::OnQuit)
 EVT_MENU(MainWin_Open,  MainWin::OnOpen)
 EVT_MENU(MainWin_SaveAs,  MainWin::OnSaveAs)
 EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
+EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
 EVT_MENU(MainWin_ResetToRoot, MainWin::ResetToRoot)
 EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::ResetToRootUpdate)
 EVT_MENU(MainWin_View_Collapse_OS,  MainWin::OnCollapseOS)
@@ -279,7 +284,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 	if (filename.empty())
 		return;
 
-	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked());
+	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
 	Reset();
 }
 
@@ -330,9 +335,18 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 	}
 }
 
+void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
+{
+	// Symbols loaded from the minidump persist across reload calls.
+	// Thus, we need to call reload with loadMinidump==true only once
+	// (as opposed to remembering whether we want to see minidump symbols).
+	database->reload(collapseOSCalls->IsChecked(),true);
+	Reset();
+}
+
 void MainWin::OnCollapseOS(wxCommandEvent& event)
 {
-	database->reload(collapseOSCalls->IsChecked());
+	database->reload(collapseOSCalls->IsChecked(),false);
 	Reset();
 }
 

@@ -71,22 +71,30 @@ OptionsDlg::OptionsDlg()
 	wxBoxSizer *rootsizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 
-	wxStaticBoxSizer *symsizer = new wxStaticBoxSizer(wxVERTICAL, this, "Symbol server");
+	wxStaticBoxSizer *symsizer = new wxStaticBoxSizer(wxVERTICAL, this, "Symbols");
 
 	useSymServer = new wxCheckBox(this, Options_UseSymServer, "Use symbol server");
 	symCacheDir = new wxDirPickerCtrl(this, -1, prefs.symCacheDir, "Select a directory to store local symbols in:",
 		wxDefaultPosition, wxDefaultSize, wxDIRP_USE_TEXTCTRL);
 	symServer = new wxTextCtrl(this, -1, prefs.symServer);
+	saveMinidump = new wxCheckBox(this, -1, "Save minidump");
+	saveMinidump->SetToolTip(
+		"Include a minidump in saved profiling results.\n"
+		"This enables the \"Load symbols from minidump\" option,\n"
+		"which allows profiling an application on a user machine without symbols,\n"
+		"then examining the profile results on a developer machine with symbols.");
 
 	useSymServer->SetValue(prefs.useSymServer);
 	symCacheDir->Enable(prefs.useSymServer);
 	symServer->Enable(prefs.useSymServer);
+	saveMinidump->SetValue(prefs.saveMinidump);
 
 	symsizer->Add(useSymServer, 0, wxALL, 5);
 	symsizer->Add(new wxStaticText(this, -1, "Local cache directory:"), 0, wxLEFT|wxTOP, 5);
 	symsizer->Add(symCacheDir, 0, wxALL|wxEXPAND, 5);
 	symsizer->Add(new wxStaticText(this, -1, "Symbol server location:"), 0, wxLEFT|wxTOP, 5);
 	symsizer->Add(symServer, 0, wxALL|wxEXPAND, 5);
+	symsizer->Add(saveMinidump, 0, wxALL, 5);
 
 	wxStaticBoxSizer *throttlesizer = new wxStaticBoxSizer(wxVERTICAL, this, "Sample rate control");
 	throttle = new wxPercentSlider(this, Options_Throttle, prefs.throttle, 1, 100, wxDefaultPosition, wxDefaultSize,
@@ -98,7 +106,7 @@ OptionsDlg::OptionsDlg()
 		"Higher values poll more often; lower values result in better\n"
 		"performance."), 0, wxALL, 5);
 	throttlesizer->Add(throttle, 0, wxEXPAND|wxLEFT|wxTOP, 5);
-	
+
 	topsizer->Add(symsizer, 0, wxEXPAND|wxALL, 0);
 	topsizer->AddSpacer(5);
 	topsizer->Add(throttlesizer, 0, wxEXPAND|wxALL, 0);
@@ -121,6 +129,7 @@ void OptionsDlg::OnOk(wxCommandEvent& event)
 	prefs.useSymServer = useSymServer->GetValue();
 	prefs.symCacheDir = symCacheDir->GetPath();
 	prefs.symServer = symServer->GetValue();
+	prefs.saveMinidump = saveMinidump->GetValue();
 	prefs.throttle = throttle->GetValue();
 	EndModal(wxID_OK);
 }

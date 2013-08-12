@@ -65,7 +65,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib rpcrt4.lib shlwapi.lib psapi.lib crashback.lib"
+				AdditionalDependencies="comctl32.lib rpcrt4.lib shlwapi.lib psapi.lib crashback.lib dbgeng.lib"
 				OutputFile="$(OutDir)/sleepy.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(WXWIN)\lib\vc_lib;src/crashback/bin/$(PlatformName)/$(ConfigurationName)"
@@ -148,7 +148,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib rpcrt4.lib dbghelp.lib shlwapi.lib psapi.lib crashback.lib"
+				AdditionalDependencies="comctl32.lib rpcrt4.lib dbghelp.lib shlwapi.lib psapi.lib crashback.lib dbgeng.lib"
 				OutputFile="$(OutDir)/sleepy.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(WXWIN)\lib\vc_amd64_lib;src/crashback/bin/$(PlatformName)/$(ConfigurationName)"
@@ -226,7 +226,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib advapi32.lib shlwapi.lib psapi.lib crashback.lib"
+				AdditionalDependencies="comctl32.lib advapi32.lib shlwapi.lib psapi.lib crashback.lib dbgeng.lib"
 				OutputFile="$(OutDir)/sleepy.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(WXWIN)\lib\vc_lib;src/crashback/bin/$(PlatformName)/$(ConfigurationName)"
@@ -306,7 +306,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib advapi32.lib dbghelp.lib shlwapi.lib psapi.lib crashback.lib"
+				AdditionalDependencies="comctl32.lib advapi32.lib dbghelp.lib shlwapi.lib psapi.lib crashback.lib dbgeng.lib"
 				OutputFile="$(OutDir)/sleepy.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(WXWIN)\lib\vc_amd64_lib;src/crashback/bin/$(PlatformName)/$(ConfigurationName)"

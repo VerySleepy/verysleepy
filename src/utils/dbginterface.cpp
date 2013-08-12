@@ -60,6 +60,7 @@ bool dbgHelpInit()
 	IMPORT(SymEnumerateModulesW64);
 	IMPORT(SymLoadModuleExW);
 	dest->SymSetDbgPrint = NULL;
+	IMPORT(MiniDumpWriteDump);
 
 	// Import the Wine dbghelp.dll
 	hMod = LoadLibrary(L"dbghelpw.dll");
@@ -87,6 +88,7 @@ bool dbgHelpInit()
 	IMPORT(SymEnumerateModulesW64);
 	IMPORT(SymLoadModuleExW);
 	IMPORT(SymSetDbgPrint);
+	IMPORT(MiniDumpWriteDump);
 
 #ifdef _WIN64
 	// Import the Wine Wow64 dbghelp.dll
@@ -115,6 +117,7 @@ bool dbgHelpInit()
 	IMPORT(SymEnumerateModulesW64);
 	IMPORT(SymLoadModuleExW);
 	IMPORT(SymSetDbgPrint);
+	IMPORT(MiniDumpWriteDump);
 #endif
 
 	return true;

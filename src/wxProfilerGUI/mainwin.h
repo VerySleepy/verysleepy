@@ -52,6 +52,7 @@ public:
 	void OnOpen(wxCommandEvent& event);
 	void OnSaveAs(wxCommandEvent& event);
 	void OnExportAsCsv(wxCommandEvent& event);
+	void OnLoadMinidumpSymbols(wxCommandEvent& event);
 	void OnCollapseOS(wxCommandEvent& event);
 	void OnStats(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);

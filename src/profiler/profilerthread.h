@@ -102,6 +102,7 @@ private:
 	bool cancelled;
 	HANDLE target_process;
 	std::wstring filename;
+	std::wstring minidump;
 	SymbolInfo *sym_info;
 
 	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)

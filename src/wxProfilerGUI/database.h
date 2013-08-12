@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 
 #include "profilergui.h"
 #include "lineinfo.h"
+#include "../profiler/symbolinfo.h"
 #include <deque>
 
 bool IsOsFunction(wxString function);
@@ -89,8 +90,8 @@ public:
 	virtual ~Database();
 	void clear();
 
-	bool loadFromPath(const std::wstring& profilepath,bool collapseOSCalls);
-	bool reload(bool collapseOSCalls);
+	bool loadFromPath(const std::wstring& profilepath,bool collapseOSCalls,bool loadMinidump);
+	bool reload(bool collapseOSCalls,bool loadMinidump);
 	void scanMainList();
 	void setRoot(const Symbol *root);
 	const Symbol *getRoot() const { return currentRoot; }
@@ -105,6 +106,8 @@ public:
 
 	std::wstring getProfilePath() const { return profilepath; }
 
+	bool has_minidump;
+
 private:
 	std::map<std::wstring, Symbol *> symbols;
 	std::deque<CallStack> callstacks;
@@ -117,6 +120,10 @@ private:
 	void loadProcList(wxInputStream &file,bool collapseKernelCalls);
 	void loadIpCounts(wxInputStream &file);
 	void loadStats(wxInputStream &file);
+	void loadMinidump(wxInputStream &file);
+
+	// Any additional symbols we can load after opening a capture
+	LateSymbolInfo late_sym_info;
 };
 
 #endif //__DATABASE_H_666_

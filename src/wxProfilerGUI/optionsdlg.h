@@ -40,6 +40,7 @@ private:
 	wxCheckBox *useSymServer;
 	wxDirPickerCtrl *symCacheDir;
 	wxTextCtrl *symServer;
+	wxCheckBox *saveMinidump;
 	wxSlider *throttle;
 
 	DECLARE_EVENT_TABLE()
