@@ -43,6 +43,7 @@ private:
 	void OnSymPathMoveUp( wxCommandEvent & event );
 	void OnSymPathMoveDown( wxCommandEvent & event );
 	void OnUseSymServer( wxCommandEvent & event );
+	void OnSaveMinidump( wxCommandEvent & event );
 
 	wxListBox *symPaths;
 	wxButton *symPathAdd, *symPathRemove, *symPathMoveUp, *symPathMoveDown;
@@ -50,6 +51,8 @@ private:
 	wxDirPickerCtrl *symCacheDir;
 	wxTextCtrl *symServer;
 	wxCheckBox *saveMinidump;
+	wxTextCtrl *saveMinidumpTime;
+	int saveMinidumpTimeValue;
 	wxSlider *throttle;
 
 	DECLARE_EVENT_TABLE()

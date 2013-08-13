@@ -71,7 +71,7 @@ public:
 	Prefs()
 	{
 		useSymServer = false;
-		saveMinidump = false;
+		saveMinidump = -1;
 		throttle = 100;
 	}
 
@@ -79,7 +79,7 @@ public:
 	bool useSymServer;
 	wxString symCacheDir;
 	wxString symServer;
-	bool saveMinidump;
+	int saveMinidump; // Save minidump after X seconds. -1 = disabled
 	int throttle;
 
 	// Add any configured search paths, and the symbol server if enabled.

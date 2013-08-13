@@ -121,9 +121,12 @@ void ProfilerThread::sampleLoop()
 {
 	timeBeginPeriod(1);
 
-	LARGE_INTEGER prev, now, freq;
+	LARGE_INTEGER prev, now, start, freq;
 	QueryPerformanceFrequency(&freq);
-	QueryPerformanceCounter(&prev);
+	QueryPerformanceCounter(&start);
+	prev = start;
+
+	bool minidump_saved = false;
 
 	while(!this->commit_suicide)
 	{
@@ -133,16 +136,26 @@ void ProfilerThread::sampleLoop()
 			continue;
 		}
 
-		int ms = 100 / prefs.throttle;
-		Sleep(ms);
-
 		QueryPerformanceCounter(&now);
 
 		__int64 diff = now.QuadPart - prev.QuadPart;
 		double t = (double)diff / (double)freq.QuadPart;
 
+		__int64 elapsed = now.QuadPart - start.QuadPart;
+		if (!minidump_saved && prefs.saveMinidump>=0 && elapsed >= prefs.saveMinidump * freq.QuadPart)
+		{
+			minidump_saved = true;
+			status = L"Saving minidump";
+			minidump = sym_info->saveMinidump();
+			status = NULL;
+			continue;
+		}
+
 		sample(t);
-		
+
+		int ms = 100 / prefs.throttle;
+		Sleep(ms);
+
 		prev = now;
 	}
 
@@ -329,12 +342,6 @@ void ProfilerThread::run()
 	wxLog::EnableLogging();
 
 	startTick = GetTickCount();
-
-	if (prefs.saveMinidump)
-	{
-		status = L"Saving minidump";
-		minidump = sym_info->saveMinidump();
-	}
 
 	status = NULL;
 	try

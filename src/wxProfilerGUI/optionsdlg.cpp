@@ -23,6 +23,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "optionsdlg.h"
 #include "wx/filepicker.h"
 #include "wx/msw/wrapcctl.h" // include <commctrl.h> "properly"
+#include "wx/valnum.h"
 
 class wxPercentSlider : public wxSlider
 {
@@ -61,6 +62,7 @@ enum OptionsId
 	Options_SymPath_Remove,
 	Options_SymPath_MoveUp,
 	Options_SymPath_MoveDown,
+	Options_SaveMinidump,
 };
 
 BEGIN_EVENT_TABLE(OptionsDlg, wxDialog)
@@ -71,6 +73,7 @@ EVT_BUTTON(Options_SymPath_Add, OptionsDlg::OnSymPathAdd)
 EVT_BUTTON(Options_SymPath_Remove, OptionsDlg::OnSymPathRemove)
 EVT_BUTTON(Options_SymPath_MoveUp, OptionsDlg::OnSymPathMoveUp)
 EVT_BUTTON(Options_SymPath_MoveDown, OptionsDlg::OnSymPathMoveDown)
+EVT_CHECKBOX(Options_SaveMinidump, OptionsDlg::OnSaveMinidump)
 END_EVENT_TABLE()
 
 OptionsDlg::OptionsDlg()
@@ -119,18 +122,36 @@ OptionsDlg::OptionsDlg()
 		wxDefaultPosition, wxDefaultSize, wxDIRP_USE_TEXTCTRL);
 	symServer = new wxTextCtrl(this, -1, prefs.symServer);
 
-	saveMinidump = new wxCheckBox(this, -1, "Save minidump");
+	wxBoxSizer *saveMinidumpSizer = new wxBoxSizer(wxHORIZONTAL);
+
+	saveMinidump = new wxCheckBox(this, Options_SaveMinidump, "Save minidump after ");
 	saveMinidump->SetToolTip(
 		"Include a minidump in saved profiling results.\n"
 		"This enables the \"Load symbols from minidump\" option,\n"
 		"which allows profiling an application on a user machine without symbols,\n"
 		"then examining the profile results on a developer machine with symbols.");
+	saveMinidumpSizer->Add(saveMinidump);
+
+	saveMinidumpTimeValue = prefs.saveMinidump < 0 ? 0 : prefs.saveMinidump;
+	saveMinidumpTime = new wxTextCtrl(
+		this, -1,
+		wxEmptyString, wxDefaultPosition,
+		wxSize(40, -1),
+		0,
+		wxIntegerValidator<int>(&saveMinidumpTimeValue));
+	saveMinidumpTime->SetToolTip(
+		"Saving a minidump at the very start of a profiling session\n"
+		"may not work as expected, as not all DLLs may be loaded yet.\n"
+		"You can set a delay after which a minidump will be saved.");
+	saveMinidumpTime->Enable(prefs.saveMinidump >= 0);
+	saveMinidumpSizer->Add(saveMinidumpTime, 0, wxTOP, -3);
+	saveMinidumpSizer->Add(new wxStaticText(this, -1, " seconds"));
 
 	symPaths->Append(wxSplit(prefs.symSearchPath, ';', 0));
 	useSymServer->SetValue(prefs.useSymServer);
 	symCacheDir->Enable(prefs.useSymServer);
 	symServer->Enable(prefs.useSymServer);
-	saveMinidump->SetValue(prefs.saveMinidump);
+	saveMinidump->SetValue(prefs.saveMinidump >= 0);
 
 	symdirsizer->Add(symPathSizer, 0, wxALL|wxEXPAND, 5);
 
@@ -142,7 +163,7 @@ OptionsDlg::OptionsDlg()
 
 	symsizer->Add(symdirsizer, 0, wxALL|wxEXPAND, 5);
 	symsizer->Add(symsrvsizer, 0, wxALL|wxEXPAND, 5);
-	symsizer->Add(saveMinidump, 0, wxALL, 5);
+	symsizer->Add(saveMinidumpSizer, 0, wxALL, 5);
 
 	wxStaticBoxSizer *throttlesizer = new wxStaticBoxSizer(wxVERTICAL, this, "Sample rate control");
 	throttle = new wxPercentSlider(this, Options_Throttle, prefs.throttle, 1, 100, wxDefaultPosition, wxDefaultSize,
@@ -174,13 +195,16 @@ OptionsDlg::~OptionsDlg()
 
 void OptionsDlg::OnOk(wxCommandEvent& event)
 {
-	prefs.symSearchPath = wxJoin(symPaths->GetStrings(), ';', 0);
-	prefs.useSymServer = useSymServer->GetValue();
-	prefs.symCacheDir = symCacheDir->GetPath();
-	prefs.symServer = symServer->GetValue();
-	prefs.saveMinidump = saveMinidump->GetValue();
-	prefs.throttle = throttle->GetValue();
-	EndModal(wxID_OK);
+	if ( Validate() && TransferDataFromWindow() )
+	{
+		prefs.symSearchPath = wxJoin(symPaths->GetStrings(), ';', 0);
+		prefs.useSymServer = useSymServer->GetValue();
+		prefs.symCacheDir = symCacheDir->GetPath();
+		prefs.symServer = symServer->GetValue();
+		prefs.saveMinidump = saveMinidump->GetValue() ? saveMinidumpTimeValue : -1;
+		prefs.throttle = throttle->GetValue();
+		EndModal(wxID_OK);
+	}
 }
 
 void OptionsDlg::OnUseSymServer(wxCommandEvent& event)
@@ -241,4 +265,9 @@ void OptionsDlg::OnSymPathMoveDown( wxCommandEvent & event )
 	symPaths->Insert(s, sel+1);
 	symPaths->Select(sel+1);
 	UpdateSymPathButtons();
+}
+
+void OptionsDlg::OnSaveMinidump( wxCommandEvent & event )
+{
+	saveMinidumpTime->Enable(saveMinidump->IsChecked());
 }

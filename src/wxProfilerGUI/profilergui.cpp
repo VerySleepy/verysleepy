@@ -543,7 +543,7 @@ bool ProfilerGUI::OnInit()
 	prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
 	prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
 	prefs.symCacheDir = config.Read("SymbolCache", symCache);
-	prefs.saveMinidump = config.Read("SaveMinidump", 0L) != 0;
+	prefs.saveMinidump = config.Read("SaveMinidump", -1);
 	prefs.throttle = config.Read("SpeedThrottle", 100);
 	if (prefs.throttle < 1)
 		prefs.throttle = 1;
