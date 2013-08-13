@@ -39,13 +39,14 @@ END_EVENT_TABLE()
 
 ProcList::ProcList(wxWindow *parent, const wxWindowID id, const wxPoint& pos,
 				   const wxSize& size, long style, SourceView* sourceview_,
-				   Database* database_, bool isroot)
+				   Database* database_, bool isroot, std::set<std::wstring>& highlights_)
 
 				   :	wxSortedListCtrl(parent, id, pos, size, wxLC_REPORT /*style*/),
 				   m_attr(*wxBLUE, *wxLIGHT_GREY, wxNullFont),
 				   sourceview(sourceview_),
 				   database(database_),
-				   parentview(NULL), callersview(NULL), calleesview(NULL), callStackView(NULL), filters(NULL)
+				   parentview(NULL), callersview(NULL), calleesview(NULL), callStackView(NULL), filters(NULL),
+				   highlights(highlights_)
 {
 	InitSort();
 
@@ -128,7 +129,7 @@ void ProcList::OnRClickItem(wxListEvent& event)
 {
 	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
 
-	FunctionMenu(this, symbol, database, filters);
+	FunctionMenu(this, symbol, database, filters, highlights);
 	setFilters(filters);
 }
 
@@ -229,6 +230,9 @@ void ProcList::showList(int highlight)
 			InsertItem(c, sym->procname.c_str(), -1);
 			if(sym->isCollapseFunction || sym->isCollapseModule) {
 				SetItemTextColour(c,wxColor(0,128,0));
+			}
+			if(highlights.find(sym->id) != highlights.end()) {
+				SetItemBackgroundColour(c, wxColor(255,255,0));
 			}
 			setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs",exclusive));
 			setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs",inclusive));

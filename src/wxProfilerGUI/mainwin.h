@@ -91,6 +91,7 @@ private:
 	wxAuiNotebook *callViews;
 
 	wxPropertyGrid *filters;
+	std::set<std::wstring> highlights;
 
 	wxMenuItem *collapseOSCalls;
 };

@@ -31,7 +31,9 @@ enum {
 	ID_SET_ROOT,
 	ID_FILTER_FUNC,
 	ID_FILTER_MODULE,
-	ID_FILTER_SOURCE
+	ID_FILTER_SOURCE,
+	ID_HIGHLIGHT,
+	ID_UNHIGHLIGHT,
 };
 
 class FunctionMenuWindow: public wxWindow
@@ -54,13 +56,16 @@ EVT_MENU(ID_SET_ROOT, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_FILTER_FUNC, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_FILTER_MODULE, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_FILTER_SOURCE, FunctionMenuWindow::OnMenu)
+EVT_MENU(ID_HIGHLIGHT, FunctionMenuWindow::OnMenu)
+EVT_MENU(ID_UNHIGHLIGHT, FunctionMenuWindow::OnMenu)
 END_EVENT_TABLE()
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters)
+void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<std::wstring>& highlights)
 {
 	FunctionMenuWindow funcWindow(window);
 	wxMenu *menu = new wxMenu;
-
+	
+	std::wstring id = sym->id;
 	wxString mod = sym->module.c_str();
 	wxString function = sym->procname.c_str();
 	wxString source = sym->sourcefile.c_str();
@@ -79,6 +84,17 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 		menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
 		menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
 	}
+
+	menu->AppendSeparator();
+	if( highlights.find( id ) == highlights.end() )
+	{
+		menu->AppendCheckItem(ID_HIGHLIGHT,wxString::Format("Highlight %s", function));
+	}
+	else
+	{
+		menu->AppendCheckItem(ID_UNHIGHLIGHT,wxString::Format("Unhighlight %s", function));
+	}
+
 
 	funcWindow.PopupMenu(menu);
 	switch(funcWindow.option) {
@@ -109,6 +125,13 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 
 	case ID_FILTER_SOURCE:
 		filters->GetProperty("sourcefile")->SetValueFromString(source);
+		break;
+
+	case ID_HIGHLIGHT:
+		highlights.insert(id);
+		break;
+	case ID_UNHIGHLIGHT:
+		highlights.erase(id);
 		break;
 	}
 }

@@ -425,7 +425,7 @@ bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
 	if ( !database->loadFromPath(filename,config.Read("MainWinCollapseOS",1)!=0) )
 		return false;
 
-	MainWin *frame = new MainWin(_T("Sleepy"), filename, database);
+	MainWin *frame = new MainWin(wxString::Format("Sleepy - %s", filename), filename, database);
 
 	frame->Show(TRUE);
 	frame->Update();

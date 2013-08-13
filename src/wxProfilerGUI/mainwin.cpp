@@ -127,19 +127,19 @@ MainWin::MainWin(const wxString& title,
 	proclist = new ProcList(this, LIST_CTRL,
 		wxDefaultPosition, wxDefaultSize,
 		wxLC_EDIT_LABELS, 
-		sourceview, database, true);
+		sourceview, database, true, highlights);
 
 	callers = new ProcList(splitWindow, LIST_CTRL,
 		wxDefaultPosition, wxDefaultSize,
 		wxLC_EDIT_LABELS, 
-		NULL, database, false);
+		NULL, database, false, highlights);
 
 	callees = new ProcList(splitWindow, LIST_CTRL,
 		wxDefaultPosition, wxDefaultSize,
 		wxLC_EDIT_LABELS, 
-		NULL, database, false);
+		NULL, database, false, highlights);
 
-	callStack = new CallstackView(this,database);
+	callStack = new CallstackView(this,database, highlights);
 
 
 	aui->AddPane(proclist, wxAuiPaneInfo()
@@ -298,6 +298,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 		return;
 
 	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked());
+	SetTitle(wxString::Format("Sleepy - %s", filename.c_str()));
 	Reset();
 }
 
@@ -329,6 +330,10 @@ void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 		if (!CopyFile(profilepath.c_str(), dlg.GetPath(), FALSE))
 		{
 			wxLogSysError("Could not save profile data.");
+		}
+		else
+		{
+			SetTitle(wxString::Format("Sleepy - %s", dlg.GetPath()));
 		}
 	}
 }
