@@ -4,6 +4,8 @@
 #include "database.h"
 #include "proclist.h"
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database);
+#include <set>
+
+void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<std::wstring>& highlights);
 
 #endif

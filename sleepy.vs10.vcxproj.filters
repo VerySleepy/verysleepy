@@ -87,6 +87,7 @@
     <ClCompile Include="src\wxProfilerGUI\threadpicker.cpp">
       <Filter>wxProfilerGUI</Filter>
     </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\logview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\profiler\processinfo.h">
@@ -164,6 +165,7 @@
     <ClInclude Include="src\wxProfilerGUI\threadpicker.h">
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\logview.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="keywords.txt" />
