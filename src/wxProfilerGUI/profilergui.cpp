@@ -456,7 +456,7 @@ bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
 	if ( !database->loadFromPath(filename,config.Read("MainWinCollapseOS",1)!=0,false) )
 		return false;
 
-	MainWin *frame = new MainWin(APPNAME, filename, database);
+	MainWin *frame = new MainWin(wxString::Format("%s - %s", APPNAME, filename), filename, database);
 
 	frame->Show(TRUE);
 	frame->Update();

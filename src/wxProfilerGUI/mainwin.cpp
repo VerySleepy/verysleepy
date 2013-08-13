@@ -42,6 +42,8 @@ enum
 	MainWin_View_Collapse_OS,
 	MainWin_View_Stats,
 	MainWin_ResetToRoot,
+	MainWin_Filters,
+	MainWin_ResetFilters,
 
 	// it is important for the id corresponding to the "About" command to have
 	// this standard value as otherwise it won't be handled properly under Mac
@@ -99,6 +101,7 @@ MainWin::MainWin(const wxString& title,
 	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls")); 
 	collapseOSCalls->Check(config.Read("MainWinCollapseOS",1)!=0);
 	menuView->Append(MainWin_ResetToRoot , _T("Reset Profile &Root"), _T("Resets the root so that the entire profile is shown"));
+	menuView->Append(MainWin_ResetFilters, _T("Reset Filters"), _T("Resets all the view filters"));
 
 	// the "About" item should be in the help menu
 	wxMenu *helpMenu = new wxMenu;
@@ -128,19 +131,19 @@ MainWin::MainWin(const wxString& title,
 	proclist = new ProcList(this, LIST_CTRL,
 		wxDefaultPosition, wxDefaultSize,
 		wxLC_EDIT_LABELS, 
-		sourceview, database, true);
+		sourceview, database, true, highlights);
 
 	callers = new ProcList(splitWindow, LIST_CTRL,
 		wxDefaultPosition, wxDefaultSize,
 		wxLC_EDIT_LABELS, 
-		NULL, database, false);
+		NULL, database, false, highlights);
 
 	callees = new ProcList(splitWindow, LIST_CTRL,
 		wxDefaultPosition, wxDefaultSize,
 		wxLC_EDIT_LABELS, 
-		NULL, database, false);
+		NULL, database, false, highlights);
 
-	callStack = new CallstackView(this,database);
+	callStack = new CallstackView(this,database, highlights);
 
 
 	aui->AddPane(proclist, wxAuiPaneInfo()
@@ -160,6 +163,15 @@ MainWin::MainWin(const wxString& title,
 		.BestSize(clientSize.GetWidth() * 2/3, clientSize.GetHeight() * 1/3)
 		);
 
+	// Set up the filters (search) view
+	filters = new wxPropertyGrid(this, MainWin_Filters);
+
+	filters->Append( new wxPropertyCategory("Main") );
+
+	filters->Append( new wxStringProperty( "Function Name", "procname", "" ) );
+	filters->Append( new wxStringProperty( "Module", "module", "" ) );
+	filters->Append( new wxStringProperty( "Source File", "sourcefile", "" ) );
+
 	sourceAndLog->AddPage(sourceview,wxT("Source"));
 	log = new LogView(sourceAndLog);
 	//wxTextCtrl *log = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY);
@@ -167,6 +179,7 @@ MainWin::MainWin(const wxString& title,
 
 	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
 
+	callViews->AddPage(filters,wxT("Filters"));
 	callViews->AddPage(splitWindow,wxT("Averages"));
 	callViews->AddPage(callStack,wxT("Call Stacks"));
 	aui->AddPane(callViews,wxAuiPaneInfo()
@@ -220,9 +233,12 @@ MainWin::MainWin(const wxString& title,
 	proclist->setCallersView(callers);
 	proclist->setCalleesView(callees);
 	proclist->setCallStackView(callStack);
+	proclist->setFilters(filters);
 	callers->setParentView(proclist);
 	callees->setParentView(proclist);
 	callStack->setProcList(proclist);
+
+	filters->CenterSplitter();
 }
 
 void MainWin::Reset()
@@ -253,9 +269,11 @@ EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
 EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
 EVT_MENU(MainWin_ResetToRoot, MainWin::ResetToRoot)
 EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::ResetToRootUpdate)
+EVT_MENU(MainWin_ResetFilters, MainWin::ResetFilters)
 EVT_MENU(MainWin_View_Collapse_OS,  MainWin::OnCollapseOS)
 EVT_MENU(MainWin_View_Stats,  MainWin::OnStats)
 EVT_MENU(MainWin_About, MainWin::OnAbout)	
+EVT_PG_CHANGED(MainWin_Filters, MainWin::OnFiltersChanged)
 END_EVENT_TABLE()
 
 void MainWin::OnClose(wxCloseEvent& WXUNUSED(event))
@@ -290,6 +308,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 		return;
 
 	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
+	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
 	Reset();
 }
 
@@ -304,6 +323,14 @@ void MainWin::ResetToRootUpdate(wxUpdateUIEvent& event)
 	event.Enable(database->getRoot() != NULL);
 }
 
+void MainWin::ResetFilters(wxCommandEvent& event)
+{
+	filters->GetProperty("procname")->SetValueFromString("");
+	filters->GetProperty("module")->SetValueFromString("");
+	filters->GetProperty("sourcefile")->SetValueFromString("");
+	proclist->setFilters(filters);
+}
+
 void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
 	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", APPNAME L" Profiles (*.sleepy)|*.sleepy", 
@@ -313,6 +340,10 @@ void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 		if (!CopyFile(profilepath.c_str(), dlg.GetPath(), FALSE))
 		{
 			wxLogSysError("Could not save profile data.");
+		}
+		else
+		{
+			SetTitle(wxString::Format("%s - %s", APPNAME, dlg.GetPath()));
 		}
 	}
 }
@@ -406,4 +437,9 @@ void MainWin::setCurrent(const std::wstring& currentfile_, int currentline_)
 		SetStatusText(std::wstring("Source file: " + currentfile).c_str(), 0);
 		SetStatusText(std::wstring("Line " + ::toString(currentline)).c_str(), 1);
 	}
+}
+
+void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
+{
+	proclist->setFilters(filters);
 }

@@ -39,15 +39,18 @@ END_EVENT_TABLE()
 
 ProcList::ProcList(wxWindow *parent, const wxWindowID id, const wxPoint& pos,
 				   const wxSize& size, long style, SourceView* sourceview_,
-				   Database* database_, bool isroot)
+				   Database* database_, bool isroot, std::set<std::wstring>& highlights_)
 
 				   :	wxSortedListCtrl(parent, id, pos, size, wxLC_REPORT /*style*/),
 				   m_attr(*wxBLUE, *wxLIGHT_GREY, wxNullFont),
 				   sourceview(sourceview_),
 				   database(database_),
-				   parentview(NULL), callersview(NULL), calleesview(NULL), callStackView(NULL)
+				   parentview(NULL), callersview(NULL), calleesview(NULL), callStackView(NULL), filters(NULL),
+				   highlights(highlights_)
 {
 	InitSort();
+
+	this->isroot = isroot;
 
 	for (int n=0;n<MAX_COLUMNS;n++)
 		columns[n].listctrl_column = -1;
@@ -124,9 +127,10 @@ void ProcList::OnSort(wxListEvent& event)
 
 void ProcList::OnRClickItem(wxListEvent& event)
 {
-	const Database::Symbol *symbol = list.items[event.m_itemIndex].symbol;
+	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
 
-	FunctionMenu(this, symbol, database);
+	FunctionMenu(this, symbol, database, filters, highlights);
+	setFilters(filters);
 }
 
 struct NamePred { bool operator () (const Database::Item &a, const Database::Item &b)			{ return a.symbol->procname < b.symbol->procname; } };
@@ -210,31 +214,40 @@ void ProcList::showCallers(const Database::Symbol *symbol)
 void ProcList::showList(int highlight)
 {
 	int c = 0;
+	int realIndex = 0;
 	Freeze();
 	DeleteAllItems();
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
 	{
-		const Database::Symbol *sym = i->symbol;
-		double inclusive = i->inclusive;
-		double exclusive = i->exclusive;
-		float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
-		float exclusivepercent = i->exclusive * 100.0f / list.totalcount;
+		if( matchesFilters( *i ) )
+		{
+			const Database::Symbol *sym = i->symbol;
+			double inclusive = i->inclusive;
+			double exclusive = i->exclusive;
+			float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
+			float exclusivepercent = i->exclusive * 100.0f / list.totalcount;
 
-		InsertItem(c, sym->procname.c_str(), -1);
-		if(sym->isCollapseFunction || sym->isCollapseModule) {
-			SetItemTextColour(c,wxColor(0,128,0));
+			InsertItem(c, sym->procname.c_str(), -1);
+			if(sym->isCollapseFunction || sym->isCollapseModule) {
+				SetItemTextColour(c,wxColor(0,128,0));
+			}
+			if(highlights.find(sym->id) != highlights.end()) {
+				SetItemBackgroundColour(c, wxColor(255,255,0));
+			}
+			setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs",exclusive));
+			setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs",inclusive));
+			setColumnValue(c, COL_EXCLUSIVEPCT,	wxString::Format("%0.2f%%",exclusivepercent));
+			setColumnValue(c, COL_INCLUSIVEPCT,	wxString::Format("%0.2f%%",inclusivepercent));
+			setColumnValue(c, COL_SAMPLES,		wxString::Format("%0.2fs",exclusive));
+			setColumnValue(c, COL_CALLSPCT,		wxString::Format("%0.2f%%",exclusivepercent));
+			setColumnValue(c, COL_MODULE,		sym->module.c_str());
+			setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile.c_str());
+			setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline).c_str());
+		
+			SetItemData(c, realIndex);
+			c++;
 		}
-		setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs",exclusive));
-		setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs",inclusive));
-		setColumnValue(c, COL_EXCLUSIVEPCT,	wxString::Format("%0.2f%%",exclusivepercent));
-		setColumnValue(c, COL_INCLUSIVEPCT,	wxString::Format("%0.2f%%",inclusivepercent));
-		setColumnValue(c, COL_SAMPLES,		wxString::Format("%0.2fs",exclusive));
-		setColumnValue(c, COL_CALLSPCT,		wxString::Format("%0.2f%%",exclusivepercent));
-		setColumnValue(c, COL_MODULE,		sym->module.c_str());
-		setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile.c_str());
-		setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline).c_str());
-
-		c++;
+		realIndex++;
 	}
 
 	this->SetItemState(highlight, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
@@ -267,7 +280,7 @@ void ProcList::OnSelected(wxListEvent& event)
 {
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = list.items[event.m_itemIndex].symbol;
+	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
 
 	if (sourceview)
 	{
@@ -295,7 +308,7 @@ void ProcList::OnActivated(wxListEvent& event)
 {
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = list.items[event.m_itemIndex].symbol;
+	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
 	if (parentview)
 		parentview->showMainList(symbol);
 }
@@ -319,4 +332,41 @@ void ProcList::setCallStackView(CallstackView *callStackView)
 {
 
 	this->callStackView = callStackView;
+}
+
+void ProcList::setFilters(wxPropertyGrid *filters)
+{
+	this->filters = filters;
+	showMainList(NULL);
+}
+
+// Check if this item matches the filters
+bool ProcList::matchesFilters(const Database::Item& item)
+{
+	if( !isroot || !filters )
+		return true;
+
+	std::wstring procname = filters->GetProperty("procname")->GetValueAsString();
+	std::wstring module = filters->GetProperty("module")->GetValueAsString();
+	std::wstring sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
+
+	if( procname.size() > 0 )
+	{
+		if( item.symbol->procname.find( procname ) == std::wstring::npos )
+			return false;
+	}
+
+	if( module.size() > 0 )
+	{
+		if( item.symbol->module.find( module ) == std::wstring::npos )
+			return false;
+	}
+
+	if( sourcefile.size() > 0 )
+	{
+		if( item.symbol->sourcefile.find( sourcefile ) == std::wstring::npos )
+			return false;
+	}
+
+	return true;
 }
