@@ -38,11 +38,10 @@ http://www.gnu.org/copyleft/gpl.html..
 
 // DE: 20090325: Profiler has a list of threads to profile
 // RM: 20130614: Profiler time can now be limited (-1 = until cancelled)
-ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_, int limit_profile_time_)
+ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_)
 :	profilers(),
 	target_process(target_process_),
-	sym_info(sym_info_),
-	limit_profile_time(limit_profile_time_)
+	sym_info(sym_info_)
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	profilers.reserve(target_threads.size());
@@ -56,6 +55,7 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 	cancelled = false;
 	symbolsPermille = 0;
 	numThreadsRunning = (int)target_threads.size();
+	status = L"Initializing";
 
 	filename = wxFileName::CreateTempFileName(wxEmptyString);
 }
@@ -145,18 +145,6 @@ void ProfilerThread::sampleLoop()
 		sample(t);
 		
 		prev = now;
-
-		// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
-		if( limit_profile_time != -1 )
-		{
-			DWORD endTick = GetTickCount();
-			int diff = endTick - startTick;
-			double duration = diff / 1000.0;
-			if( duration >= (double)limit_profile_time )
-			{
-				commit_suicide = true;
-			}
-		}
 	}
 }
 
@@ -177,6 +165,20 @@ void ProfilerThread::saveData()
 	{
 		error(L"Error writing to file");
 		return;
+	}
+
+	//------------------------------------------------------------------------
+	//copy minidump
+	//------------------------------------------------------------------------
+	if (!minidump.empty())
+	{
+		zip.PutNextEntry(_T("minidump.dmp"));
+		beginProgress(L"Copying minidump", 100);
+		{
+			wxFFileInputStream stream(minidump);
+			zip.Write(stream);
+		}
+		wxRemoveFile(minidump);
 	}
 
 	//------------------------------------------------------------------------
@@ -309,6 +311,7 @@ void ProfilerThread::saveData()
 			return;
 	}
 
+
 	zip.PutNextEntry(L"Version " VERSION L" required");
 	txt << VERSION << "\n";
 
@@ -322,8 +325,17 @@ void ProfilerThread::saveData()
 
 void ProfilerThread::run()
 {
+	wxLog::EnableLogging();
+
 	startTick = GetTickCount();
 
+	if (prefs.saveMinidump)
+	{
+		status = L"Saving minidump";
+		minidump = sym_info->saveMinidump();
+	}
+
+	status = NULL;
 	try
 	{
 		sampleLoop();
@@ -341,6 +353,8 @@ void ProfilerThread::run()
 
 		numThreadsRunning = 0;
 	}
+
+	status = L"Exiting";
 
 	if (cancelled)
 		return;

@@ -71,13 +71,37 @@ public:
 	Prefs()
 	{
 		useSymServer = false;
+		saveMinidump = false;
 		throttle = 100;
 	}
 
+	wxString symSearchPath;
 	bool useSymServer;
 	wxString symCacheDir;
 	wxString symServer;
+	bool saveMinidump;
 	int throttle;
+
+	// Add any configured search paths, and the symbol server if enabled.
+	void AdjustSymbolPath(std::wstring &sympath, bool download)
+	{
+		if (!symSearchPath.empty())
+		{
+			if (!sympath.empty())
+				sympath += L";";
+			sympath += symSearchPath;
+		}
+
+		if (useSymServer)
+		{
+			if (!sympath.empty())
+				sympath += L";";
+			sympath += L"SRV*";
+			sympath += symCacheDir;
+			if ( download )
+				sympath += std::wstring(L"*") + symServer;
+		}
+	}
 };
 
 /*=====================================================================
@@ -103,11 +127,15 @@ protected:
 	virtual void OnInitCmdLine(wxCmdLineParser& parser);
 	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
 
+	void CreateProgressWindow();
+	void DestroyProgressWindow();
+
 	bool LaunchProfiler(const AttachInfo *info, std::wstring &output_filename);
 	AttachInfo *RunProcess(std::wstring run_cmd,std::wstring run_cwd);
 	bool LoadProfileData(const std::wstring &filename);
 	std::wstring ObtainProfileData();
 
+	class CaptureWin *captureWin;
 	bool initialized;
 };
 

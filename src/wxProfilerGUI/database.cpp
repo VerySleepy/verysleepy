@@ -29,6 +29,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <fstream>
 #include <set>
 #include "mainwin.h"
+#include "../profiler/symbolinfo.h"
 
 Database *theDatabase;
 
@@ -43,14 +44,14 @@ bool IsOsFunction(wxString function)
 void AddOsFunction(wxString function)
 {
 	osFunctions.Add(function);
-	theDatabase->reload(true);
+	theDatabase->reload(true, false);
 	theMainWin->Reset();
 }
 
 void RemoveOsFunction(wxString function)
 {
 	osFunctions.Remove(function);
-	theDatabase->reload(true);
+	theDatabase->reload(true, false);
 	theMainWin->Reset();
 }
 
@@ -62,14 +63,14 @@ bool IsOsModule(wxString mod)
 void AddOsModule(wxString mod)
 {
 	osModules.Add(mod);
-	theDatabase->reload(true);
+	theDatabase->reload(true, false);
 	theMainWin->Reset();
 }
 
 void RemoveOsModule(wxString mod)
 {
 	osModules.Remove(mod);
-	theDatabase->reload(true);
+	theDatabase->reload(true, false);
 	theMainWin->Reset();
 }
 
@@ -96,14 +97,15 @@ void Database::clear()
 	fileinfo.clear();
 	mainList.items.clear();
 	mainList.totalcount = 0;
+	has_minidump = false;
 }
 
-bool Database::reload(bool collapseOSCalls)
+bool Database::reload(bool collapseOSCalls, bool loadMinidump)
 {
-	return loadFromPath(profilepath, collapseOSCalls);
+	return loadFromPath(profilepath, collapseOSCalls, loadMinidump);
 }
 
-bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCalls)
+bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCalls, bool loadMinidump)
 {
 	if(_profilepath != profilepath) {
 		profilepath = _profilepath;
@@ -171,6 +173,7 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 		else if (name == "Callstacks.txt")	loadProcList(zip,collapseOSCalls);
 		else if (name == "IPCounts.txt")	loadIpCounts(zip);
 		else if (name == "Stats.txt")		loadStats(zip);
+		else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
 		else if (name.Left(8) == "Version ") {}
 		else {
 			wxLogWarning("Other fluff found in capture file (%s)", name.c_str());
@@ -200,6 +203,9 @@ void Database::loadSymbols(wxInputStream &file)
 		::readQuote(stream, sym->procname);
 		::readQuote(stream, sym->sourcefile);
 		stream >> sym->sourceline;
+
+		late_sym_info.filterSymbol(sym->module, sym->procname, sym->sourcefile, sym->sourceline);
+
 		sym->isCollapseFunction = osFunctions.Contains(sym->procname.c_str());
 		sym->isCollapseModule = osModules.Contains(sym->module.c_str());
 		symbols[sym->id] = sym;
@@ -211,7 +217,7 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 {
 	wxTextInputStream str(file);
 
-	wxProgressDialog progressdlg("Sleepy", "Loading profile database...",
+	wxProgressDialog progressdlg(APPNAME, "Loading profile database...",
 		(int)file.GetSize(), theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
@@ -307,6 +313,8 @@ void Database::loadIpCounts(wxInputStream &file)
 		::readQuote(stream, srcfile);
 		stream >> linenum;
 
+		late_sym_info.filterIP(memaddr, srcfile, linenum);
+
 		LineInfo& lineinfo = (fileinfo[srcfile])[linenum];
 		lineinfo.count += count;
 		lineinfo.percentage += 100.0f * ((float)count / (float)totallinecount);
@@ -342,7 +350,7 @@ void Database::scanMainList()
 {
 	std::map<const Symbol *, double> exclusive, inclusive;
 
-	wxProgressDialog progressdlg("Sleepy", "Scanning profile database...",
+	wxProgressDialog progressdlg(APPNAME, "Scanning profile database...",
 		(int)callstacks.size(), theMainWin,
 		wxPD_APP_MODAL|wxPD_REMAINING_TIME);
 
@@ -483,5 +491,24 @@ const LINEINFOMAP *Database::getLineInfo(const std::wstring &srcfile) const
 		return &i->second;
 	} else {
 		return NULL;
+	}
+}
+
+void Database::loadMinidump(wxInputStream &file)
+{
+	wxFFile minidump_file;
+	std::wstring dumppath = wxFileName::CreateTempFileName(wxEmptyString, &minidump_file);
+	wxFFileOutputStream minidump_stream(minidump_file);
+	minidump_stream.Write(file);
+	minidump_stream.Close();
+	minidump_file.Close();
+
+	try
+	{
+		late_sym_info.loadMinidump(dumppath, true);
+	}
+	catch (SymbolInfoExcep &e)
+	{
+		wxLogError("%ls", e.what());
 	}
 }

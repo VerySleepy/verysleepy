@@ -28,6 +28,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "proclist.h"
 #include "sourceview.h"
 #include "CallstackView.h"
+#include "logview.h"
 
 #include <wx/propgrid/propgrid.h>
 
@@ -54,6 +55,7 @@ public:
 	void OnOpen(wxCommandEvent& event);
 	void OnSaveAs(wxCommandEvent& event);
 	void OnExportAsCsv(wxCommandEvent& event);
+	void OnLoadMinidumpSymbols(wxCommandEvent& event);
 	void OnCollapseOS(wxCommandEvent& event);
 	void OnStats(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
@@ -76,6 +78,7 @@ private:
 	ProcList* callees;
 	CallstackView* callStack;
 	SourceView* sourceview;
+	LogView* log;
 	Database *database;
 	std::wstring profilepath;
 
@@ -89,6 +92,7 @@ private:
 	wxString contentString;
 
 	wxAuiNotebook *callViews;
+	wxAuiNotebook *sourceAndLog;
 
 	wxPropertyGrid *filters;
 	std::set<std::wstring> highlights;

@@ -32,6 +32,8 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <iostream>
 #include <algorithm>
 #include <shlwapi.h>
+#include <Dbgeng.h>
+#include <comdef.h>
 
 SymLogFn *g_symLog = NULL;
 
@@ -142,15 +144,7 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		}
 	}
 
-	// Add the symbol server if enabled.
-	if (prefs.useSymServer)
-	{
-		sympath += L";SRV*";
-		sympath += prefs.symCacheDir;
-		if ( download )
-			sympath += std::wstring(L"*") + prefs.symServer;
-	}
-
+	prefs.AdjustSymbolPath(sympath, download);
 
 	for( int n=0;n<4;n++ )
 	{
@@ -240,6 +234,41 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 	if (g_symLog)
 		g_symLog(L"\nFinished.\n");
 	sortModules();
+}
+
+template<class T>
+T wenforce(T cond, const char* where = NULL)
+{
+	if (cond)
+		return cond;
+
+	DWORD code = GetLastError();
+
+	std::wostringstream message;
+	if (where)
+		message << where;
+
+	if (code)
+	{
+		wchar_t *lpMsgBuf = NULL;
+		FormatMessageW(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			code,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPWSTR)&lpMsgBuf,
+			0,
+			NULL);
+
+		message << ": " << lpMsgBuf;
+		if (lpMsgBuf)
+			LocalFree(lpMsgBuf);
+		message << " (error " << code << ")";
+	}
+	else
+		message << " failed";
+
+	throw SymbolInfoExcep(message.str());
 }
 
 SymbolInfo::~SymbolInfo()
@@ -376,5 +405,177 @@ void SymbolInfo::getLineForAddr(PROFILER_ADDR addr, std::wstring& filepath_out, 
 	}
 }
 
+std::wstring SymbolInfo::saveMinidump()
+{
+#ifdef _WIN64
+	if (!Is64BitProcess(process_handle))
+	{
+		wxLogWarning(
+			L"Warning: minidumps of 32-bit processes saved by 64-bit processes will most likely not be saved correctly.\n"
+			L"Use the 32-bit version of " APPNAME L" to profile 32-bit processes if a minidump needs to be included."
+		);
+	}
+#endif
+
+	wxFile f;
+	std::wstring dumppath = wxFileName::CreateTempFileName(wxEmptyString, &f);
+	wenforce(dbgHelpMs.MiniDumpWriteDump(
+		process_handle,
+		GetProcessId(process_handle),
+		(HANDLE)_get_osfhandle(f.fd()),
+		MiniDumpNormal,
+		NULL, NULL, NULL), "MiniDumpWriteDump");
+	f.Close();
+	return dumppath;
+}
 
 
+void comenforce(HRESULT result, const char* where = NULL)
+{
+	if (result == S_OK)
+		return;
+
+	std::wostringstream message;
+	if (where)
+		message << where;
+
+	_com_error error(result);
+	message << ": " << error.ErrorMessage();
+	message << " (error " << result << ")";
+
+	throw SymbolInfoExcep(message.str());
+}
+
+
+LateSymbolInfo::LateSymbolInfo()
+:	debugClient5(NULL), debugControl4(NULL), debugSymbols3(NULL)
+{
+}
+
+LateSymbolInfo::~LateSymbolInfo()
+{
+	unloadMinidump();
+}
+
+// Allow debugging Minidump PDB load errors using dbgview.
+// If we ever get a log view in the main window, we could use that instead.
+struct DebugOutputCallbacksWide : public IDebugOutputCallbacksWide
+{
+	HRESULT	STDMETHODCALLTYPE QueryInterface(__in REFIID InterfaceId, __out PVOID* Interface) { return E_NOINTERFACE; }
+	ULONG	STDMETHODCALLTYPE AddRef() { return 1; }
+	ULONG	STDMETHODCALLTYPE Release() { return 0; }
+
+	HRESULT	STDMETHODCALLTYPE Output(__in ULONG Mask, __in PCWSTR Text)
+	{
+		//OutputDebugStringW(Text);
+		wxLogMessage(L"%s", Text);
+		return S_OK;
+	}
+};
+
+static DebugOutputCallbacksWide *debugOutputCallbacks = new DebugOutputCallbacksWide();
+
+void LateSymbolInfo::loadMinidump(std::wstring& dumppath, bool delete_when_done)
+{
+	// Method credit to http://stackoverflow.com/a/8119364/21501
+
+	if (debugClient5 || debugControl4 || debugSymbols3)
+	{
+		//throw SymbolInfoExcep(L"Minidump symbols already loaded.");
+
+		// maybe the user moved a .pdb to somewhere where we can now find it?
+		unloadMinidump();
+	}
+
+	IDebugClient *debugClient = NULL;
+
+	SetLastError(0);
+	comenforce(DebugCreate(__uuidof(IDebugClient), (void**)&debugClient), "DebugCreate");
+	comenforce(debugClient->QueryInterface(__uuidof(IDebugClient5 ), (void**)&debugClient5 ), "QueryInterface(IDebugClient5)" );
+	comenforce(debugClient->QueryInterface(__uuidof(IDebugControl4), (void**)&debugControl4), "QueryInterface(IDebugControl4)");
+	comenforce(debugClient->QueryInterface(__uuidof(IDebugSymbols3), (void**)&debugSymbols3), "QueryInterface(IDebugSymbols3)");
+	comenforce(debugClient5->SetOutputCallbacksWide(debugOutputCallbacks), "IDebugClient5::SetOutputCallbacksWide");
+	comenforce(debugSymbols3->SetSymbolOptions(SYMOPT_UNDNAME | SYMOPT_LOAD_LINES | SYMOPT_OMAP_FIND_NEAREST | SYMOPT_AUTO_PUBLICS | SYMOPT_DEBUG), "IDebugSymbols::SetSymbolOptions");
+
+	std::wstring sympath;
+	prefs.AdjustSymbolPath(sympath, true);
+
+	comenforce(debugSymbols3->SetSymbolPathWide(sympath.c_str()), "IDebugSymbols::SetSymbolPath");
+	comenforce(debugClient5->OpenDumpFileWide(dumppath.c_str(), NULL), "IDebugClient4::OpenDumpFileWide");
+	comenforce(debugControl4->WaitForEvent(0, INFINITE), "IDebugControl::WaitForEvent");
+
+	// Since we can't just enumerate all symbols in all modules referenced by the minidump,
+	// we have to keep the debugger session open and query symbols as requested by the
+	// profiler GUI.
+
+	debugClient->Release(); // but keep the other ones
+
+	// If we are given a temporary file, clean it up later
+	if (delete_when_done)
+		file_to_delete = dumppath;
+}
+
+void LateSymbolInfo::unloadMinidump()
+{
+	if (debugClient5)
+	{
+		debugClient5->EndSession(DEBUG_END_ACTIVE_TERMINATE);
+		debugClient5->Release();
+	}
+	if (debugControl4)
+		debugControl4->Release();
+	if (debugSymbols3)
+		debugSymbols3->Release();
+
+	if (!file_to_delete.empty())
+	{
+		wxRemoveFile(file_to_delete);
+		file_to_delete.clear();
+	}
+}
+
+bool LateSymbolInfo::isUnresolved( const std::wstring &procname )
+{
+	return procname[0]=='[' && procname[procname.length()-1] == ']' && procname != L"[unknown]";
+}
+
+wchar_t LateSymbolInfo::buffer[4096];
+
+void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, std::wstring &sourcefile, int &sourceline)
+{
+	if (debugSymbols3 && isUnresolved(procname))
+	{
+		ULONG64 offset = 0;
+		swscanf_s(procname.c_str(), L"[%I64x]", &offset);
+		if (!offset) return;
+
+		if (debugSymbols3->GetNameByOffsetWide(offset, buffer, _countof(buffer), NULL, NULL) == S_OK)
+			procname = buffer;
+
+		filterIP(offset, sourcefile, sourceline);
+	}
+}
+
+void LateSymbolInfo::filterIP(ULONG64 offset, std::wstring &sourcefile, int &sourceline)
+{
+	if (!sourceline)
+	{
+		ULONG line;
+		if (debugSymbols3->GetLineByOffsetWide(offset, &line, buffer, _countof(buffer), NULL, NULL) == S_OK)
+		{
+			sourcefile = buffer;
+			sourceline = line;
+		}
+	}
+}
+
+void LateSymbolInfo::filterIP(const std::wstring &memaddr, std::wstring &srcfile, int &linenum)
+{
+	if (debugSymbols3)
+	{
+		ULONG64 offset = 0;
+		swscanf_s(memaddr.c_str(), L"0x%I64x", &offset);
+		if (offset)
+			filterIP(offset, srcfile, linenum);
+	}
+}

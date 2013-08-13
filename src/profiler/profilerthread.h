@@ -56,7 +56,7 @@ public:
 	=====================================================================*/
 	// DE: 20090325 Profiler thread now has a vector of threads to profile
 	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
-	ProfilerThread(HANDLE target_process, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info, int limit_profile_time);
+	ProfilerThread(HANDLE target_process, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info);
 
 	virtual ~ProfilerThread();
 
@@ -67,6 +67,7 @@ public:
 	int getNumThreadsRunning() const { return numThreadsRunning; }
 	bool getDone() const { return done; }
 	bool getFailed() const { return failed; }
+	const wchar_t* getStatus() const { return status; }
 	int getSampleProgress() const { return numsamplessofar; }
 	void getSymbolsProgress(int *permille, std::wstring *stage) const { *permille = symbolsPermille; *stage = symbolsStage; }
 	const std::wstring &getFilename() const { return filename; }
@@ -94,6 +95,7 @@ private:
 	std::vector<Profiler> profilers;
 	double duration;
 	//int numsamples;
+	const wchar_t* status;
 	int numsamplessofar;
 	int numThreadsRunning;
 	bool done;
@@ -102,10 +104,8 @@ private:
 	bool cancelled;
 	HANDLE target_process;
 	std::wstring filename;
+	std::wstring minidump;
 	SymbolInfo *sym_info;
-
-	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
-	int limit_profile_time;
 
 	DWORD startTick;
 };

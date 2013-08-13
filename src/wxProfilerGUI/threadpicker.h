@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 
 #include "profilergui.h"
 #include "processlist.h"
+#include "logview.h"
 #include <vector>
 
 #include <wx/valnum.h>
@@ -102,16 +103,11 @@ public:
 	void OnAttachProfiler(wxCommandEvent& event);
 	void OnAttachProfilerAll(wxCommandEvent& event);
 	void OnDoubleClicked(wxListEvent& event);
-	void OnContextMenu(wxContextMenuEvent& event);
-	void OnCopy(wxCommandEvent& event);
-	void OnClearLog(wxCommandEvent& event);
-	void OnSelectAll(wxCommandEvent& event);
 	void OnTimeCheck(wxCommandEvent& event);
-	void OnIdle(wxIdleEvent& event);
 
 	AttachInfo *attach_info;
 	std::wstring run_filename, run_cwd, open_filename;
-	wxTextCtrl *log;
+	LogView *log;
 	wxCheckBox *time_check;
 	wxTextCtrl *time_ctrl;
 	int time_value;

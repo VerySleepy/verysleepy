@@ -120,7 +120,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;dbghelp.lib;shlwapi.lib;psapi.lib;crashback.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;dbghelp.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_amd64_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -176,7 +176,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;advapi32.lib;dbghelp.lib;shlwapi.lib;psapi.lib;crashback.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;advapi32.lib;dbghelp.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_amd64_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -210,6 +210,7 @@
     <ClCompile Include="src\wxProfilerGUI\database.cpp" />
     <ClCompile Include="src\wxProfilerGUI\launchdlg.cpp" />
     <ClCompile Include="src\wxProfilerGUI\lineinfo.cpp" />
+    <ClCompile Include="src\wxProfilerGUI\logview.cpp" />
     <ClCompile Include="src\wxProfilerGUI\mainwin.cpp" />
     <ClCompile Include="src\wxProfilerGUI\optionsdlg.cpp" />
     <ClCompile Include="src\wxProfilerGUI\processlist.cpp" />
@@ -237,6 +238,7 @@
     <ClInclude Include="src\wxProfilerGUI\database.h" />
     <ClInclude Include="src\wxProfilerGUI\launchdlg.h" />
     <ClInclude Include="src\wxProfilerGUI\lineinfo.h" />
+    <ClInclude Include="src\wxProfilerGUI\logview.h" />
     <ClInclude Include="src\wxProfilerGUI\mainwin.h" />
     <ClInclude Include="src\wxProfilerGUI\optionsdlg.h" />
     <ClInclude Include="src\wxProfilerGUI\processlist.h" />

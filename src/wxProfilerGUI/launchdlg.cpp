@@ -60,7 +60,7 @@ LaunchDlg::LaunchDlg(wxWindow *parent)
 	int border = ConvertDialogToPixels(wxSize(2, 0)).x;
 	wxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
 	buttons->AddStretchSpacer();
-	wxButton *ok = new wxButton(this, wxID_OK);
+	wxButton *ok = new wxButton(this, wxID_OK, "&Launch");
 	wxButton *cancel = new wxButton(this, wxID_CANCEL);
 	buttons->Add(ok,		0, wxALIGN_RIGHT | wxLEFT|wxRIGHT,	border);
 	buttons->Add(cancel,	0, wxALIGN_RIGHT | wxLEFT,			border);

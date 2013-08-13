@@ -38,6 +38,7 @@ enum
 	MainWin_Open,
 	MainWin_SaveAs,
 	MainWin_ExportAsCsv,
+	MainWin_LoadMinidumpSymbols,
 	MainWin_View_Collapse_OS,
 	MainWin_View_Stats,
 	MainWin_ResetToRoot,
@@ -89,11 +90,14 @@ MainWin::MainWin(const wxString& title,
 	menuFile->Append(MainWin_SaveAs, _T("Save &As..."), _T("Saves the profile data to a file"));
 	menuFile->Append(MainWin_ExportAsCsv, _T("&Export as CSV..."), _T("Export the profile data to a CSV file"));
 	menuFile->AppendSeparator();
+	menuFile->Append(MainWin_LoadMinidumpSymbols,_T("Load symbols from minidump"), _T("Loads symbols for modules recorded in the minidump included with this capture."))
+		->Enable(database->has_minidump);
+	menuFile->AppendSeparator();
 	menuFile->Append(MainWin_Quit, _T("E&xit\tAlt-X"), _T("Quit this program"));
 
 	// View options and layout.
 	wxMenu *menuView = new wxMenu;
-	menuView->Append(MainWin_View_Stats,_T("Show Profiling Sstatistics"), _T("Shows any extra information logged while profiling")); 
+	menuView->Append(MainWin_View_Stats,_T("Show Profiling Statistics"), _T("Shows any extra information logged while profiling"));
 	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls")); 
 	collapseOSCalls->Check(config.Read("MainWinCollapseOS",1)!=0);
 	menuView->Append(MainWin_ResetToRoot , _T("Reset Profile &Root"), _T("Resets the root so that the entire profile is shown"));
@@ -149,9 +153,10 @@ MainWin::MainWin(const wxString& title,
 		.CaptionVisible(true)
 		);
 
-	aui->AddPane(sourceview, wxAuiPaneInfo()
-		.Name(wxT("Source"))
-		.Caption(wxT("Source"))
+	sourceAndLog = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
+	aui->AddPane(sourceAndLog, wxAuiPaneInfo()
+		.Name(wxT("SourceAndLog"))
+		.CaptionVisible(false)
 		.CloseButton(false)
 		.Bottom()
 		.Layer(0)
@@ -167,7 +172,11 @@ MainWin::MainWin(const wxString& title,
 	filters->Append( new wxStringProperty( "Module", "module", "" ) );
 	filters->Append( new wxStringProperty( "Source File", "sourcefile", "" ) );
 
-	
+	sourceAndLog->AddPage(sourceview,wxT("Source"));
+	log = new LogView(sourceAndLog);
+	//wxTextCtrl *log = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY);
+	sourceAndLog->AddPage(log,wxT("Log"));
+
 	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
 
 	callViews->AddPage(filters,wxT("Filters"));
@@ -257,6 +266,7 @@ EVT_MENU(MainWin_Quit,  MainWin::OnQuit)
 EVT_MENU(MainWin_Open,  MainWin::OnOpen)
 EVT_MENU(MainWin_SaveAs,  MainWin::OnSaveAs)
 EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
+EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
 EVT_MENU(MainWin_ResetToRoot, MainWin::ResetToRoot)
 EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::ResetToRootUpdate)
 EVT_MENU(MainWin_ResetFilters, MainWin::ResetFilters)
@@ -297,8 +307,8 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 	if (filename.empty())
 		return;
 
-	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked());
-	SetTitle(wxString::Format("Sleepy - %s", filename.c_str()));
+	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
+	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
 	Reset();
 }
 
@@ -323,7 +333,7 @@ void MainWin::ResetFilters(wxCommandEvent& event)
 
 void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
-	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", "Sleepy Profiles (*.sleepy)|*.sleepy", 
+	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", APPNAME L" Profiles (*.sleepy)|*.sleepy", 
 		wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 	if (dlg.ShowModal() != wxID_CANCEL)
 	{
@@ -333,7 +343,7 @@ void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 		}
 		else
 		{
-			SetTitle(wxString::Format("Sleepy - %s", dlg.GetPath()));
+			SetTitle(wxString::Format("$s - %s", APPNAME, dlg.GetPath()));
 		}
 	}
 }
@@ -361,9 +371,21 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 	}
 }
 
+void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
+{
+	// Open the log tab, so the user sees output from the debug engine.
+	sourceAndLog->SetSelection(1);
+
+	// Symbols loaded from the minidump persist across reload calls.
+	// Thus, we need to call reload with loadMinidump==true only once
+	// (as opposed to remembering whether we want to see minidump symbols).
+	database->reload(collapseOSCalls->IsChecked(),true);
+	Reset();
+}
+
 void MainWin::OnCollapseOS(wxCommandEvent& event)
 {
-	database->reload(collapseOSCalls->IsChecked());
+	database->reload(collapseOSCalls->IsChecked(),false);
 	Reset();
 }
 

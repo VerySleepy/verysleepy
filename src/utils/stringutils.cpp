@@ -338,8 +338,13 @@ StringSet::StringSet(const wchar_t *file, bool caseCheck)
 	if (!fp) {
 		GetModuleFileName(NULL, path, MAX_PATH);
 		PathRemoveFileSpec(path);
-		PathAppend(path, file);
-		fp = _wfopen(path, L"r");
+
+		do
+		{
+			PathAppend(path, file);
+			fp = _wfopen(path, L"r");
+		}
+		while (!fp && PathRemoveFileSpec(path) && PathRemoveFileSpec(path));
 	}
 
 	if (!fp)

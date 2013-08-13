@@ -11,4 +11,5 @@ ipch
 *.opensdf
 *.sdf
 *.aps
-[Tt]humbs.db 
+*.exe
+[Tt]humbs.db
