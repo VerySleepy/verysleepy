@@ -119,13 +119,12 @@ public:
 
 void ProfilerThread::sampleLoop()
 {
-	LARGE_INTEGER prev, now, freq;
+	timeBeginPeriod(1);
 
+	LARGE_INTEGER prev, now, freq;
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&prev);
 
-	timeBeginPeriod(1);
-	
 	while(!this->commit_suicide)
 	{
 		if (paused)
@@ -146,6 +145,8 @@ void ProfilerThread::sampleLoop()
 		
 		prev = now;
 	}
+
+	timeEndPeriod(1);
 }
 
 void ProfilerThread::saveData()
