@@ -83,7 +83,7 @@ ThreadPicker::ThreadPicker()
 
 	wxMenu *menuFile = new wxMenu;
 	menuFile->Append(wxID_OPEN, _T("&Open...\tCtrl-O"), _T("Opens an existing profile"));
-	menuFile->Append(ProcWin_Launch, _T("&Launch..."), _T("Launches a new executable to profile"));
+	menuFile->Append(ProcWin_Launch, _T("&Launch...\tCtrl-N"), _T("Launches a new executable to profile"));
 	menuFile->AppendSeparator();
 	menuFile->Append(ProcWin_Exit, _T("E&xit\tAlt-X"), _T("Quit this program"));
 
