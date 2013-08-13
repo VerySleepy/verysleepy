@@ -141,7 +141,7 @@ MainWin::MainWin(const wxString& title,
 		.CaptionVisible(true)
 		);
 
-	sourceAndLog = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
+	sourceAndLog = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxNO_BORDER);
 	aui->AddPane(sourceAndLog, wxAuiPaneInfo()
 		.Name(wxT("SourceAndLog"))
 		.CaptionVisible(false)
@@ -165,7 +165,7 @@ MainWin::MainWin(const wxString& title,
 	//wxTextCtrl *log = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY);
 	sourceAndLog->AddPage(log,wxT("Log"));
 
-	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
+	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxNO_BORDER|wxNO_BORDER);
 
 	callViews->AddPage(splitWindow,wxT("Averages"));
 	callViews->AddPage(callStack,wxT("Call Stacks"));
