@@ -87,13 +87,32 @@ OptionsDlg::OptionsDlg()
 
 	symPaths = new wxListBox(this, Options_SymPath, wxDefaultPosition, wxSize(-1, 75), 0, NULL, wxLB_SINGLE | wxLB_NEEDED_SB);
 
-	wxBoxSizer *sympathButtons = new wxBoxSizer(wxHORIZONTAL);
-	wxButton *b;
-	symPathAdd      = b = new wxButton(this, Options_SymPath_Add     ); b->SetBitmap(LoadPngResource(L"button_add"   )); sympathButtons->Add(b, 1); b->SetToolTip("Browse for a directory to add");
-	symPathRemove   = b = new wxButton(this, Options_SymPath_Remove  ); b->SetBitmap(LoadPngResource(L"button_remove")); sympathButtons->Add(b, 1); b->SetToolTip("Remove selected directory");
-	symPathMoveUp   = b = new wxButton(this, Options_SymPath_MoveUp  ); b->SetBitmap(LoadPngResource(L"button_up"    )); sympathButtons->Add(b, 1); b->SetToolTip("Move selected directory up");
-	symPathMoveDown = b = new wxButton(this, Options_SymPath_MoveDown); b->SetBitmap(LoadPngResource(L"button_down"  )); sympathButtons->Add(b, 1); b->SetToolTip("Move selected directory down");
+	wxBoxSizer *symPathSizer = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer *symPathButtonSizer = new wxBoxSizer(wxVERTICAL);
+
+	static const struct { wxButton * OptionsDlg::* button; OptionsId id; const wchar_t *icon; const char *tip; } symPathButtons[] = {
+		{ &OptionsDlg::symPathAdd     , Options_SymPath_Add     , L"button_add"   , "Browse for a directory to add" },
+		{ &OptionsDlg::symPathRemove  , Options_SymPath_Remove  , L"button_remove", "Remove selected directory"     },
+		{ &OptionsDlg::symPathMoveUp  , Options_SymPath_MoveUp  , L"button_up"    , "Move selected directory up"    },
+		{ &OptionsDlg::symPathMoveDown, Options_SymPath_MoveDown, L"button_down"  , "Move selected directory down"  },
+	};
+	for (size_t n=0; n<_countof(symPathButtons); n++)
+	{
+		wxButton *b = this->*symPathButtons[n].button = new wxButton(
+			this,
+			symPathButtons[n].id,
+			wxEmptyString,
+			wxDefaultPosition,
+			wxSize(20, 20),
+			wxBU_EXACTFIT);
+		b->SetBitmap(LoadPngResource(symPathButtons[n].icon));
+		b->SetToolTip(symPathButtons[n].tip);
+		symPathButtonSizer->Add(b, 1);
+	}
 	UpdateSymPathButtons();
+
+	symPathSizer->Add(symPaths, 100, wxEXPAND);
+	symPathSizer->Add(symPathButtonSizer, 1, wxSHRINK);
 
 	useSymServer = new wxCheckBox(this, Options_UseSymServer, "Use symbol server");
 	symCacheDir = new wxDirPickerCtrl(this, -1, prefs.symCacheDir, "Select a directory to store local symbols in:",
@@ -113,8 +132,7 @@ OptionsDlg::OptionsDlg()
 	symServer->Enable(prefs.useSymServer);
 	saveMinidump->SetValue(prefs.saveMinidump);
 
-	symdirsizer->Add(symPaths, 0, wxALL|wxEXPAND, 5);
-	symdirsizer->Add(sympathButtons, 0, wxALL|wxEXPAND, 5);
+	symdirsizer->Add(symPathSizer, 0, wxALL|wxEXPAND, 5);
 
 	symsrvsizer->Add(useSymServer, 0, wxALL, 5);
 	symsrvsizer->Add(new wxStaticText(this, -1, "Local cache directory:"), 0, wxLEFT|wxTOP, 5);
