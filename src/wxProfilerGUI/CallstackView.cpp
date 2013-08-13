@@ -74,7 +74,7 @@ EVT_LIST_ITEM_SELECTED(LIST_CTRL, CallstackView::OnSelected)
 EVT_LIST_ITEM_RIGHT_CLICK(-1,CallstackView::OnRClickItem)
 END_EVENT_TABLE()
 
-CallstackView::CallstackView(wxWindow *parent,Database *_database) : wxWindow(parent,-1), database(_database), callstackActive(0),itemSelected(~0)
+CallstackView::CallstackView(wxWindow *parent,Database *_database, std::set<std::wstring>& _highlights) : wxWindow(parent,-1), database(_database), callstackActive(0),itemSelected(~0), highlights(_highlights)
 {
 	
 
@@ -198,6 +198,13 @@ void CallstackView::updateList()
 		} else {
 			listCtrl->SetItemTextColour(i,wxColor(0,0,0));
 		}
+		if(highlights.find(snow->id) != highlights.end()) {
+			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,0));
+		}
+		else
+		{
+			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,255));
+		}
 		listCtrl->SetItem(i,COL_MODULE,snow->module.c_str());
 		listCtrl->SetItem(i,COL_SOURCEFILE,snow->sourcefile.c_str());
 		listCtrl->SetItem(i,COL_SOURCELINE,wxString::Format("%d",snow->sourceline));
@@ -236,6 +243,6 @@ void CallstackView::OnRClickItem(wxListEvent& event)
 {
 	const Database::Symbol *sym = (const Database::Symbol *)listCtrl->GetItemData(event.GetIndex());
 	
-	FunctionMenu(this, sym, database);
+	FunctionMenu(this, sym, database, NULL, highlights);
 }
 

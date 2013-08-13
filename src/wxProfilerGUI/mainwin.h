@@ -30,6 +30,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "CallstackView.h"
 #include "logview.h"
 
+#include <wx/propgrid/propgrid.h>
+
 /*=====================================================================
 MainWin
 -------
@@ -60,6 +62,8 @@ public:
 	void SetTopOfTree(wxCommandEvent& event);
 	void ResetToRoot(wxCommandEvent& event);
 	void ResetToRootUpdate(wxUpdateUIEvent& event);
+	void ResetFilters(wxCommandEvent& event);
+	void OnFiltersChanged(wxPropertyGridEvent& event);
 
 	void Reset();
 	void setCurrent(const std::wstring& currentfile, int currentline);
@@ -89,6 +93,9 @@ private:
 
 	wxAuiNotebook *callViews;
 	wxAuiNotebook *sourceAndLog;
+
+	wxPropertyGrid *filters;
+	std::set<std::wstring> highlights;
 
 	wxMenuItem *collapseOSCalls;
 };
