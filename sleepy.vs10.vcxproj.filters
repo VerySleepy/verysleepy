@@ -87,6 +87,9 @@
     <ClCompile Include="src\wxProfilerGUI\threadpicker.cpp">
       <Filter>wxProfilerGUI</Filter>
     </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\logview.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\profiler\processinfo.h">
@@ -162,6 +165,9 @@
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
     <ClInclude Include="src\wxProfilerGUI\threadpicker.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\logview.h">
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
   </ItemGroup>
