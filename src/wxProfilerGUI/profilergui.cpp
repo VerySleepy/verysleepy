@@ -662,7 +662,7 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 	if (parser.Found("o", &param))
 		cmdline_save = param.c_str();
 	if (!parser.Found("t", &cmdline_timeout))
-		cmdline_timeout = 0;
+		cmdline_timeout = -1;
 	if (parser.Found("r", &param))
 		cmdline_run = param.c_str();
 
