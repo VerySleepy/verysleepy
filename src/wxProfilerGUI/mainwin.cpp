@@ -343,7 +343,7 @@ void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 		}
 		else
 		{
-			SetTitle(wxString::Format("$s - %s", APPNAME, dlg.GetPath()));
+			SetTitle(wxString::Format("%s - %s", APPNAME, dlg.GetPath()));
 		}
 	}
 }
