@@ -179,9 +179,9 @@ MainWin::MainWin(const wxString& title,
 
 	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
 
-	callViews->AddPage(filters,wxT("Filters"));
 	callViews->AddPage(splitWindow,wxT("Averages"));
 	callViews->AddPage(callStack,wxT("Call Stacks"));
+	callViews->AddPage(filters,wxT("Filters"));
 	aui->AddPane(callViews,wxAuiPaneInfo()
 		.Name(wxT("CallInfo"))
 		.CaptionVisible(false)
