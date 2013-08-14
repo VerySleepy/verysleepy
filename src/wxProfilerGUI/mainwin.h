@@ -146,6 +146,8 @@ private:
 
 	ViewState viewstate;
 
+	void buildFilterAutocomplete();
+
 	/// Apply the filter settings in the wxPropertyGrid to viewstate.
 	void applyFilters();
 

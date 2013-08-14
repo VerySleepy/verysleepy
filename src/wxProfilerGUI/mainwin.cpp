@@ -27,6 +27,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/stringutils.h"
 #include "CallstackView.h"
 #include <wx/aui/auibook.h>
+#include <set>
 
 MainWin *theMainWin;
 
@@ -220,14 +221,59 @@ MainWin::MainWin(const wxString& title,
 	filters->CenterSplitter();
 
 	viewstate.flags.resize(database->getSymbolIDCount());
+	buildFilterAutocomplete();
 	refresh();
+}
+
+static void addSplitValues(std::set<wxString>& dest, const wxString& str, const char sep)
+{
+	if (str.find(sep) != wxString::npos)
+	{
+		wxArrayString split = wxSplit(str, sep);
+		dest.insert(split.begin(), split.end());
+	}
+}
+
+static wxArrayString arrayFromSet( const std::set<wxString>& set )
+{
+	wxArrayString dest;
+
+	for (std::set<wxString>::const_iterator iter=set.begin(); iter != set.end(); ++iter )
+	{
+		if( *iter != "" )
+			dest.Add(*iter);
+	}
+
+	return dest;
+}
+
+void MainWin::buildFilterAutocomplete()
+{
+	const Database::List &list = database->getMainList();
+	std::set<wxString> procnameAutocomplete;
+	std::set<wxString> moduleAutocomplete;
+	std::set<wxString> sourcefileAutocomplete;
+
+	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
+	{
+		procnameAutocomplete.insert(i->symbol->procname);
+		moduleAutocomplete.insert(i->symbol->module);
+		sourcefileAutocomplete.insert(i->symbol->sourcefile);
+
+		addSplitValues(procnameAutocomplete, i->symbol->procname, ':');
+		addSplitValues(sourcefileAutocomplete, i->symbol->sourcefile, '\\');
+	}
+
+	filters->SetPropertyAttribute("procname"  , "AutoComplete", arrayFromSet(procnameAutocomplete));
+	filters->SetPropertyAttribute("module"    , "AutoComplete", arrayFromSet(moduleAutocomplete));
+	filters->SetPropertyAttribute("sourcefile", "AutoComplete", arrayFromSet(sourcefileAutocomplete));
 }
 
 MainWin::~MainWin()
 {
 	auiTab1->UnInit();
 	aui->UnInit();
-	delete database;	
+	delete database;
 	delete auiTab1;
 	delete aui;
 }
