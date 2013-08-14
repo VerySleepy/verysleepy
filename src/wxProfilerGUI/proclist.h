@@ -120,6 +120,13 @@ private:
 	void sortList();
 	void showList(int highlight);
 
+	// Filters:
+
+	// Ran before filtering the database.
+	void prepareFilters();
+	// Values cached by prepareFilters.
+	std::wstring filter_procname, filter_module, filter_sourcefile;
+	// Called for each item to filter.
 	bool matchesFilters(const Database::Item& item);
 };
 

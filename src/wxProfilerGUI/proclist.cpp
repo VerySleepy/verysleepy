@@ -217,6 +217,7 @@ void ProcList::showList(int highlight)
 	int realIndex = 0;
 	Freeze();
 	DeleteAllItems();
+	prepareFilters();
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
 	{
 		if( matchesFilters( *i ) )
@@ -346,27 +347,33 @@ bool ProcList::matchesFilters(const Database::Item& item)
 	if( !isroot || !filters )
 		return true;
 
-	std::wstring procname = filters->GetProperty("procname")->GetValueAsString();
-	std::wstring module = filters->GetProperty("module")->GetValueAsString();
-	std::wstring sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
-
-	if( procname.size() > 0 )
+	if( !filter_procname.empty() )
 	{
-		if( item.symbol->procname.find( procname ) == std::wstring::npos )
+		if( item.symbol->procname.find( filter_procname ) == std::wstring::npos )
 			return false;
 	}
 
-	if( module.size() > 0 )
+	if( !filter_module.empty() )
 	{
-		if( item.symbol->module.find( module ) == std::wstring::npos )
+		if( item.symbol->module.find( filter_module ) == std::wstring::npos )
 			return false;
 	}
 
-	if( sourcefile.size() > 0 )
+	if( !filter_sourcefile.empty() )
 	{
-		if( item.symbol->sourcefile.find( sourcefile ) == std::wstring::npos )
+		if( item.symbol->sourcefile.find( filter_sourcefile ) == std::wstring::npos )
 			return false;
 	}
 
 	return true;
+}
+
+void ProcList::prepareFilters()
+{
+	if (filters)
+	{
+		filter_procname = filters->GetProperty("procname")->GetValueAsString();
+		filter_module = filters->GetProperty("module")->GetValueAsString();
+		filter_sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
+	}
 }
