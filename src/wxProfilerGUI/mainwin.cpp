@@ -241,9 +241,59 @@ MainWin::MainWin(const wxString& title,
 	filters->CenterSplitter();
 }
 
+void AddSplitValues( std::set<wxString>& dest, const wxString& str, const char sep )
+{
+	if (str.find(sep) != wxString::npos)
+	{
+		wxArrayString split = wxSplit(str, sep);
+		dest.insert(split.begin(), split.end());
+	}
+}
+
+wxArrayString arrayFromSet( const std::set<wxString>& set )
+{
+	wxArrayString dest;
+
+	for (std::set<wxString>::const_iterator iter=set.begin(); iter != set.end(); ++iter )
+	{
+		if( *iter != "" )
+			dest.Add(*iter);
+	}
+
+	return dest;
+}
+
+void BuildFilterAutocomplete( Database* database, wxPropertyGrid* filters )
+{
+	if (!filters)
+		return;
+
+	Database::List list = database->getMainList();
+	std::set<wxString> procnameAutocomplete;
+	std::set<wxString> moduleAutocomplete;
+	std::set<wxString> sourcefileAutocomplete;
+
+	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
+	{
+		procnameAutocomplete.insert(i->symbol->procname);
+		moduleAutocomplete.insert(i->symbol->module);
+		sourcefileAutocomplete.insert(i->symbol->sourcefile);
+
+		AddSplitValues(procnameAutocomplete, i->symbol->procname, ':');
+		AddSplitValues(sourcefileAutocomplete, i->symbol->sourcefile, '\\');
+	}
+
+	filters->SetPropertyAttribute("procname", "AutoComplete", arrayFromSet(procnameAutocomplete));
+	filters->SetPropertyAttribute("module", "AutoComplete", arrayFromSet(moduleAutocomplete));
+	filters->SetPropertyAttribute("sourcefile", "AutoComplete", arrayFromSet(sourcefileAutocomplete));
+}
+
 void MainWin::Reset()
 {
 	proclist->showMainList(NULL);
+
+	if (filters)
+		BuildFilterAutocomplete(database, filters);
 }
 
 
