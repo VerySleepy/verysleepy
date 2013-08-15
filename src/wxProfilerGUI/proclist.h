@@ -118,7 +118,7 @@ private:
 	void setupColumn(ColumnType id, int width, SortType defsort, const wxString &name);
 	void setColumnValue(int row, ColumnType id, const wchar_t *value);
 	void sortList();
-	void showList(int highlight);
+	void showList();
 
 	bool matchesFilters(const Database::Item& item);
 };

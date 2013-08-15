@@ -122,7 +122,7 @@ void ProcList::OnSort(wxListEvent& event)
 
 	SetSortImage(columns[sort_column].listctrl_column, sort_dir);
 	sortList();
-	showList(0);
+	showList();
 }
 
 void ProcList::OnRClickItem(wxListEvent& event)
@@ -162,29 +162,14 @@ void ProcList::sortList()
 void ProcList::showMainList(const Database::Symbol *symbol)
 {
 	list = database->getMainList();
-
 	sortList();
+	showList();
 
-	// find 'symbol' in the list
-	// will default to the top symbol if not found
-	size_t foundat = 0;
-	for (size_t i=0;i<list.items.size();i++)
-	{
-		const Database::Symbol *sym = list.items[i].symbol;
-		if (sym == symbol)
-		{
-			foundat = i;
-			break;
-		}
-	}
-
-	// DE: 20090325 remove compiler warning
-	showList(static_cast<int>(foundat));
+	// RM: 20130815 de-duplicate find logic, since we're working with filters now
+	selectSymbol(symbol);
 
 	if (!list.items.empty())
 	{
-		symbol = list.items[foundat].symbol;
-
 		if (callersview)
 			callersview->showCallers(symbol);
 		if (calleesview)
@@ -199,7 +184,7 @@ void ProcList::showCallees(const Database::Symbol *symbol)
 	list = database->getCallees(symbol);
 
 	sortList();
-	showList(0);
+	showList();
 }
 
 void ProcList::showCallers(const Database::Symbol *symbol)
@@ -207,11 +192,11 @@ void ProcList::showCallers(const Database::Symbol *symbol)
 	list = database->getCallers(symbol);
 
 	sortList();
-	showList(0);
+	showList();
 }
 
 
-void ProcList::showList(int highlight)
+void ProcList::showList()
 {
 	int c = 0;
 	int realIndex = 0;
@@ -250,10 +235,7 @@ void ProcList::showList(int highlight)
 		realIndex++;
 	}
 
-	this->SetItemState(highlight, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
-
 	Thaw();
-	EnsureVisible(highlight);
 }
 
 void ProcList::setColumnValue(int row, ColumnType id, const wchar_t *value)
@@ -265,8 +247,8 @@ void ProcList::setColumnValue(int row, ColumnType id, const wchar_t *value)
 
 void ProcList::selectSymbol(const Database::Symbol *symbol)
 {
-	for(long i=0;i<(long)list.items.size();i++) {
-		if(list.items[i].symbol == symbol) {
+	for(int i=0;i<GetItemCount();i++) {
+		if(list.items[GetItemData(i)].symbol == symbol) {
 			SetItemState(i,wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 			EnsureVisible(i);
 		} else {

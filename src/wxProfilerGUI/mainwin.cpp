@@ -153,7 +153,7 @@ MainWin::MainWin(const wxString& title,
 		.CaptionVisible(true)
 		);
 
-	sourceAndLog = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
+	sourceAndLog = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxNO_BORDER);
 	aui->AddPane(sourceAndLog, wxAuiPaneInfo()
 		.Name(wxT("SourceAndLog"))
 		.CaptionVisible(false)
@@ -177,7 +177,7 @@ MainWin::MainWin(const wxString& title,
 	//wxTextCtrl *log = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY);
 	sourceAndLog->AddPage(log,wxT("Log"));
 
-	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_TB_DEFAULT_STYLE|wxNO_BORDER);
+	callViews = new wxAuiNotebook(this,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxAUI_NB_TOP|wxAUI_NB_TAB_SPLIT|wxAUI_NB_TAB_MOVE|wxAUI_NB_SCROLL_BUTTONS|wxNO_BORDER|wxNO_BORDER);
 
 	callViews->AddPage(splitWindow,wxT("Averages"));
 	callViews->AddPage(callStack,wxT("Call Stacks"));
@@ -238,12 +238,62 @@ MainWin::MainWin(const wxString& title,
 	callees->setParentView(proclist);
 	callStack->setProcList(proclist);
 
-	filters->CenterSplitter();
+	filters->FitColumns();
+}
+
+void AddSplitValues( std::set<wxString>& dest, const wxString& str, const char sep )
+{
+	if (str.find(sep) != wxString::npos)
+	{
+		wxArrayString split = wxSplit(str, sep);
+		dest.insert(split.begin(), split.end());
+	}
+}
+
+wxArrayString arrayFromSet( const std::set<wxString>& set )
+{
+	wxArrayString dest;
+
+	for (std::set<wxString>::const_iterator iter=set.begin(); iter != set.end(); ++iter )
+	{
+		if( *iter != "" )
+			dest.Add(*iter);
+	}
+
+	return dest;
+}
+
+void BuildFilterAutocomplete( Database* database, wxPropertyGrid* filters )
+{
+	if (!filters)
+		return;
+
+	Database::List list = database->getMainList();
+	std::set<wxString> procnameAutocomplete;
+	std::set<wxString> moduleAutocomplete;
+	std::set<wxString> sourcefileAutocomplete;
+
+	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
+	{
+		procnameAutocomplete.insert(i->symbol->procname);
+		moduleAutocomplete.insert(i->symbol->module);
+		sourcefileAutocomplete.insert(i->symbol->sourcefile);
+
+		AddSplitValues(procnameAutocomplete, i->symbol->procname, ':');
+		AddSplitValues(sourcefileAutocomplete, i->symbol->sourcefile, '\\');
+	}
+
+	filters->SetPropertyAttribute("procname", "AutoComplete", arrayFromSet(procnameAutocomplete));
+	filters->SetPropertyAttribute("module", "AutoComplete", arrayFromSet(moduleAutocomplete));
+	filters->SetPropertyAttribute("sourcefile", "AutoComplete", arrayFromSet(sourcefileAutocomplete));
 }
 
 void MainWin::Reset()
 {
 	proclist->showMainList(NULL);
+
+	if (filters)
+		BuildFilterAutocomplete(database, filters);
 }
 
 
