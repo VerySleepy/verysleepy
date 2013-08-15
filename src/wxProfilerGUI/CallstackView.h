@@ -72,7 +72,7 @@ public:
 	void OnSize(wxSizeEvent& event);
 	void OnTool(wxCommandEvent &event);
 	void OnSelected(wxListEvent& event);
-	void OnRClickItem(wxListEvent& event);
+	void OnContextMenu(wxContextMenuEvent& event);
 public:
 	void showCallStack(const Database::Symbol *symbol);
 	DECLARE_EVENT_TABLE()

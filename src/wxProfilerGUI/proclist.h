@@ -43,7 +43,7 @@ public:
 	void OnSelected(wxListEvent& event);
 	void OnActivated(wxListEvent& event);
 	void OnSort(wxListEvent& event);
-	void OnRClickItem(wxListEvent& event);
+	void OnContextMenu(wxContextMenuEvent& event);
 
 	/// Recreates the GUI list from the given one. Preserves selection.
 	void showList(const Database::List &list);

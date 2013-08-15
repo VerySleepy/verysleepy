@@ -40,7 +40,7 @@ BEGIN_EVENT_TABLE(ProcList, wxListCtrl)
 EVT_LIST_ITEM_SELECTED(ProcList_List, ProcList::OnSelected)
 EVT_LIST_ITEM_ACTIVATED(ProcList_List, ProcList::OnActivated)
 EVT_LIST_COL_CLICK(-1, ProcList::OnSort)
-EVT_LIST_ITEM_RIGHT_CLICK(-1,ProcList::OnRClickItem)
+EVT_CONTEXT_MENU(ProcList::OnContextMenu)
 END_EVENT_TABLE()
 
 ProcList::ProcList(wxWindow *parent, bool isroot, Database *database)
@@ -126,7 +126,7 @@ void ProcList::OnSort(wxListEvent& event)
 	displayList();
 }
 
-void ProcList::OnRClickItem(wxListEvent& event)
+void ProcList::OnContextMenu(wxContextMenuEvent& event)
 {
 	FunctionMenu(this, database);
 }

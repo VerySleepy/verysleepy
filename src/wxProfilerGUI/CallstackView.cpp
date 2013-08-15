@@ -71,7 +71,7 @@ BEGIN_EVENT_TABLE(CallstackView, wxWindow)
 EVT_SIZE(CallstackView::OnSize)
 EVT_TOOL_RANGE(0,10,CallstackView::OnTool)
 EVT_LIST_ITEM_SELECTED(LIST_CTRL, CallstackView::OnSelected)
-EVT_LIST_ITEM_RIGHT_CLICK(-1,CallstackView::OnRClickItem)
+EVT_CONTEXT_MENU(CallstackView::OnContextMenu)
 END_EVENT_TABLE()
 
 CallstackView::CallstackView(wxWindow *parent,Database *_database)
@@ -235,7 +235,7 @@ void CallstackView::OnTool(wxCommandEvent &event)
 	}
 }
 
-void CallstackView::OnRClickItem(wxListEvent& event)
+void CallstackView::OnContextMenu(wxContextMenuEvent& event)
 {
 	FunctionMenu(listCtrl, database);
 }
