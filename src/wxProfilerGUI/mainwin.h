@@ -111,7 +111,7 @@ public:
 	const ViewState *getViewState() { return &viewstate; }
 
 	void setFilter(const wxString &name, const wxString &value);
-	void setHighlight(Database::Symbol::ID id, bool set);
+	void setHighlight(const std::vector<Database::Symbol::ID> &ids, bool set);
 
 private:
 	// any class wishing to process wxWindows events must use this macro

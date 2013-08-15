@@ -544,8 +544,9 @@ void MainWin::setFilter(const wxString &name, const wxString &value)
 	applyFilters();
 }
 
-void MainWin::setHighlight(Database::Symbol::ID id, bool set)
+void MainWin::setHighlight(const std::vector<Database::Symbol::ID> &ids, bool set)
 {
-	viewstate.setFlag(id, ViewState::Flag_Highlighted, set);
+	for each (Database::Symbol::ID id in ids)
+		viewstate.setFlag(id, ViewState::Flag_Highlighted, set);
 	refresh();
 }

@@ -60,52 +60,78 @@ EVT_MENU(ID_HIGHLIGHT, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_UNHIGHLIGHT, FunctionMenuWindow::OnMenu)
 END_EVENT_TABLE()
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database)
+void FunctionMenu(wxListCtrl *list, Database *database)
 {
-	FunctionMenuWindow funcWindow(window);
+	FunctionMenuWindow funcWindow(list);
 	wxMenu *menu = new wxMenu;
-	
-	Database::Symbol::ID id = sym->id;
-	wxString mod = sym->module.c_str();
-	wxString function = sym->procname.c_str();
-	wxString source = sym->sourcefile.c_str();
 
-	const ViewState *viewstate = theMainWin->getViewState();
+	const Database::Symbol* sym;
+	std::vector<Database::Symbol::ID> selection;
 
-	wxString modUpper = mod;
-	modUpper.UpperCase();
+	{
+		long i = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
+		if (i < 0)
+			return;
+		sym = database->getSymbol(list->GetItemData(i));
+	}
 
-	menu->AppendCheckItem(ID_COLLAPSE_FUNC,"Collapse child calls")->Check(IsOsFunction(function));
-	menu->AppendCheckItem(ID_COLLAPSE_MOD,wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
-	menu->AppendCheckItem(ID_SET_ROOT,wxString::Format("Set root to %s", function));
+	for (long item = -1;;)
+	{
+		item = list->GetNextItem(item,
+			wxLIST_NEXT_ALL,
+			wxLIST_STATE_SELECTED);
+		if (item == -1)
+			break;
 
-	menu->AppendSeparator();
-	menu->AppendCheckItem(ID_FILTER_FUNC,wxString::Format("Filter functions to %s", function));
-	menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
-	menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
+		Database::Symbol::ID id = list->GetItemData(item);
+		selection.push_back(id);
+	}
 
-	menu->AppendSeparator();
-	if (theMainWin->getViewState()->flags[id] & ViewState::Flag_Highlighted)
-		menu->AppendCheckItem(ID_UNHIGHLIGHT, wxString::Format("Unhighlight %s", function));
+	if (selection.size() == 0)
+		return;
+
+	if (selection.size() == 1)
+	{
+		wxString mod = sym->module.c_str();
+		wxString function = sym->procname.c_str();
+		wxString source = sym->sourcefile.c_str();
+
+		wxString modUpper = mod;
+		modUpper.UpperCase();
+
+		menu->AppendCheckItem(ID_COLLAPSE_FUNC,"Collapse child calls")->Check(IsOsFunction(function));
+		menu->AppendCheckItem(ID_COLLAPSE_MOD,wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
+		menu->AppendCheckItem(ID_SET_ROOT,wxString::Format("Set root to %s", function));
+		menu->AppendSeparator();
+
+		menu->AppendCheckItem(ID_FILTER_FUNC,wxString::Format("Filter functions to %s", function));
+		menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
+		menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
+		menu->AppendSeparator();
+	}
+
+	wxString highlightTarget = selection.size()==1 ? sym->procname : L"selected";
+	if (theMainWin->getViewState()->flags[sym->id] & ViewState::Flag_Highlighted)
+		menu->AppendCheckItem(ID_UNHIGHLIGHT, wxString::Format("Unhighlight %s", highlightTarget));
 	else
-		menu->AppendCheckItem(ID_HIGHLIGHT  , wxString::Format("Highlight %s"  , function));
+		menu->AppendCheckItem(ID_HIGHLIGHT  , wxString::Format("Highlight %s"  , highlightTarget));
 
 	funcWindow.PopupMenu(menu);
 	switch(funcWindow.option)
 	{
 	case ID_COLLAPSE_FUNC:
-		if (IsOsFunction(function))
-			RemoveOsFunction(function);
+		if (IsOsFunction(sym->procname))
+			RemoveOsFunction(sym->procname);
 		else
-			AddOsFunction(function);
+			AddOsFunction(sym->procname);
 		theMainWin->refresh();
 		break;
 
 	case ID_COLLAPSE_MOD:
-		if (IsOsModule(mod))
-			RemoveOsModule(mod);
+		if (IsOsModule(sym->module))
+			RemoveOsModule(sym->module);
 		else
-			AddOsModule(mod);
+			AddOsModule(sym->module);
 		theMainWin->refresh();
 		break;
 
@@ -115,24 +141,23 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 		break;
 
 	case ID_FILTER_FUNC:
-		theMainWin->setFilter("procname", function);
+		theMainWin->setFilter("procname", sym->procname);
 		break;
 
 	case ID_FILTER_MODULE:
-		theMainWin->setFilter("module", mod);
+		theMainWin->setFilter("module", sym->module);
 		break;
 
 	case ID_FILTER_SOURCE:
-		theMainWin->setFilter("sourcefile", source);
+		theMainWin->setFilter("sourcefile", sym->sourcefile);
 		break;
 
 	case ID_HIGHLIGHT:
-		theMainWin->setHighlight(id, true);
+		theMainWin->setHighlight(selection, true);
 		break;
 	case ID_UNHIGHLIGHT:
-		theMainWin->setHighlight(id, false);
+		theMainWin->setHighlight(selection, false);
 		break;
 	}
-
 }
 

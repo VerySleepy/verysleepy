@@ -128,9 +128,7 @@ void ProcList::OnSort(wxListEvent& event)
 
 void ProcList::OnRClickItem(wxListEvent& event)
 {
-	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
-
-	FunctionMenu(this, symbol, database);
+	FunctionMenu(this, database);
 }
 
 struct NamePred       { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->procname   < b.symbol->procname  ; } };

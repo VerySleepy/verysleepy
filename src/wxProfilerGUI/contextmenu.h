@@ -4,8 +4,10 @@
 #include "database.h"
 #include "proclist.h"
 
-#include <set>
-
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database);
+/// Show a right-click menu for a given wxListCtrl.
+/// We assume that the selected items are the actionable ones,
+/// and that the list stores Database::Symbol::IDs in its
+/// ItemData.
+void FunctionMenu(wxListCtrl *list, Database *database);
 
 #endif
