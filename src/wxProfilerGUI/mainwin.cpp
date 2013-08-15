@@ -218,7 +218,7 @@ MainWin::MainWin(const wxString& title,
 
 	aui->Update();
 
-	filters->CenterSplitter();
+	filters->FitColumns();
 
 	viewstate.flags.resize(database->getSymbolIDCount());
 	buildFilterAutocomplete();
