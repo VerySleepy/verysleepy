@@ -43,11 +43,10 @@ EVT_LIST_COL_CLICK(-1, ProcList::OnSort)
 EVT_LIST_ITEM_RIGHT_CLICK(-1,ProcList::OnRClickItem)
 END_EVENT_TABLE()
 
-ProcList::ProcList(wxWindow *parent, bool isroot, Database *database, std::set<Database::Symbol::ID>& highlights)
+ProcList::ProcList(wxWindow *parent, bool isroot, Database *database)
 :	wxSortedListCtrl(parent, ProcList_List, wxDefaultPosition, wxDefaultSize, wxLC_REPORT /*style*/),
 	isroot(isroot), database(database),
-	filterview(NULL), updating(false),
-	highlights(highlights)
+	updating(false)
 {
 	InitSort();
 
@@ -131,7 +130,7 @@ void ProcList::OnRClickItem(wxListEvent& event)
 {
 	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
 
-	FunctionMenu(this, symbol, database, filterview, highlights);
+	FunctionMenu(this, symbol, database);
 }
 
 struct NamePred       { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->procname   < b.symbol->procname  ; } };
@@ -177,13 +176,16 @@ void ProcList::displayList()
 
 	Freeze();
 	DeleteAllItems();
-	prepareFilters();
+
+	const ViewState *viewstate = theMainWin->getViewState();
+
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
 	{
-		if (!matchesFilters( *i ))
+		const Database::Symbol *sym = i->symbol;
+
+		if (isroot && viewstate->flags[sym->id] & ViewState::Flag_Filtered)
 			continue;
 
-		const Database::Symbol *sym = i->symbol;
 		double inclusive = i->inclusive;
 		double exclusive = i->exclusive;
 		float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
@@ -193,7 +195,7 @@ void ProcList::displayList()
 		if(sym->isCollapseFunction || sym->isCollapseModule) {
 			SetItemTextColour(c,wxColor(0,128,0));
 		}
-		if(highlights.find(sym->id) != highlights.end()) {
+		if(viewstate->flags[sym->id] & ViewState::Flag_Highlighted) {
 			SetItemBackgroundColour(c, wxColor(255,255,0));
 		}
 		setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs" ,exclusive));
@@ -277,46 +279,4 @@ void ProcList::OnActivated(wxListEvent& event)
 	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
 	if (!isroot)
 		theMainWin->inspectSymbol(symbol);
-}
-
-void ProcList::setFilters(wxPropertyGrid *filterview)
-{
-	this->filterview = filterview;
-}
-
-// Check if this item matches the filters
-bool ProcList::matchesFilters(const Database::Item& item)
-{
-	if( !isroot || !filterview )
-		return true;
-
-	if( !filter_procname.empty() )
-	{
-		if( item.symbol->procname.find( filter_procname ) == std::wstring::npos )
-			return false;
-	}
-
-	if( !filter_module.empty() )
-	{
-		if( item.symbol->module.find( filter_module ) == std::wstring::npos )
-			return false;
-	}
-
-	if( !filter_sourcefile.empty() )
-	{
-		if( item.symbol->sourcefile.find( filter_sourcefile ) == std::wstring::npos )
-			return false;
-	}
-
-	return true;
-}
-
-void ProcList::prepareFilters()
-{
-	if (filterview)
-	{
-		filter_procname = filterview->GetProperty("procname")->GetValueAsString();
-		filter_module = filterview->GetProperty("module")->GetValueAsString();
-		filter_sourcefile = filterview->GetProperty("sourcefile")->GetValueAsString();
-	}
 }

@@ -74,7 +74,8 @@ EVT_LIST_ITEM_SELECTED(LIST_CTRL, CallstackView::OnSelected)
 EVT_LIST_ITEM_RIGHT_CLICK(-1,CallstackView::OnRClickItem)
 END_EVENT_TABLE()
 
-CallstackView::CallstackView(wxWindow *parent,Database *_database, std::set<Database::Symbol::ID>& _highlights) : wxWindow(parent,-1), database(_database), callstackActive(0),itemSelected(~0), highlights(_highlights)
+CallstackView::CallstackView(wxWindow *parent,Database *_database)
+:	wxWindow(parent,-1), database(_database), callstackActive(0), itemSelected(~0)
 {
 	listCtrl = new wxListCtrl(this,LIST_CTRL,wxDefaultPosition,wxDefaultSize,wxLC_REPORT);
 	setupColumn(COL_NAME,			150,	_T("Name"));
@@ -179,6 +180,8 @@ void CallstackView::updateList()
 	if(!now)
 		return;
 
+	const ViewState *viewstate = theMainWin->getViewState();
+
 	for(unsigned i=0;i<now->stack.size();i++) {
 		const Database::Symbol *snow = now->stack[i];
 		if(i == listCtrl->GetItemCount()) {
@@ -191,7 +194,7 @@ void CallstackView::updateList()
 		} else {
 			listCtrl->SetItemTextColour(i,wxColor(0,0,0));
 		}
-		if(highlights.find(snow->id) != highlights.end()) {
+		if(viewstate->flags[snow->id] & ViewState::Flag_Highlighted) {
 			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,0));
 		}
 		else
@@ -235,6 +238,6 @@ void CallstackView::OnTool(wxCommandEvent &event)
 void CallstackView::OnRClickItem(wxListEvent& event)
 {
 	const Database::Symbol *sym = database->getSymbol(listCtrl->GetItemData(event.GetIndex()));
-	FunctionMenu(this, sym, database, NULL, highlights);
+	FunctionMenu(this, sym, database);
 }
 

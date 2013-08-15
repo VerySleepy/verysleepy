@@ -32,6 +32,26 @@ http://www.gnu.org/copyleft/gpl.html.
 
 #include <wx/propgrid/propgrid.h>
 
+/// Cache per-symbol view settings so we don't
+/// have to compute them on every refresh.
+struct ViewState
+{
+	enum Flag : unsigned char
+	{
+		Flag_Highlighted = 1,
+		Flag_Filtered    = 2,
+	};
+
+	/// Index is Database::Symbol::ID
+	std::vector<Flag> flags;
+
+	void setFlag(Database::Symbol::ID id, Flag flag, bool set)
+	{
+		Flag *p = &flags[id];
+		*p = (ViewState::Flag)((*p & ~flag) | (set ? flag : 0));
+	}
+};
+
 /*=====================================================================
 MainWin
 -------
@@ -88,6 +108,11 @@ public:
 	/// Called by SourceView to update the status bar.
 	void setSourcePos(const std::wstring& currentfile, int currentline);
 
+	const ViewState *getViewState() { return &viewstate; }
+
+	void setFilter(const wxString &name, const wxString &value);
+	void setHighlight(Database::Symbol::ID id, bool set);
+
 private:
 	// any class wishing to process wxWindows events must use this macro
 	DECLARE_EVENT_TABLE()
@@ -116,11 +141,15 @@ private:
 	wxAuiNotebook *sourceAndLog;
 
 	wxPropertyGrid *filters;
-	std::set<Database::Symbol::ID> highlights;
 
 	wxMenuItem *collapseOSCalls;
 
-	void showSource( const Database::Symbol * symbol );
+	ViewState viewstate;
+
+	/// Apply the filter settings in the wxPropertyGrid to viewstate.
+	void applyFilters();
+
+	void showSource(const Database::Symbol * symbol);
 };
 
 extern MainWin *theMainWin;

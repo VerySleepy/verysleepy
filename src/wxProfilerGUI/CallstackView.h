@@ -27,8 +27,6 @@ class CallstackView;
 #include "profilergui.h"
 #include "database.h"
 
-#include <set>
-
 #ifndef __CALLSTTACKVIEW_H_
 #define __CALLSTTACKVIEW_H_
 
@@ -64,13 +62,12 @@ class CallstackView : public wxWindow
 	size_t									callstackActive;
 	const Database::Symbol					*currSymbol;
 	long									itemSelected;
-	std::set<Database::Symbol::ID>&			highlights;
 
 	void setupColumn(ColumnType id, int width, const wxString &name);
 	void updateList();
 
 public:
-	CallstackView(wxWindow *parent, Database *database, std::set<Database::Symbol::ID>& highlights);
+	CallstackView(wxWindow *parent, Database *database);
 	virtual ~CallstackView(void);
 	void OnSize(wxSizeEvent& event);
 	void OnTool(wxCommandEvent &event);

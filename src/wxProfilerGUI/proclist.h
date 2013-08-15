@@ -28,10 +28,6 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "database.h"
 #include "../utils/sortlist.h"
 
-#include <set>
-
-#include <wx/propgrid/propgrid.h>
-
 /*=====================================================================
 ProcList
 --------
@@ -40,7 +36,7 @@ ProcList
 class ProcList : public wxSortedListCtrl
 {
 public:
-	ProcList(wxWindow *parent, bool isroot, Database *database, std::set<Database::Symbol::ID>& highlights);
+	ProcList(wxWindow *parent, bool isroot, Database *database);
 
 	virtual ~ProcList();
 
@@ -48,8 +44,6 @@ public:
 	void OnActivated(wxListEvent& event);
 	void OnSort(wxListEvent& event);
 	void OnRClickItem(wxListEvent& event);
-
-	void setFilters(wxPropertyGrid *filterview);
 
 	/// Recreates the GUI list from the given one. Preserves selection.
 	void showList(const Database::List &list);
@@ -92,9 +86,6 @@ private:
 	int sort_column;
 	SortType sort_dir;
 
-	wxPropertyGrid *filterview;
-	std::set<Database::Symbol::ID>& highlights;
-
 	Column columns[MAX_COLUMNS];
 	void setupColumn(ColumnType id, int width, SortType defsort, const wxString &name);
 	void setColumnValue(int row, ColumnType id, const wchar_t *value);
@@ -104,15 +95,6 @@ private:
 
 	/// Displays our in-memory list. Preserves selection.
 	void displayList();
-
-	/// Filters:
-
-	/// Ran before filtering the database.
-	void prepareFilters();
-	/// Values cached by prepareFilters.
-	std::wstring filter_procname, filter_module, filter_sourcefile;
-	/// Called for each item to filter.
-	bool matchesFilters(const Database::Item& item);
 };
 
 #endif //__PROCLIST_H_666_

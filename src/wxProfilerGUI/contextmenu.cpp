@@ -60,7 +60,7 @@ EVT_MENU(ID_HIGHLIGHT, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_UNHIGHLIGHT, FunctionMenuWindow::OnMenu)
 END_EVENT_TABLE()
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<Database::Symbol::ID>& highlights)
+void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database)
 {
 	FunctionMenuWindow funcWindow(window);
 	wxMenu *menu = new wxMenu;
@@ -70,6 +70,8 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 	wxString function = sym->procname.c_str();
 	wxString source = sym->sourcefile.c_str();
 
+	const ViewState *viewstate = theMainWin->getViewState();
+
 	wxString modUpper = mod;
 	modUpper.UpperCase();
 
@@ -77,24 +79,16 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 	menu->AppendCheckItem(ID_COLLAPSE_MOD,wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
 	menu->AppendCheckItem(ID_SET_ROOT,wxString::Format("Set root to %s", function));
 
-	if( filters )
-	{
-		menu->AppendSeparator();
-		menu->AppendCheckItem(ID_FILTER_FUNC,wxString::Format("Filter functions to %s", function));
-		menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
-		menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
-	}
+	menu->AppendSeparator();
+	menu->AppendCheckItem(ID_FILTER_FUNC,wxString::Format("Filter functions to %s", function));
+	menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
+	menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
 
 	menu->AppendSeparator();
-	if( highlights.find( id ) == highlights.end() )
-	{
-		menu->AppendCheckItem(ID_HIGHLIGHT,wxString::Format("Highlight %s", function));
-	}
+	if (theMainWin->getViewState()->flags[id] & ViewState::Flag_Highlighted)
+		menu->AppendCheckItem(ID_UNHIGHLIGHT, wxString::Format("Unhighlight %s", function));
 	else
-	{
-		menu->AppendCheckItem(ID_UNHIGHLIGHT,wxString::Format("Unhighlight %s", function));
-	}
-
+		menu->AppendCheckItem(ID_HIGHLIGHT  , wxString::Format("Highlight %s"  , function));
 
 	funcWindow.PopupMenu(menu);
 	switch(funcWindow.option)
@@ -104,6 +98,7 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 			RemoveOsFunction(function);
 		else
 			AddOsFunction(function);
+		theMainWin->refresh();
 		break;
 
 	case ID_COLLAPSE_MOD:
@@ -111,35 +106,33 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 			RemoveOsModule(mod);
 		else
 			AddOsModule(mod);
+		theMainWin->refresh();
 		break;
 
 	case ID_SET_ROOT:
 		database->setRoot(sym);
+		theMainWin->refresh();
 		break;
 
 	case ID_FILTER_FUNC:
-		filters->GetProperty("procname")->SetValueFromString(function);
+		theMainWin->setFilter("procname", function);
 		break;
 
 	case ID_FILTER_MODULE:
-		filters->GetProperty("module")->SetValueFromString(mod);
+		theMainWin->setFilter("module", mod);
 		break;
 
 	case ID_FILTER_SOURCE:
-		filters->GetProperty("sourcefile")->SetValueFromString(source);
+		theMainWin->setFilter("sourcefile", source);
 		break;
 
 	case ID_HIGHLIGHT:
-		highlights.insert(id);
+		theMainWin->setHighlight(id, true);
 		break;
 	case ID_UNHIGHLIGHT:
-		highlights.erase(id);
+		theMainWin->setHighlight(id, false);
 		break;
-
-	default:
-		return; // don't refresh
 	}
 
-	theMainWin->refresh();
 }
 

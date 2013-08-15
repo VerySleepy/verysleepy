@@ -128,11 +128,11 @@ MainWin::MainWin(const wxString& title,
 	sourceview = new SourceView(this ,this);
 
 	// Create the windows
-	proclist = new ProcList(this       , true , database, highlights);
-	callers  = new ProcList(splitWindow, false, database, highlights);
-	callees  = new ProcList(splitWindow, false, database, highlights);
+	proclist = new ProcList(this       , true , database);
+	callers  = new ProcList(splitWindow, false, database);
+	callees  = new ProcList(splitWindow, false, database);
 
-	callStack = new CallstackView(this,database, highlights);
+	callStack = new CallstackView(this, database);
 
 	aui->AddPane(proclist, wxAuiPaneInfo()
 		.Name(wxT("Functions"))
@@ -217,11 +217,9 @@ MainWin::MainWin(const wxString& title,
 
 	aui->Update();
 
-	// Tie it all together
-	proclist->setFilters(filters);
-
 	filters->CenterSplitter();
 
+	viewstate.flags.resize(database->getSymbolIDCount());
 	refresh();
 }
 
@@ -357,7 +355,7 @@ void MainWin::OnResetFilters(wxCommandEvent& event)
 	filters->GetProperty("procname"  )->SetValueFromString("");
 	filters->GetProperty("module"    )->SetValueFromString("");
 	filters->GetProperty("sourcefile")->SetValueFromString("");
-	refresh();
+	applyFilters();
 }
 
 void MainWin::OnCollapseOS(wxCommandEvent& event)
@@ -405,7 +403,7 @@ void MainWin::OnAbout(wxCommandEvent& WXUNUSED(event))
 
 void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
 {
-	refresh();
+	applyFilters();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,13 +421,13 @@ void MainWin::showSource( const Database::Symbol * symbol )
 	if (symbol->procname == L"KiFastSystemCallRet")
 		sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, NULL);
 	else
-		if(lineInfo)
-			sourceview->showFile(symbol->sourcefile, symbol->sourceline, lineInfo);
-		else
-		{
-			LINEINFOMAP dummymap;
-			sourceview->showFile(symbol->sourcefile, symbol->sourceline, &dummymap);
-		}
+	if(lineInfo)
+		sourceview->showFile(symbol->sourcefile, symbol->sourceline, lineInfo);
+	else
+	{
+		LINEINFOMAP dummymap;
+		sourceview->showFile(symbol->sourcefile, symbol->sourceline, &dummymap);
+	}
 }
 
 void MainWin::focusSymbol(const Database::Symbol *symbol)
@@ -469,4 +467,36 @@ void MainWin::setSourcePos(const std::wstring& currentfile_, int currentline_)
 		SetStatusText(std::wstring("Source file: " + currentfile).c_str(), 0);
 		SetStatusText(std::wstring("Line " + ::toString(currentline)).c_str(), 1);
 	}
+}
+
+void MainWin::applyFilters()
+{
+	wxString filter_procname   = filters->GetProperty("procname"  )->GetValueAsString();
+	wxString filter_module     = filters->GetProperty("module"    )->GetValueAsString();
+	wxString filter_sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
+
+	for (Database::Symbol::ID id = 0; id < database->getSymbolIDCount(); id++)
+	{
+		const Database::Symbol *symbol = database->getSymbol(id);
+
+		bool filtered =
+			( !filter_procname  .empty() && symbol->procname  .find(filter_procname  ) != std::wstring::npos ) ||
+			( !filter_module    .empty() && symbol->module    .find(filter_module    ) != std::wstring::npos ) ||
+			( !filter_sourcefile.empty() && symbol->sourcefile.find(filter_sourcefile) != std::wstring::npos );
+
+		viewstate.setFlag(id, ViewState::Flag_Filtered, filtered);
+	}
+	refresh();
+}
+
+void MainWin::setFilter(const wxString &name, const wxString &value)
+{
+	filters->GetProperty(name)->SetValueFromString(value);
+	applyFilters();
+}
+
+void MainWin::setHighlight(Database::Symbol::ID id, bool set)
+{
+	viewstate.setFlag(id, ViewState::Flag_Highlighted, set);
+	refresh();
 }
