@@ -462,6 +462,9 @@ void MainWin::reload(bool loadMinidump/*=false*/)
 
 void MainWin::showSource( const Database::Symbol * symbol )
 {
+	if (sourceAndLog->GetSelection() != 0)
+		sourceAndLog->SetSelection(0); // Open source tab
+
 	const LINEINFOMAP *lineInfo = database->getLineInfo(symbol->sourcefile);
 
 	if (symbol->procname == L"KiFastSystemCallRet")
