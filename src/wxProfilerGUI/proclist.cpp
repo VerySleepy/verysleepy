@@ -265,8 +265,8 @@ void ProcList::setColumnValue(int row, ColumnType id, const wchar_t *value)
 
 void ProcList::selectSymbol(const Database::Symbol *symbol)
 {
-	for(long i=0;i<(long)list.items.size();i++) {
-		if(list.items[i].symbol == symbol) {
+	for(int i=0;i<GetItemCount();i++) {
+		if(list.items[GetItemData(i)].symbol == symbol) {
 			SetItemState(i,wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 			EnsureVisible(i);
 		} else {
