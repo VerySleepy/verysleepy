@@ -280,7 +280,7 @@ void SourceView::OnUpdateUI(wxUpdateUIEvent& event)
 	else
 		line += 1;//convert to 1-based line numbering
 
-	mainwin->setCurrent(currentfile, line);
+	mainwin->setSourcePos(currentfile, line);
 
 	event.Skip();
 }

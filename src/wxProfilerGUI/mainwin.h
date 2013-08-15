@@ -59,14 +59,34 @@ public:
 	void OnCollapseOS(wxCommandEvent& event);
 	void OnStats(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
-	void SetTopOfTree(wxCommandEvent& event);
-	void ResetToRoot(wxCommandEvent& event);
-	void ResetToRootUpdate(wxUpdateUIEvent& event);
-	void ResetFilters(wxCommandEvent& event);
+	void OnResetToRoot(wxCommandEvent& event);
+	void OnResetToRootUpdate(wxUpdateUIEvent& event);
+	void OnResetFilters(wxCommandEvent& event);
 	void OnFiltersChanged(wxPropertyGridEvent& event);
 
-	void Reset();
-	void setCurrent(const std::wstring& currentfile, int currentline);
+	/// Refresh proc lists.
+	/// Preserves selection.
+	/// Does not reload the database.
+	void refresh();
+
+	/// Reload the database.
+	/// Needed to apply any settings that are applied during
+	/// database loading, such as collapsing OS calls.
+	void reload(bool loadMinidump=false);
+
+	/// Switch selection to a given symbol.
+	/// Does not repopulate the secondary views.
+	/// Called when clicking on a particular symbol.
+	void focusSymbol(const Database::Symbol *symbol);
+
+	/// Inspect a given symbol.
+	/// Opens the corresponding symbol properties in all related views.
+	/// Implies focusSymbol(symbol).
+	/// Called when double-clicking on a particular symbol.
+	void inspectSymbol(const Database::Symbol *symbol);
+
+	/// Called by SourceView to update the status bar.
+	void setSourcePos(const std::wstring& currentfile, int currentline);
 
 private:
 	// any class wishing to process wxWindows events must use this macro
@@ -82,6 +102,7 @@ private:
 	Database *database;
 	std::wstring profilepath;
 
+	// Used by setSourcePos
 	std::wstring currentfile;
 	int currentline;
 
@@ -95,9 +116,11 @@ private:
 	wxAuiNotebook *sourceAndLog;
 
 	wxPropertyGrid *filters;
-	std::set<std::wstring> highlights;
+	std::set<Database::Symbol::ID> highlights;
 
 	wxMenuItem *collapseOSCalls;
+
+	void showSource( const Database::Symbol * symbol );
 };
 
 extern MainWin *theMainWin;

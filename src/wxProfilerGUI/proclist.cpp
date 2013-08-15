@@ -29,24 +29,25 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <fstream>
 #include <algorithm>
 #include "contextmenu.h"
+#include "mainwin.h"
+
+enum
+{
+	ProcList_List = 1
+};
 
 BEGIN_EVENT_TABLE(ProcList, wxListCtrl)
-EVT_LIST_ITEM_SELECTED(LIST_CTRL, ProcList::OnSelected)
-EVT_LIST_ITEM_ACTIVATED(LIST_CTRL, ProcList::OnActivated)
+EVT_LIST_ITEM_SELECTED(ProcList_List, ProcList::OnSelected)
+EVT_LIST_ITEM_ACTIVATED(ProcList_List, ProcList::OnActivated)
 EVT_LIST_COL_CLICK(-1, ProcList::OnSort)
 EVT_LIST_ITEM_RIGHT_CLICK(-1,ProcList::OnRClickItem)
 END_EVENT_TABLE()
 
-ProcList::ProcList(wxWindow *parent, const wxWindowID id, const wxPoint& pos,
-				   const wxSize& size, long style, SourceView* sourceview_,
-				   Database* database_, bool isroot, std::set<std::wstring>& highlights_)
-
-				   :	wxSortedListCtrl(parent, id, pos, size, wxLC_REPORT /*style*/),
-				   m_attr(*wxBLUE, *wxLIGHT_GREY, wxNullFont),
-				   sourceview(sourceview_),
-				   database(database_),
-				   parentview(NULL), callersview(NULL), calleesview(NULL), callStackView(NULL), filters(NULL),
-				   highlights(highlights_)
+ProcList::ProcList(wxWindow *parent, bool isroot, Database *database, std::set<Database::Symbol::ID>& highlights)
+:	wxSortedListCtrl(parent, ProcList_List, wxDefaultPosition, wxDefaultSize, wxLC_REPORT /*style*/),
+	isroot(isroot), database(database),
+	filterview(NULL), updating(false),
+	highlights(highlights)
 {
 	InitSort();
 
@@ -121,140 +122,102 @@ void ProcList::OnSort(wxListEvent& event)
 	}
 
 	SetSortImage(columns[sort_column].listctrl_column, sort_dir);
+
 	sortList();
-	showList(0);
+	displayList();
 }
 
 void ProcList::OnRClickItem(wxListEvent& event)
 {
-	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
+	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
 
-	FunctionMenu(this, symbol, database, filters, highlights);
-	setFilters(filters);
+	FunctionMenu(this, symbol, database, filterview, highlights);
 }
 
-struct NamePred { bool operator () (const Database::Item &a, const Database::Item &b)			{ return a.symbol->procname < b.symbol->procname; } };
-struct ExclusivePred { bool operator () (const Database::Item &a, const Database::Item &b)		{ return a.exclusive < b.exclusive; } };
-struct InclusivePred { bool operator () (const Database::Item &a, const Database::Item &b)		{ return a.inclusive < b.inclusive; } };
-struct ModulePred { bool operator () (const Database::Item &a, const Database::Item &b)			{ return a.symbol->module < b.symbol->module; } };
-struct SourceFilePred { bool operator () (const Database::Item &a, const Database::Item &b)		{ return a.symbol->sourcefile < b.symbol->sourcefile; } };
-struct SourceLinePred { bool operator () (const Database::Item &a, const Database::Item &b)		{ return a.symbol->sourceline < b.symbol->sourceline; } };
+struct NamePred       { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->procname   < b.symbol->procname  ; } };
+struct ExclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) { return a.exclusive          < b.exclusive         ; } };
+struct InclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) { return a.inclusive          < b.inclusive         ; } };
+struct ModulePred     { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->module     < b.symbol->module    ; } };
+struct SourceFilePred { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->sourcefile < b.symbol->sourcefile; } };
+struct SourceLinePred { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->sourceline < b.symbol->sourceline; } };
 
 void ProcList::sortList()
 {
 	switch(sort_column) {
-	case COL_NAME:			std::sort(list.items.begin(), list.items.end(), NamePred()); break;
-	case COL_EXCLUSIVE:		std::sort(list.items.begin(), list.items.end(), ExclusivePred()); break;
-	case COL_INCLUSIVE:		std::sort(list.items.begin(), list.items.end(), InclusivePred()); break;
-	case COL_EXCLUSIVEPCT:	std::sort(list.items.begin(), list.items.end(), ExclusivePred()); break;
-	case COL_INCLUSIVEPCT:	std::sort(list.items.begin(), list.items.end(), InclusivePred()); break;
-	case COL_SAMPLES:		std::sort(list.items.begin(), list.items.end(), ExclusivePred()); break;
-	case COL_CALLSPCT:		std::sort(list.items.begin(), list.items.end(), ExclusivePred()); break;
-	case COL_MODULE:		std::sort(list.items.begin(), list.items.end(), ModulePred()); break;
-	case COL_SOURCEFILE:	std::sort(list.items.begin(), list.items.end(), SourceFilePred()); break;
-	case COL_SOURCELINE:	std::sort(list.items.begin(), list.items.end(), SourceLinePred()); break;
+	case COL_NAME:         std::sort(list.items.begin(), list.items.end(), NamePred      ()); break;
+	case COL_EXCLUSIVE:
+	case COL_EXCLUSIVEPCT:
+	case COL_SAMPLES:
+	case COL_CALLSPCT:     std::sort(list.items.begin(), list.items.end(), ExclusivePred ()); break;
+	case COL_INCLUSIVE:
+	case COL_INCLUSIVEPCT: std::sort(list.items.begin(), list.items.end(), InclusivePred ()); break;
+	case COL_MODULE:       std::sort(list.items.begin(), list.items.end(), ModulePred    ()); break;
+	case COL_SOURCEFILE:   std::sort(list.items.begin(), list.items.end(), SourceFilePred()); break;
+	case COL_SOURCELINE:   std::sort(list.items.begin(), list.items.end(), SourceLinePred()); break;
 	}
 
 	if (sort_dir == SORT_DOWN)
 		std::reverse(list.items.begin(), list.items.end());
 }
 
-void ProcList::showMainList(const Database::Symbol *symbol)
+
+void ProcList::showList(const Database::List &list)
 {
-	list = database->getMainList();
-
+	this->list = list;
 	sortList();
-
-	// find 'symbol' in the list
-	// will default to the top symbol if not found
-	size_t foundat = 0;
-	for (size_t i=0;i<list.items.size();i++)
-	{
-		const Database::Symbol *sym = list.items[i].symbol;
-		if (sym == symbol)
-		{
-			foundat = i;
-			break;
-		}
-	}
-
-	// DE: 20090325 remove compiler warning
-	showList(static_cast<int>(foundat));
-
-	if (!list.items.empty())
-	{
-		symbol = list.items[foundat].symbol;
-
-		if (callersview)
-			callersview->showCallers(symbol);
-		if (calleesview)
-			calleesview->showCallees(symbol);
-		if(callStackView)
-			callStackView->showCallStack(symbol);
-	}
+	displayList();
 }
 
-void ProcList::showCallees(const Database::Symbol *symbol)
+void ProcList::displayList()
 {
-	list = database->getCallees(symbol);
+	int *item_state = new int[database->getSymbolIDCount()]();
+	// TODO: use GetNextItem?
+	for (long i=0; i<GetItemCount(); i++)
+		item_state[GetItemData(i)] = GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 
-	sortList();
-	showList(0);
-}
-
-void ProcList::showCallers(const Database::Symbol *symbol)
-{
-	list = database->getCallers(symbol);
-
-	sortList();
-	showList(0);
-}
-
-
-void ProcList::showList(int highlight)
-{
-	int c = 0;
-	int realIndex = 0;
 	Freeze();
 	DeleteAllItems();
 	prepareFilters();
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
 	{
-		if( matchesFilters( *i ) )
-		{
-			const Database::Symbol *sym = i->symbol;
-			double inclusive = i->inclusive;
-			double exclusive = i->exclusive;
-			float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
-			float exclusivepercent = i->exclusive * 100.0f / list.totalcount;
+		if (!matchesFilters( *i ))
+			continue;
 
-			InsertItem(c, sym->procname.c_str(), -1);
-			if(sym->isCollapseFunction || sym->isCollapseModule) {
-				SetItemTextColour(c,wxColor(0,128,0));
-			}
-			if(highlights.find(sym->id) != highlights.end()) {
-				SetItemBackgroundColour(c, wxColor(255,255,0));
-			}
-			setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs",exclusive));
-			setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs",inclusive));
-			setColumnValue(c, COL_EXCLUSIVEPCT,	wxString::Format("%0.2f%%",exclusivepercent));
-			setColumnValue(c, COL_INCLUSIVEPCT,	wxString::Format("%0.2f%%",inclusivepercent));
-			setColumnValue(c, COL_SAMPLES,		wxString::Format("%0.2fs",exclusive));
-			setColumnValue(c, COL_CALLSPCT,		wxString::Format("%0.2f%%",exclusivepercent));
-			setColumnValue(c, COL_MODULE,		sym->module.c_str());
-			setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile.c_str());
-			setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline).c_str());
-		
-			SetItemData(c, realIndex);
-			c++;
+		const Database::Symbol *sym = i->symbol;
+		double inclusive = i->inclusive;
+		double exclusive = i->exclusive;
+		float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
+		float exclusivepercent = i->exclusive * 100.0f / list.totalcount;
+
+		int c = InsertItem(GetItemCount(), sym->procname.c_str(), -1);
+		if(sym->isCollapseFunction || sym->isCollapseModule) {
+			SetItemTextColour(c,wxColor(0,128,0));
 		}
-		realIndex++;
+		if(highlights.find(sym->id) != highlights.end()) {
+			SetItemBackgroundColour(c, wxColor(255,255,0));
+		}
+		setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs" ,exclusive));
+		setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs" ,inclusive));
+		setColumnValue(c, COL_EXCLUSIVEPCT,	wxString::Format("%0.2f%%",exclusivepercent));
+		setColumnValue(c, COL_INCLUSIVEPCT,	wxString::Format("%0.2f%%",inclusivepercent));
+		setColumnValue(c, COL_SAMPLES,		wxString::Format("%0.2fs" ,exclusive));
+		setColumnValue(c, COL_CALLSPCT,		wxString::Format("%0.2f%%",exclusivepercent));
+		setColumnValue(c, COL_MODULE,		sym->module.c_str());
+		setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile.c_str());
+		setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline).c_str());
+
+		SetItemData(c, sym->id);
+
+		if (int state = item_state[sym->id])
+		{
+			SetItemState(c, state, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
+			if (state & wxLIST_STATE_FOCUSED)
+				EnsureVisible(c);
+		}
 	}
 
-	this->SetItemState(highlight, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
-
+	delete[] item_state;
 	Thaw();
-	EnsureVisible(highlight);
 }
 
 void ProcList::setColumnValue(int row, ColumnType id, const wchar_t *value)
@@ -264,87 +227,67 @@ void ProcList::setColumnValue(int row, ColumnType id, const wchar_t *value)
 		SetItem(row, listcol, value);
 }
 
-void ProcList::selectSymbol(const Database::Symbol *symbol)
+void ProcList::focusSymbol(const Database::Symbol *symbol)
 {
+	// If we use Freeze/Thaw here, we'll get an unpleasant blinking
+	// even though the list is not being repopulated.
+	if (updating) return;
+	updating = true;
+
 	for(long i=0;i<(long)list.items.size();i++) {
 		if(list.items[i].symbol == symbol) {
 			SetItemState(i,wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 			EnsureVisible(i);
 		} else {
-			SetItemState(i,0,wxLIST_STATE_SELECTED);
+			if (GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED))
+				SetItemState(i,0,wxLIST_STATE_SELECTED);
 		}
-
 	}
+
+	updating = false;
+}
+
+const Database::Symbol * ProcList::getFocusedSymbol()
+{
+	long i = GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
+	return i >= 0 ? database->getSymbol(GetItemData(i)) : NULL;
 }
 
 void ProcList::OnSelected(wxListEvent& event)
 {
+	if (IsFrozen() || updating)
+		return; // the list is being populated or updated
+	updating = true;
+
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
+	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
+	if (isroot)
+		theMainWin->inspectSymbol(symbol);
+	else
+		theMainWin->focusSymbol(symbol);
 
-	if (sourceview)
-	{
-		const LINEINFOMAP *lineInfo = database->getLineInfo(symbol->sourcefile);
-
-		if (symbol->procname == L"KiFastSystemCallRet") {
-			sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, NULL);			
-		} else if(lineInfo) {
-			sourceview->showFile(symbol->sourcefile, symbol->sourceline, lineInfo);
-		} else {
-			LINEINFOMAP dummymap;
-			sourceview->showFile(symbol->sourcefile, symbol->sourceline, &dummymap);
-		}
-	}
-
-	if (callersview)
-		callersview->showCallers(symbol);
-	if (calleesview)
-		calleesview->showCallees(symbol);
-	if (callStackView)
-		callStackView->showCallStack(symbol);
+	updating = false;
 }
 
 void ProcList::OnActivated(wxListEvent& event)
 {
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = list.items[GetItemData(event.m_itemIndex)].symbol;
-	if (parentview)
-		parentview->showMainList(symbol);
+	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
+	if (!isroot)
+		theMainWin->inspectSymbol(symbol);
 }
 
-void ProcList::setParentView(ProcList *parentview)
+void ProcList::setFilters(wxPropertyGrid *filterview)
 {
-	this->parentview = parentview;
-}
-
-void ProcList::setCallersView(ProcList *callersview)
-{
-	this->callersview = callersview;
-}
-
-void ProcList::setCalleesView(ProcList *calleesview)
-{
-	this->calleesview = calleesview;
-}
-
-void ProcList::setCallStackView(CallstackView *callStackView)
-{
-
-	this->callStackView = callStackView;
-}
-
-void ProcList::setFilters(wxPropertyGrid *filters)
-{
-	this->filters = filters;
-	showMainList(NULL);
+	this->filterview = filterview;
 }
 
 // Check if this item matches the filters
 bool ProcList::matchesFilters(const Database::Item& item)
 {
-	if( !isroot || !filters )
+	if( !isroot || !filterview )
 		return true;
 
 	if( !filter_procname.empty() )
@@ -370,10 +313,10 @@ bool ProcList::matchesFilters(const Database::Item& item)
 
 void ProcList::prepareFilters()
 {
-	if (filters)
+	if (filterview)
 	{
-		filter_procname = filters->GetProperty("procname")->GetValueAsString();
-		filter_module = filters->GetProperty("module")->GetValueAsString();
-		filter_sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
+		filter_procname = filterview->GetProperty("procname")->GetValueAsString();
+		filter_module = filterview->GetProperty("module")->GetValueAsString();
+		filter_sourcefile = filterview->GetProperty("sourcefile")->GetValueAsString();
 	}
 }

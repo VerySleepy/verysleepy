@@ -60,12 +60,12 @@ EVT_MENU(ID_HIGHLIGHT, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_UNHIGHLIGHT, FunctionMenuWindow::OnMenu)
 END_EVENT_TABLE()
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<std::wstring>& highlights)
+void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<Database::Symbol::ID>& highlights)
 {
 	FunctionMenuWindow funcWindow(window);
 	wxMenu *menu = new wxMenu;
 	
-	std::wstring id = sym->id;
+	Database::Symbol::ID id = sym->id;
 	wxString mod = sym->module.c_str();
 	wxString function = sym->procname.c_str();
 	wxString source = sym->sourcefile.c_str();
@@ -97,22 +97,24 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 
 
 	funcWindow.PopupMenu(menu);
-	switch(funcWindow.option) {
+	switch(funcWindow.option)
+	{
 	case ID_COLLAPSE_FUNC:
 		if (IsOsFunction(function))
 			RemoveOsFunction(function);
 		else
 			AddOsFunction(function);
 		break;
+
 	case ID_COLLAPSE_MOD:
 		if (IsOsModule(mod))
 			RemoveOsModule(mod);
 		else
 			AddOsModule(mod);
 		break;
+
 	case ID_SET_ROOT:
 		database->setRoot(sym);
-		theMainWin->Reset();
 		break;
 
 	case ID_FILTER_FUNC:
@@ -133,6 +135,11 @@ void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *datab
 	case ID_UNHIGHLIGHT:
 		highlights.erase(id);
 		break;
+
+	default:
+		return; // don't refresh
 	}
+
+	theMainWin->refresh();
 }
 

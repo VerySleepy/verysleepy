@@ -6,6 +6,6 @@
 
 #include <set>
 
-void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<std::wstring>& highlights);
+void FunctionMenu(wxWindow *window, const Database::Symbol *sym, Database *database, wxPropertyGrid *filters, std::set<Database::Symbol::ID>& highlights);
 
 #endif

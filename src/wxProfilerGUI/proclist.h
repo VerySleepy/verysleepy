@@ -27,13 +27,10 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "profilergui.h"
 #include "database.h"
 #include "../utils/sortlist.h"
-#include "CallstackView.h"
 
 #include <set>
 
 #include <wx/propgrid/propgrid.h>
-
-class SourceView;
 
 /*=====================================================================
 ProcList
@@ -43,15 +40,8 @@ ProcList
 class ProcList : public wxSortedListCtrl
 {
 public:
-	/*=====================================================================
-	ProcList
-	--------
-	
-	=====================================================================*/
-	ProcList(wxWindow *parent, const wxWindowID id, const wxPoint& pos,
-               const wxSize& size, long style, SourceView* sourceview, Database *database,
-			   bool isroot, std::set<std::wstring>& highlights);
-  
+	ProcList(wxWindow *parent, bool isroot, Database *database, std::set<Database::Symbol::ID>& highlights);
+
 	virtual ~ProcList();
 
 	void OnSelected(wxListEvent& event);
@@ -59,20 +49,17 @@ public:
 	void OnSort(wxListEvent& event);
 	void OnRClickItem(wxListEvent& event);
 
-	void setParentView(ProcList *parentview);
-	void setCallersView(ProcList *callersview);
-	void setCalleesView(ProcList *calleesview);
-	void setCallStackView(CallstackView *callStackView);
+	void setFilters(wxPropertyGrid *filterview);
 
-	void showMainList(const Database::Symbol *symbol);
-	void showCallers(const Database::Symbol *symbol);
-	void showCallees(const Database::Symbol *symbol);
-	void selectSymbol(const Database::Symbol *symbol);
+	/// Recreates the GUI list from the given one. Preserves selection.
+	void showList(const Database::List &list);
 
-	void setFilters(wxPropertyGrid *filters);
+	void focusSymbol(const Database::Symbol *symbol);
+	const Database::Symbol *getFocusedSymbol();
 
-	Database::List list;
 private:
+	Database::List list;
+
 	enum ColumnType
 	{
 		COL_NAME,
@@ -96,75 +83,37 @@ private:
 		SortType default_sort;
 	};
 
-	wxListItemAttr m_attr;
+	DECLARE_EVENT_TABLE()
 
-    DECLARE_EVENT_TABLE()
+	bool isroot; // Are we the main proc list?
+	bool updating; // Is a selection update in progress? (ignore selection events)
 
-	bool isroot;
-
-	SourceView* sourceview;
-	ProcList *parentview, *callersview, *calleesview;
-	CallstackView *callStackView;
 	Database* database;
 	int sort_column;
 	SortType sort_dir;
-	wxString curToolTip;
 
-	wxPropertyGrid *filters;
-	std::set<std::wstring>& highlights;
+	wxPropertyGrid *filterview;
+	std::set<Database::Symbol::ID>& highlights;
 
 	Column columns[MAX_COLUMNS];
-
 	void setupColumn(ColumnType id, int width, SortType defsort, const wxString &name);
 	void setColumnValue(int row, ColumnType id, const wchar_t *value);
+
+	/// Sorts the in-memory list. Does not affect GUI.
 	void sortList();
-	void showList(int highlight);
 
-	// Filters:
+	/// Displays our in-memory list. Preserves selection.
+	void displayList();
 
-	// Ran before filtering the database.
+	/// Filters:
+
+	/// Ran before filtering the database.
 	void prepareFilters();
-	// Values cached by prepareFilters.
+	/// Values cached by prepareFilters.
 	std::wstring filter_procname, filter_module, filter_sourcefile;
-	// Called for each item to filter.
+	/// Called for each item to filter.
 	bool matchesFilters(const Database::Item& item);
 };
-
-
-// IDs for the menu commands
-enum
-{
-    LIST_ABOUT,
-    LIST_QUIT,
-
-    /*LIST_LIST_VIEW,
-    LIST_ICON_VIEW,
-    LIST_ICON_TEXT_VIEW,
-    LIST_SMALL_ICON_VIEW,
-    LIST_SMALL_ICON_TEXT_VIEW,
-    LIST_REPORT_VIEW,
-    LIST_VIRTUAL_VIEW,
-
-    LIST_DESELECT_ALL,
-    LIST_SELECT_ALL,
-    LIST_DELETE_ALL,
-    LIST_DELETE,
-    LIST_ADD,
-    LIST_EDIT,
-    LIST_SORT,
-    LIST_SET_FG_COL,
-    LIST_SET_BG_COL,
-    LIST_TOGGLE_MULTI_SEL,
-    LIST_TOGGLE_FIRST,
-    LIST_SHOW_COL_INFO,
-    LIST_SHOW_SEL_INFO,
-    LIST_FOCUS_LAST,
-    LIST_FREEZE,
-    LIST_THAW,*/
-
-    LIST_CTRL                   = 1000
-};
-
 
 #endif //__PROCLIST_H_666_
 

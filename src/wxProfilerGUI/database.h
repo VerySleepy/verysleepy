@@ -47,13 +47,15 @@ class Database
 public:
 	struct Symbol
 	{
-		std::wstring id;
+		typedef long ID;
+
+		ID           id;
 		std::wstring module;
 		std::wstring procname;
 		std::wstring sourcefile;
-		bool		isCollapseFunction;
-		bool		isCollapseModule;
-		int         sourceline;
+		int          sourceline;
+		bool         isCollapseFunction;
+		bool         isCollapseModule;
 	};
 
 	struct Item
@@ -93,6 +95,8 @@ public:
 	bool loadFromPath(const std::wstring& profilepath,bool collapseOSCalls,bool loadMinidump);
 	bool reload(bool collapseOSCalls,bool loadMinidump);
 	void scanMainList();
+	int getSymbolIDCount() { return max_symbol_id + 1; } /// Size of an array capable of storing an element for every Symbol::id
+	const Symbol *getSymbol(Symbol::ID id) { return symbols[id]; }
 	void setRoot(const Symbol *root);
 	const Symbol *getRoot() const { return currentRoot; }
 
@@ -101,7 +105,7 @@ public:
 	List getCallees(const Symbol *symbol) const;
 	std::vector<const CallStack*> getCallstacksContaining(const Symbol *symbol) const;
 	const LINEINFOMAP *getLineInfo(const std::wstring &srcfile) const;
-	
+
 	std::vector<std::wstring> stats;
 
 	std::wstring getProfilePath() const { return profilepath; }
@@ -109,12 +113,15 @@ public:
 	bool has_minidump;
 
 private:
-	std::map<std::wstring, Symbol *> symbols;
+	std::vector<Symbol *> symbols;
 	std::deque<CallStack> callstacks;
 	std::map<std::wstring, LINEINFOMAP > fileinfo;
 	List mainList;
 	std::wstring profilepath;
 	const Symbol *currentRoot;
+	Symbol::ID max_symbol_id;
+
+	Symbol::ID translateSymbolID(const std::wstring &name);
 
 	void loadSymbols(wxInputStream &file);
 	void loadProcList(wxInputStream &file,bool collapseKernelCalls);

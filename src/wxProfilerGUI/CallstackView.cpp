@@ -24,8 +24,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "CallstackView.h"
 #include <algorithm>
 #include <wx/aui/auibar.h>
-#include "proclist.h"
 #include "contextmenu.h"
+#include "mainwin.h"
 
 class wxStaticTextTransparent: public wxControl
 {
@@ -74,10 +74,8 @@ EVT_LIST_ITEM_SELECTED(LIST_CTRL, CallstackView::OnSelected)
 EVT_LIST_ITEM_RIGHT_CLICK(-1,CallstackView::OnRClickItem)
 END_EVENT_TABLE()
 
-CallstackView::CallstackView(wxWindow *parent,Database *_database, std::set<std::wstring>& _highlights) : wxWindow(parent,-1), database(_database), callstackActive(0),itemSelected(~0), highlights(_highlights)
+CallstackView::CallstackView(wxWindow *parent,Database *_database, std::set<Database::Symbol::ID>& _highlights) : wxWindow(parent,-1), database(_database), callstackActive(0),itemSelected(~0), highlights(_highlights)
 {
-	
-
 	listCtrl = new wxListCtrl(this,LIST_CTRL,wxDefaultPosition,wxDefaultSize,wxLC_REPORT);
 	setupColumn(COL_NAME,			150,	_T("Name"));
 	setupColumn(COL_MODULE,			-1,		_T("Module"));
@@ -104,7 +102,7 @@ void CallstackView::OnSelected(wxListEvent& event)
 	itemSelected = event.m_itemIndex;
 	if(callstackActive < callstacks.size() && (size_t)itemSelected < callstacks[callstackActive]->stack.size()) {
 		const Database::Symbol *symbol =  callstacks[callstackActive]->stack[itemSelected];
-		procList->selectSymbol(symbol);
+		theMainWin->focusSymbol(symbol);
 	}
 	itemSelected = ~0;
 }
@@ -125,11 +123,6 @@ void CallstackView::setupColumn(ColumnType index, int width, const wxString &nam
 
 CallstackView::~CallstackView(void)
 {
-}
-
-void CallstackView::setProcList(ProcList *procList_ )
-{
-	procList = procList_;
 }
 
 bool SortCalls(const Database::CallStack*a,const Database::CallStack*b)
@@ -220,7 +213,7 @@ void CallstackView::updateList()
 		} else {
 			listCtrl->SetItemState(i, 0, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 		}
-		listCtrl->SetItemPtrData(i, (wxUIntPtr)snow);
+		listCtrl->SetItemData(i, snow->id);
 	}
 	while(listCtrl->GetItemCount() > int(now->stack.size())) {
 		listCtrl->DeleteItem(listCtrl->GetItemCount()-1);
@@ -241,8 +234,7 @@ void CallstackView::OnTool(wxCommandEvent &event)
 
 void CallstackView::OnRClickItem(wxListEvent& event)
 {
-	const Database::Symbol *sym = (const Database::Symbol *)listCtrl->GetItemData(event.GetIndex());
-	
+	const Database::Symbol *sym = database->getSymbol(listCtrl->GetItemData(event.GetIndex()));
 	FunctionMenu(this, sym, database, NULL, highlights);
 }
 

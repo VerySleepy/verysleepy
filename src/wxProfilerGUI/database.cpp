@@ -44,15 +44,13 @@ bool IsOsFunction(wxString function)
 void AddOsFunction(wxString function)
 {
 	osFunctions.Add(function);
-	theDatabase->reload(true, false);
-	theMainWin->Reset();
+	theMainWin->reload();
 }
 
 void RemoveOsFunction(wxString function)
 {
 	osFunctions.Remove(function);
-	theDatabase->reload(true, false);
-	theMainWin->Reset();
+	theMainWin->reload();
 }
 
 bool IsOsModule(wxString mod)
@@ -63,15 +61,13 @@ bool IsOsModule(wxString mod)
 void AddOsModule(wxString mod)
 {
 	osModules.Add(mod);
-	theDatabase->reload(true, false);
-	theMainWin->Reset();
+	theMainWin->reload();
 }
 
 void RemoveOsModule(wxString mod)
 {
 	osModules.Remove(mod);
-	theDatabase->reload(true, false);
-	theMainWin->Reset();
+	theMainWin->reload();
 }
 
 Database::Database()
@@ -87,10 +83,9 @@ Database::~Database()
 
 void Database::clear()
 {
-	for (std::map<std::wstring, Symbol *>::iterator i = symbols.begin(); i != symbols.end(); i++)
-	{
-		delete i->second;
-	}
+	for (std::vector<Symbol *>::iterator i = symbols.begin(); i != symbols.end(); i++)
+		if (*i)
+			delete *i;
 
 	symbols.clear();
 	callstacks.clear();
@@ -98,6 +93,7 @@ void Database::clear()
 	mainList.items.clear();
 	mainList.totalcount = 0;
 	has_minidump = false;
+	max_symbol_id = -1;
 }
 
 bool Database::reload(bool collapseOSCalls, bool loadMinidump)
@@ -184,11 +180,26 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	return true;
 }
 
+/// Translate a symbol ID string, as it appears in a text file, to an unique numeric ID.
+/// Currently, we assume the convention as currently implemented when writing the capture -
+/// every symbol ID is just the string "sym" followed by a decimal number.
+Database::Symbol::ID Database::translateSymbolID(const std::wstring &name)
+{
+	Database::Symbol::ID id;
+	if (name.length() < 4 || name[0]!='s' || name[1]!='y' || name[2]!='m' || !wxString(name).substr(3).ToLong(&id))
+	{
+		wxLogError(L"Invalid symbol name: %s", name.c_str());
+		return 0;
+	}
+	if (max_symbol_id < id)
+		max_symbol_id = id;
+	return id;
+}
+
 // read symbol table
 void Database::loadSymbols(wxInputStream &file)
 {
 	wxTextInputStream str(file, wxT(" \t"), wxConvAuto(wxFONTENCODING_UTF8));
-	int c = 0;
 	while(!file.Eof())
 	{
 		wxString line = str.ReadLine();
@@ -198,7 +209,10 @@ void Database::loadSymbols(wxInputStream &file)
 		std::wistringstream stream(line.c_str().AsWChar());
 		Symbol *sym = new Symbol;
 
-		stream >> sym->id;
+		std::wstring idstr;
+		stream >> idstr;
+		sym->id = translateSymbolID(idstr);
+
 		::readQuote(stream, sym->module);
 		::readQuote(stream, sym->procname);
 		::readQuote(stream, sym->sourcefile);
@@ -208,6 +222,9 @@ void Database::loadSymbols(wxInputStream &file)
 
 		sym->isCollapseFunction = osFunctions.Contains(sym->procname.c_str());
 		sym->isCollapseModule = osModules.Contains(sym->module.c_str());
+
+		if (symbols.size() <= (size_t)sym->id)
+			symbols.resize(sym->id+1);
 		symbols[sym->id] = sym;
 	}
 }
@@ -245,12 +262,12 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 
 		while(true)
 		{
-			std::wstring id;
-			stream >> id;
-			if (id.empty())
+			std::wstring idstr;
+			stream >> idstr;
+			if (idstr.empty())
 				break;
 
-			const Symbol *sym = symbols[id];
+			const Symbol *sym = symbols[translateSymbolID(idstr)];
 
 			if(collapseKernelCalls && sym->isCollapseFunction) {
 				callstack.stack.clear();
@@ -276,7 +293,8 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 			iter->Get()->samplecount += callstack.samplecount;
 			continue;
 		}
-		callstacks.push_back(callstack);
+		callstacks.push_back(std::move(callstack));
+		// TODO: this code is WRONG! The address of pushed items can change due to vector resizes!
 		callstackSet.insert(&callstacks[callstacks.size()-1]);
 
 		wxFileOffset offset = file.TellI();

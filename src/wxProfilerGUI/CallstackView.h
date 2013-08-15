@@ -33,7 +33,6 @@ class CallstackView;
 #define __CALLSTTACKVIEW_H_
 
 class wxStaticTextTransparent;
-class ProcList;
 
 class CallstackView : public wxWindow
 {
@@ -41,7 +40,6 @@ class CallstackView : public wxWindow
 	wxListCtrl				*listCtrl;
 	wxStaticTextTransparent	*toolRange;
 	Database				*database;
-	ProcList				*procList;
 
 	enum ColumnType
 	{
@@ -66,13 +64,13 @@ class CallstackView : public wxWindow
 	size_t									callstackActive;
 	const Database::Symbol					*currSymbol;
 	long									itemSelected;
-	std::set<std::wstring>&					highlights;
+	std::set<Database::Symbol::ID>&			highlights;
 
 	void setupColumn(ColumnType id, int width, const wxString &name);
 	void updateList();
 
 public:
-	CallstackView(wxWindow *parent,Database *database, std::set<std::wstring>& highlights);
+	CallstackView(wxWindow *parent, Database *database, std::set<Database::Symbol::ID>& highlights);
 	virtual ~CallstackView(void);
 	void OnSize(wxSizeEvent& event);
 	void OnTool(wxCommandEvent &event);
@@ -80,7 +78,6 @@ public:
 	void OnRClickItem(wxListEvent& event);
 public:
 	void showCallStack(const Database::Symbol *symbol);
-	void setProcList(ProcList *procList_ );
 	DECLARE_EVENT_TABLE()
 
 };

@@ -81,7 +81,7 @@ MainWin::MainWin(const wxString& title,
 	this->database = database;
 
 	// set the frame icon
-    SetIcon(sleepy_icon);
+	SetIcon(sleepy_icon);
 
 #if wxUSE_MENUS
 	// create a menu bar
@@ -128,23 +128,11 @@ MainWin::MainWin(const wxString& title,
 	sourceview = new SourceView(this ,this);
 
 	// Create the windows
-	proclist = new ProcList(this, LIST_CTRL,
-		wxDefaultPosition, wxDefaultSize,
-		wxLC_EDIT_LABELS, 
-		sourceview, database, true, highlights);
-
-	callers = new ProcList(splitWindow, LIST_CTRL,
-		wxDefaultPosition, wxDefaultSize,
-		wxLC_EDIT_LABELS, 
-		NULL, database, false, highlights);
-
-	callees = new ProcList(splitWindow, LIST_CTRL,
-		wxDefaultPosition, wxDefaultSize,
-		wxLC_EDIT_LABELS, 
-		NULL, database, false, highlights);
+	proclist = new ProcList(this       , true , database, highlights);
+	callers  = new ProcList(splitWindow, false, database, highlights);
+	callees  = new ProcList(splitWindow, false, database, highlights);
 
 	callStack = new CallstackView(this,database, highlights);
-
 
 	aui->AddPane(proclist, wxAuiPaneInfo()
 		.Name(wxT("Functions"))
@@ -230,22 +218,12 @@ MainWin::MainWin(const wxString& title,
 	aui->Update();
 
 	// Tie it all together
-	proclist->setCallersView(callers);
-	proclist->setCalleesView(callees);
-	proclist->setCallStackView(callStack);
 	proclist->setFilters(filters);
-	callers->setParentView(proclist);
-	callees->setParentView(proclist);
-	callStack->setProcList(proclist);
 
 	filters->CenterSplitter();
-}
 
-void MainWin::Reset()
-{
-	proclist->showMainList(NULL);
+	refresh();
 }
-
 
 MainWin::~MainWin()
 {
@@ -267,9 +245,9 @@ EVT_MENU(MainWin_Open,  MainWin::OnOpen)
 EVT_MENU(MainWin_SaveAs,  MainWin::OnSaveAs)
 EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
 EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
-EVT_MENU(MainWin_ResetToRoot, MainWin::ResetToRoot)
-EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::ResetToRootUpdate)
-EVT_MENU(MainWin_ResetFilters, MainWin::ResetFilters)
+EVT_MENU(MainWin_ResetToRoot, MainWin::OnResetToRoot)
+EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::OnResetToRootUpdate)
+EVT_MENU(MainWin_ResetFilters, MainWin::OnResetFilters)
 EVT_MENU(MainWin_View_Collapse_OS,  MainWin::OnCollapseOS)
 EVT_MENU(MainWin_View_Stats,  MainWin::OnStats)
 EVT_MENU(MainWin_About, MainWin::OnAbout)	
@@ -309,26 +287,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 
 	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
 	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
-	Reset();
-}
-
-void MainWin::ResetToRoot(wxCommandEvent& WXUNUSED(event))
-{
-	database->setRoot(NULL);
-	proclist->showMainList(NULL);
-}
-
-void MainWin::ResetToRootUpdate(wxUpdateUIEvent& event)
-{
-	event.Enable(database->getRoot() != NULL);
-}
-
-void MainWin::ResetFilters(wxCommandEvent& event)
-{
-	filters->GetProperty("procname")->SetValueFromString("");
-	filters->GetProperty("module")->SetValueFromString("");
-	filters->GetProperty("sourcefile")->SetValueFromString("");
-	proclist->setFilters(filters);
+	refresh();
 }
 
 void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
@@ -358,12 +317,12 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 		if(!file.IsOk())
 			wxLogSysError("Could not export profile data.");
 		wxTextOutputStream txt(file);
-		for each(const Database::Item &item in proclist->list.items) {
+		for each(const Database::Item &item in database->getMainList().items) {
 			txt << item.symbol->procname << ",";
 			txt << item.exclusive << ",";
 			txt << item.inclusive << ",";
-			txt << (item.exclusive*100.0f/proclist->list.totalcount) << ",";
-			txt << (item.inclusive*100.0f/proclist->list.totalcount) << ",";
+			txt << (item.exclusive*100.0f/database->getMainList().totalcount) << ",";
+			txt << (item.inclusive*100.0f/database->getMainList().totalcount) << ",";
 			txt << item.symbol->module << ",";
 			txt << item.symbol->sourcefile << ",";
 			txt << item.symbol->sourceline << "\n";
@@ -379,14 +338,31 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 	// Symbols loaded from the minidump persist across reload calls.
 	// Thus, we need to call reload with loadMinidump==true only once
 	// (as opposed to remembering whether we want to see minidump symbols).
-	database->reload(collapseOSCalls->IsChecked(),true);
-	Reset();
+	reload(true);
+}
+
+void MainWin::OnResetToRoot(wxCommandEvent& WXUNUSED(event))
+{
+	database->setRoot(NULL);
+	Refresh();
+}
+
+void MainWin::OnResetToRootUpdate(wxUpdateUIEvent& event)
+{
+	event.Enable(database->getRoot() != NULL);
+}
+
+void MainWin::OnResetFilters(wxCommandEvent& event)
+{
+	filters->GetProperty("procname"  )->SetValueFromString("");
+	filters->GetProperty("module"    )->SetValueFromString("");
+	filters->GetProperty("sourcefile")->SetValueFromString("");
+	refresh();
 }
 
 void MainWin::OnCollapseOS(wxCommandEvent& event)
 {
-	database->reload(collapseOSCalls->IsChecked(),false);
-	Reset();
+	reload();
 }
 
 void MainWin::OnStats(wxCommandEvent& event)
@@ -410,15 +386,15 @@ void MainWin::OnStats(wxCommandEvent& event)
 	text->SetBackgroundColour(dlg.GetBackgroundColour());
 	sizer->Add(text, wxSizerFlags().Expand().Proportion(1).Border(wxALL, 10));
 
-    wxSizer *sizerBtns = dlg.CreateButtonSizer(wxOK);
-    if ( sizerBtns )
-    {
-        sizer->Add(sizerBtns, wxSizerFlags().Expand().Border());
-    }
+	wxSizer *sizerBtns = dlg.CreateButtonSizer(wxOK);
+	if ( sizerBtns )
+	{
+		sizer->Add(sizerBtns, wxSizerFlags().Expand().Border());
+	}
 
-    dlg.SetSizerAndFit(sizer);
+	dlg.SetSizerAndFit(sizer);
 	dlg.SetSize(300, 200);
-    dlg.CentreOnScreen();
+	dlg.CentreOnScreen();
 	dlg.ShowModal();
 }
 
@@ -427,7 +403,63 @@ void MainWin::OnAbout(wxCommandEvent& WXUNUSED(event))
 	ProfilerGUI::ShowAboutBox();
 }
 
-void MainWin::setCurrent(const std::wstring& currentfile_, int currentline_)
+void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
+{
+	refresh();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+void MainWin::reload(bool loadMinidump/*=false*/)
+{
+	database->reload(collapseOSCalls->IsChecked(), loadMinidump);
+	refresh();
+}
+
+void MainWin::showSource( const Database::Symbol * symbol )
+{
+	const LINEINFOMAP *lineInfo = database->getLineInfo(symbol->sourcefile);
+
+	if (symbol->procname == L"KiFastSystemCallRet")
+		sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, NULL);
+	else
+		if(lineInfo)
+			sourceview->showFile(symbol->sourcefile, symbol->sourceline, lineInfo);
+		else
+		{
+			LINEINFOMAP dummymap;
+			sourceview->showFile(symbol->sourcefile, symbol->sourceline, &dummymap);
+		}
+}
+
+void MainWin::focusSymbol(const Database::Symbol *symbol)
+{
+	showSource(symbol);
+	proclist->focusSymbol(symbol);
+	callers->focusSymbol(symbol);
+	callees->focusSymbol(symbol);
+	//callStack->focusSymbol(symbol);
+}
+
+void MainWin::inspectSymbol(const Database::Symbol *symbol)
+{
+	showSource(symbol);
+	proclist->focusSymbol(symbol);
+	callers->showList(database->getCallers(symbol));
+	callees->showList(database->getCallees(symbol));
+	callStack->showCallStack(symbol);
+}
+
+void MainWin::refresh()
+{
+	const Database::Symbol *symbol = proclist->getFocusedSymbol();
+	proclist->showList(database->getMainList());
+	callers->showList(database->getCallers(symbol));
+	callees->showList(database->getCallees(symbol));
+	callStack->showCallStack(symbol);
+}
+
+void MainWin::setSourcePos(const std::wstring& currentfile_, int currentline_)
 {
 	if(currentfile != currentfile_ || currentline != currentline_)
 	{
@@ -437,9 +469,4 @@ void MainWin::setCurrent(const std::wstring& currentfile_, int currentline_)
 		SetStatusText(std::wstring("Source file: " + currentfile).c_str(), 0);
 		SetStatusText(std::wstring("Line " + ::toString(currentline)).c_str(), 1);
 	}
-}
-
-void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
-{
-	proclist->setFilters(filters);
 }
