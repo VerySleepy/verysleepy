@@ -238,7 +238,7 @@ MainWin::MainWin(const wxString& title,
 	callees->setParentView(proclist);
 	callStack->setProcList(proclist);
 
-	filters->CenterSplitter();
+	filters->FitColumns();
 }
 
 void AddSplitValues( std::set<wxString>& dest, const wxString& str, const char sep )
