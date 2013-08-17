@@ -549,8 +549,21 @@ void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, 
 		swscanf_s(procname.c_str(), L"[%I64x]", &offset);
 		if (!offset) return;
 
+		ULONG moduleindex;
+		if (debugSymbols3->GetModuleByOffset(offset, 0, &moduleindex, NULL) == S_OK)
+			if (debugSymbols3->GetModuleNameStringWide(DEBUG_MODNAME_MODULE, moduleindex, 0, buffer, _countof(buffer), NULL) == S_OK)
+				module = buffer;
+
 		if (debugSymbols3->GetNameByOffsetWide(offset, buffer, _countof(buffer), NULL, NULL) == S_OK)
-			procname = buffer;
+			if (module.compare(buffer) != 0)
+			{
+				procname = buffer;
+
+				// Remove redundant "Module!" prefix
+				size_t modlength = module.length();
+				if (procname.length() > modlength+1 && module.compare(0, modlength, procname, 0, modlength)==0 && procname[modlength] == '!')
+					procname.erase(0, modlength+1);
+			}
 
 		filterIP(offset, sourcefile, sourceline);
 	}
