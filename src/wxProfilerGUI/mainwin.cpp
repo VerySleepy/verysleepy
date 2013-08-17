@@ -331,6 +331,9 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 
 	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
 	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
+
+	viewstate.flags.clear();
+	viewstate.flags.resize(database->getSymbolIDCount());
 	refresh();
 }
 
