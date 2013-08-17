@@ -459,6 +459,7 @@ bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
 	MainWin *frame = new MainWin(wxString::Format("%s - %s", APPNAME, filename), filename, database);
 	frame->Show(TRUE);
 	frame->Update();
+	frame->Raise();
 	return true;
 }
 
