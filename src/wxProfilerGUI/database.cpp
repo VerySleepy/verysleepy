@@ -293,7 +293,11 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 			iter->Get()->samplecount += callstack.samplecount;
 			continue;
 		}
+#if _MSC_VER >= 1600
 		callstacks.push_back(std::move(callstack));
+#else
+		callstacks.push_back(callstack);
+#endif
 		// TODO: this code is WRONG! The address of pushed items can change due to vector resizes!
 		callstackSet.insert(&callstacks[callstacks.size()-1]);
 
