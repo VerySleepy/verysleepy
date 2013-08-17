@@ -103,6 +103,7 @@ public:
 	/// Reload the database.
 	/// Needed to apply any settings that are applied during
 	/// database loading, such as collapsing OS calls.
+	/// Does not refresh().
 	void reload(bool loadMinidump=false);
 
 	/// Switch selection to a given symbol.

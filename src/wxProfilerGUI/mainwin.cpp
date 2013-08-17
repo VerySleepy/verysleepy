@@ -406,6 +406,7 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 	reload(true);
 
 	symbolsChanged();
+	refresh();
 }
 
 void MainWin::OnBack(wxCommandEvent& event)
@@ -447,11 +448,13 @@ void MainWin::OnResetFilters(wxCommandEvent& event)
 	filters->GetProperty("module"    )->SetValueFromString("");
 	filters->GetProperty("sourcefile")->SetValueFromString("");
 	applyFilters();
+	refresh();
 }
 
 void MainWin::OnCollapseOS(wxCommandEvent& event)
 {
 	reload();
+	refresh();
 }
 
 void MainWin::OnStats(wxCommandEvent& event)
@@ -495,6 +498,7 @@ void MainWin::OnAbout(wxCommandEvent& WXUNUSED(event))
 void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
 {
 	applyFilters();
+	refresh();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -502,7 +506,6 @@ void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
 void MainWin::reload(bool loadMinidump/*=false*/)
 {
 	database->reload(collapseOSCalls->IsChecked(), loadMinidump);
-	refresh();
 }
 
 void MainWin::showSource( const Database::Symbol * symbol )
@@ -564,7 +567,6 @@ void MainWin::reset()
 	historyPos = 0;
 
 	symbolsChanged();
-
 	refresh();
 }
 
@@ -617,13 +619,13 @@ void MainWin::applyFilters()
 
 		viewstate.setFlag(id, ViewState::Flag_Filtered, filtered);
 	}
-	refresh();
 }
 
 void MainWin::setFilter(const wxString &name, const wxString &value)
 {
 	filters->GetProperty(name)->SetValueFromString(value);
 	applyFilters();
+	refresh();
 }
 
 void MainWin::setHighlight(const std::vector<Database::Symbol::ID> &ids, bool set)
