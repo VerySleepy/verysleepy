@@ -460,6 +460,7 @@ bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
 	frame->Show(TRUE);
 	frame->Update();
 	frame->Raise();
+	frame->reset();
 	return true;
 }
 

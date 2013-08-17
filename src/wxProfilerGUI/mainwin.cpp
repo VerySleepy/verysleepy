@@ -27,6 +27,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/stringutils.h"
 #include "CallstackView.h"
 #include <wx/aui/auibook.h>
+#include <wx/hashset.h>
 #include <set>
 
 MainWin *theMainWin;
@@ -124,6 +125,8 @@ MainWin::MainWin(const wxString& title,
 #endif // wxUSE_MENUS
 
 	CreateStatusBar(2);
+	gauge = NULL;
+
 	// Construct the docking panes
 	wxSize clientSize = GetClientSize();
 
@@ -222,28 +225,27 @@ MainWin::MainWin(const wxString& title,
 	}
 
 	aui->Update();
+	proclist->SetFocus();
 
 	filters->FitColumns();
-
-	clear();
-	buildFilterAutocomplete();
-	refresh();
 }
 
-static void addSplitValues(std::set<wxString>& dest, const wxString& str, const char sep)
+WX_DECLARE_HASH_SET(wxString, wxStringHash, wxStringEqual, wxStringHashSet);
+
+static void addSplitValues(wxStringHashSet& dest, const std::wstring& str, wchar_t sep)
 {
-	if (str.find(sep) != wxString::npos)
-	{
-		wxArrayString split = wxSplit(str, sep);
-		dest.insert(split.begin(), split.end());
-	}
+	std::wistringstream ss(str);
+	std::wstring item;
+	while (std::getline(ss, item, sep))
+		dest.insert(item);
 }
 
-static wxArrayString arrayFromSet( const std::set<wxString>& set )
+static wxArrayString arrayFromSet( const wxStringHashSet& set )
 {
 	wxArrayString dest;
+	dest.reserve(set.size());
 
-	for (std::set<wxString>::const_iterator iter=set.begin(); iter != set.end(); ++iter )
+	for (wxStringHashSet::const_iterator iter=set.begin(); iter != set.end(); ++iter )
 	{
 		if( *iter != "" )
 			dest.Add(*iter);
@@ -255,9 +257,11 @@ static wxArrayString arrayFromSet( const std::set<wxString>& set )
 void MainWin::buildFilterAutocomplete()
 {
 	const Database::List &list = database->getMainList();
-	std::set<wxString> procnameAutocomplete;
-	std::set<wxString> moduleAutocomplete;
-	std::set<wxString> sourcefileAutocomplete;
+	wxStringHashSet procnameAutocomplete;
+	wxStringHashSet moduleAutocomplete;
+	wxStringHashSet sourcefileAutocomplete;
+
+	setProgress(L"Collecting autocomplete data...", list.items.size());
 
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
 	{
@@ -267,11 +271,17 @@ void MainWin::buildFilterAutocomplete()
 
 		addSplitValues(procnameAutocomplete, i->symbol->procname, ':');
 		addSplitValues(sourcefileAutocomplete, i->symbol->sourcefile, '\\');
+
+		updateProgress(i - list.items.begin());
 	}
+
+	setProgress(L"Applying autocomplete data...");
 
 	filters->SetPropertyAttribute("procname"  , "AutoComplete", arrayFromSet(procnameAutocomplete));
 	filters->SetPropertyAttribute("module"    , "AutoComplete", arrayFromSet(moduleAutocomplete));
 	filters->SetPropertyAttribute("sourcefile", "AutoComplete", arrayFromSet(sourcefileAutocomplete));
+
+	setProgress(NULL);
 }
 
 MainWin::~MainWin()
@@ -341,8 +351,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
 	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
 
-	clear();
-	refresh();
+	reset();
 }
 
 void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
@@ -544,12 +553,16 @@ void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=
 	}
 }
 
-void MainWin::clear()
+void MainWin::reset()
 {
 	viewstate.flags.clear();
 	viewstate.flags.resize(database->getSymbolIDCount());
 	history.clear();
 	historyPos = 0;
+
+	buildFilterAutocomplete();
+
+	refresh();
 }
 
 void MainWin::refresh()
@@ -568,9 +581,14 @@ void MainWin::setSourcePos(const std::wstring& currentfile_, int currentline_)
 		currentfile = currentfile_;
 		currentline = currentline_;
 
-		SetStatusText(std::wstring("Source file: " + currentfile).c_str(), 0);
-		SetStatusText(std::wstring("Line " + ::toString(currentline)).c_str(), 1);
+		updateStatusBar();
 	}
+}
+
+void MainWin::updateStatusBar()
+{
+	SetStatusText(std::wstring("Source file: " + currentfile).c_str(), 0);
+	SetStatusText(std::wstring("Line " + ::toString(currentline)).c_str(), 1);
 }
 
 void MainWin::applyFilters()
@@ -604,4 +622,48 @@ void MainWin::setHighlight(const std::vector<Database::Symbol::ID> &ids, bool se
 	for each (Database::Symbol::ID id in ids)
 		viewstate.setFlag(id, ViewState::Flag_Highlighted, set);
 	refresh();
+}
+
+void MainWin::setProgress(const wchar_t *text, int max)
+{
+	if (text)
+	{
+		if (!gauge)
+		{
+			wxStatusBar *statusBar = GetStatusBar();
+			gauge = new wxGauge(statusBar, -1, 0xFFFF, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH);
+
+			wxRect gaugeRect;
+			statusBar->GetFieldRect(1, gaugeRect);
+			static const int margin = 2;
+			gauge->SetPosition(wxPoint(gaugeRect.x+margin, gaugeRect.y+margin));
+			gauge->SetSize(wxSize(gaugeRect.width-2*margin, gaugeRect.height-2*margin));
+		}
+
+		SetStatusText(text, 0);
+		SetStatusText("", 1);
+		if (max)
+		{
+			gauge->SetValue(0);
+			gauge->SetRange(max);
+		}
+		else
+			gauge->Pulse();
+	}
+	else
+	{
+		if (gauge)
+		{
+			delete gauge;
+			gauge = NULL;
+		}
+
+		updateStatusBar();
+	}
+}
+
+void MainWin::updateProgress(int pos)
+{
+	assert(gauge);
+	gauge->SetValue(pos);
 }

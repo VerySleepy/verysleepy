@@ -91,9 +91,9 @@ public:
 	void OnFiltersChanged(wxPropertyGridEvent& event);
 
 	/// Called after loading a database
-	/// (on construction, and in OnOpen).
+	/// (after construction, and in OnOpen).
 	/// Initialize anything database-specific here.
-	void clear();
+	void reset();
 
 	/// Refresh proc lists.
 	/// Preserves selection.
@@ -123,6 +123,10 @@ public:
 
 	void setFilter(const wxString &name, const wxString &value);
 	void setHighlight(const std::vector<Database::Symbol::ID> &ids, bool set);
+
+	/// Non-modal (status bar) progress display
+	void setProgress(const wchar_t *text, int max=0);
+	void updateProgress(int pos);
 
 private:
 	// any class wishing to process wxWindows events must use this macro
@@ -160,12 +164,16 @@ private:
 	std::deque<Database::Symbol::ID> history;
 	size_t historyPos;
 
+	wxGauge *gauge;
+
 	void buildFilterAutocomplete();
 
 	/// Apply the filter settings in the wxPropertyGrid to viewstate.
 	void applyFilters();
 
 	void showSource(const Database::Symbol * symbol);
+
+	void updateStatusBar();
 };
 
 extern MainWin *theMainWin;
