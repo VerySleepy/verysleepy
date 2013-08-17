@@ -41,6 +41,7 @@ enum
 	MainWin_ExportAsCsv,
 	MainWin_LoadMinidumpSymbols,
 	MainWin_View_Back,
+	MainWin_View_Forward,
 	MainWin_View_Collapse_OS,
 	MainWin_View_Stats,
 	MainWin_ResetToRoot,
@@ -100,6 +101,7 @@ MainWin::MainWin(const wxString& title,
 	// View options and layout.
 	wxMenu *menuView = new wxMenu;
 	menuView->Append(MainWin_View_Back,_T("Back\tAlt-Left"), _T("Go back to the previously-visited symbol"));
+	menuView->Append(MainWin_View_Forward,_T("Forward\tAlt-Right"), _T("Go forward in history (undo \"Back\")"));
 	menuView->AppendSeparator();
 	menuView->Append(MainWin_View_Stats,_T("Show Profiling Statistics"), _T("Shows any extra information logged while profiling"));
 	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls")); 
@@ -294,6 +296,8 @@ EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
 EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
 EVT_MENU(MainWin_View_Back, MainWin::OnBack)
 EVT_UPDATE_UI(MainWin_View_Back, MainWin::OnBackUpdate)
+EVT_MENU(MainWin_View_Forward, MainWin::OnForward)
+EVT_UPDATE_UI(MainWin_View_Forward, MainWin::OnForwardUpdate)
 EVT_MENU(MainWin_ResetToRoot, MainWin::OnResetToRoot)
 EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::OnResetToRootUpdate)
 EVT_MENU(MainWin_ResetFilters, MainWin::OnResetFilters)
@@ -394,13 +398,24 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 
 void MainWin::OnBack(wxCommandEvent& event)
 {
-	history.pop();
-	inspectSymbol(database->getSymbol(history.top()), false);
+	historyPos--;
+	inspectSymbol(database->getSymbol(history[historyPos]), false);
 }
 
 void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
 {
-	event.Enable(history.size()>1);
+	event.Enable(historyPos > 0);
+}
+
+void MainWin::OnForward(wxCommandEvent& event)
+{
+	historyPos++;
+	inspectSymbol(database->getSymbol(history[historyPos]), false);
+}
+
+void MainWin::OnForwardUpdate(wxUpdateUIEvent& event)
+{
+	event.Enable(historyPos+1 < history.size());
 }
 
 void MainWin::OnResetToRoot(wxCommandEvent& WXUNUSED(event))
@@ -515,16 +530,26 @@ void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=
 	callStack->showCallStack(symbol);
 
 	if (addtohistory && symbol)
-		if (history.empty() || history.top() != symbol->id)
-			history.push(symbol->id);
-
+	{
+		if (history.empty())
+			history.push_back(symbol->id);
+		else
+		if (history[historyPos] != symbol->id)
+		{
+			history.resize(historyPos+1);
+			history.push_back(symbol->id);
+			historyPos++;
+		}
+		assert(historyPos==history.size()-1);
+	}
 }
 
 void MainWin::clear()
 {
 	viewstate.flags.clear();
 	viewstate.flags.resize(database->getSymbolIDCount());
-	history = std::stack<Database::Symbol::ID>();
+	history.clear();
+	historyPos = 0;
 }
 
 void MainWin::refresh()

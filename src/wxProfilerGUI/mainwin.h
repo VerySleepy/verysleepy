@@ -83,6 +83,8 @@ public:
 	void OnAbout(wxCommandEvent& event);
 	void OnBack(wxCommandEvent& event);
 	void OnBackUpdate(wxUpdateUIEvent& event);
+	void OnForward(wxCommandEvent& event);
+	void OnForwardUpdate(wxUpdateUIEvent& event);
 	void OnResetToRoot(wxCommandEvent& event);
 	void OnResetToRootUpdate(wxUpdateUIEvent& event);
 	void OnResetFilters(wxCommandEvent& event);
@@ -155,7 +157,8 @@ private:
 
 	ViewState viewstate;
 
-	std::stack<Database::Symbol::ID> history;
+	std::deque<Database::Symbol::ID> history;
+	size_t historyPos;
 
 	void buildFilterAutocomplete();
 
