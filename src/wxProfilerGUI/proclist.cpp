@@ -177,7 +177,7 @@ void ProcList::displayList()
 
 	const ViewState *viewstate = theMainWin->getViewState();
 
-	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
+	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
 	{
 		const Database::Symbol *sym = i->symbol;
 

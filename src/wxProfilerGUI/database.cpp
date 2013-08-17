@@ -84,7 +84,7 @@ Database::~Database()
 
 void Database::clear()
 {
-	for (std::vector<Symbol *>::iterator i = symbols.begin(); i != symbols.end(); i++)
+	for (std::vector<Symbol *>::iterator i = symbols.begin(); i != symbols.end(); ++i)
 		if (*i)
 			delete *i;
 
@@ -401,7 +401,7 @@ void Database::scanMainList()
 	mainList.totalcount = 0;
 
 	int progress = 0;
-	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{  
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -424,7 +424,7 @@ void Database::scanMainList()
 		progressdlg.Update(progress++);
 	}
 
-	for (std::map<const Symbol *, double>::const_iterator i = inclusive.begin(); i != inclusive.end(); i++)
+	for (std::map<const Symbol *, double>::const_iterator i = inclusive.begin(); i != inclusive.end(); ++i)
 	{
 		Item item;
 		item.symbol = i->first;
@@ -437,7 +437,7 @@ void Database::scanMainList()
 std::vector<const Database::CallStack*> Database::getCallstacksContaining(const Database::Symbol *symbol) const
 {
 	std::vector<const CallStack *> ret;
-	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -459,7 +459,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 {
 	List list;
 	std::map<const Symbol *, double> counts;
-	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -478,7 +478,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 		}
 	}
 
-	for (std::map<const Symbol *, double>::const_iterator i = counts.begin(); i != counts.end(); i++)
+	for (std::map<const Symbol *, double>::const_iterator i = counts.begin(); i != counts.end(); ++i)
 	{
 		Item item;
 		item.symbol = i->first;
@@ -494,7 +494,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 {
 	List list;
 	std::map<const Symbol *, double> counts;
-	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -514,7 +514,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 		}
 	}
 
-	for (std::map<const Symbol *, double>::const_iterator i = counts.begin(); i != counts.end(); i++)
+	for (std::map<const Symbol *, double>::const_iterator i = counts.begin(); i != counts.end(); ++i)
 	{
 		Item item;
 		item.symbol = i->first;

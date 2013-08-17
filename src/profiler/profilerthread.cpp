@@ -269,7 +269,7 @@ void ProfilerThread::saveData()
 
 	beginProgress(L"Querying symbols", used_addresses.size());
 
-	for (std::map<PROFILER_ADDR, bool>::iterator i = used_addresses.begin(); i != used_addresses.end(); i++)
+	for (std::map<PROFILER_ADDR, bool>::iterator i = used_addresses.begin(); i != used_addresses.end(); ++i)
 	{
 		int proclinenum;
 		std::wstring procfile;

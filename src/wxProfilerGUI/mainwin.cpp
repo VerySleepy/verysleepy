@@ -254,7 +254,7 @@ void MainWin::buildFilterAutocomplete()
 	std::set<wxString> moduleAutocomplete;
 	std::set<wxString> sourcefileAutocomplete;
 
-	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); i++)
+	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
 	{
 		procnameAutocomplete.insert(i->symbol->procname);
 		moduleAutocomplete.insert(i->symbol->module);
