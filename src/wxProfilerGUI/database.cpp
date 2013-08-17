@@ -391,7 +391,7 @@ void Database::setRoot(const Database::Symbol *root)
 
 void Database::scanMainList()
 {
-	std::map<const Symbol *, double> exclusive, inclusive;
+	std::vector<double> exclusive(getSymbolIDCount()), inclusive(getSymbolIDCount());
 
 	wxProgressDialog progressdlg(APPNAME, "Scanning profile database...",
 		(int)callstacks.size(), theMainWin,
@@ -400,36 +400,40 @@ void Database::scanMainList()
 	mainList.items.clear();
 	mainList.totalcount = 0;
 
+	Symbol::ID currentRootID = currentRoot ? currentRoot->id : -1;
+
 	int progress = 0;
 	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{  
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
 
-		exclusive[i->stack[0]] += i->samplecount;
-		std::map<const Symbol *, bool> seen;
+		exclusive[i->stack[0]->id] += i->samplecount;
+		std::vector<bool> seen(getSymbolIDCount());
 		for (size_t n=0;n<i->stack.size();n++)
 		{
+			Symbol::ID id = i->stack[n]->id;
+
 			// we filter out duplicates, to avoid getting funny numbers when 
 			// using recursive functions.
-			if (!seen[i->stack[n]])
+			if (!seen[id])
 			{
-				inclusive[i->stack[n]] += i->samplecount;
-				seen[i->stack[n]] = true;
+				inclusive[id] += i->samplecount;
+				seen[id] = true;
 			} 
-			if (i->stack[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
+			if (id == currentRootID) break;       // Stop handling the call stack if we encounter the root
 		}
 		mainList.totalcount += i->samplecount;
 
 		progressdlg.Update(progress++);
 	}
 
-	for (std::map<const Symbol *, double>::const_iterator i = inclusive.begin(); i != inclusive.end(); ++i)
+	for (Symbol::ID id=0; id < getSymbolIDCount(); id++)
 	{
 		Item item;
-		item.symbol = i->first;
-		item.exclusive = exclusive[item.symbol];
-		item.inclusive = i->second;
+		item.symbol = getSymbol(id);
+		item.exclusive = exclusive[id];
+		item.inclusive = inclusive[id];
 		mainList.items.push_back(item);
 	}
 }
