@@ -171,6 +171,9 @@ private:
 	/// Apply the filter settings in the wxPropertyGrid to viewstate.
 	void applyFilters();
 
+	/// Called when the symbol strings have changed in one way or another.
+	void symbolsChanged();
+
 	void showSource(const Database::Symbol * symbol);
 
 	void updateStatusBar();

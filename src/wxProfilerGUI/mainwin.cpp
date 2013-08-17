@@ -265,12 +265,13 @@ void MainWin::buildFilterAutocomplete()
 
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
 	{
-		procnameAutocomplete.insert(i->symbol->procname);
-		moduleAutocomplete.insert(i->symbol->module);
-		sourcefileAutocomplete.insert(i->symbol->sourcefile);
+		const Database::Symbol *symbol = i->symbol;
+		procnameAutocomplete  .insert(symbol->procname  );
+		moduleAutocomplete    .insert(symbol->module    );
+		sourcefileAutocomplete.insert(symbol->sourcefile);
 
-		addSplitValues(procnameAutocomplete, i->symbol->procname, ':');
-		addSplitValues(sourcefileAutocomplete, i->symbol->sourcefile, '\\');
+		addSplitValues(procnameAutocomplete  , symbol->procname  , ':');
+		addSplitValues(sourcefileAutocomplete, symbol->sourcefile, '\\');
 
 		updateProgress(i - list.items.begin());
 	}
@@ -403,6 +404,8 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 	// Thus, we need to call reload with loadMinidump==true only once
 	// (as opposed to remembering whether we want to see minidump symbols).
 	reload(true);
+
+	symbolsChanged();
 }
 
 void MainWin::OnBack(wxCommandEvent& event)
@@ -560,9 +563,15 @@ void MainWin::reset()
 	history.clear();
 	historyPos = 0;
 
-	buildFilterAutocomplete();
+	symbolsChanged();
 
 	refresh();
+}
+
+void MainWin::symbolsChanged()
+{
+	buildFilterAutocomplete();
+	applyFilters();
 }
 
 void MainWin::refresh()
@@ -593,18 +602,18 @@ void MainWin::updateStatusBar()
 
 void MainWin::applyFilters()
 {
-	wxString filter_procname   = filters->GetProperty("procname"  )->GetValueAsString();
-	wxString filter_module     = filters->GetProperty("module"    )->GetValueAsString();
-	wxString filter_sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
+	std::wstring filter_procname   = filters->GetProperty("procname"  )->GetValueAsString();
+	std::wstring filter_module     = filters->GetProperty("module"    )->GetValueAsString();
+	std::wstring filter_sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
 
 	for (Database::Symbol::ID id = 0; id < database->getSymbolIDCount(); id++)
 	{
 		const Database::Symbol *symbol = database->getSymbol(id);
 
 		bool filtered =
-			( !filter_procname  .empty() && symbol->procname  .find(filter_procname  ) != std::wstring::npos ) ||
-			( !filter_module    .empty() && symbol->module    .find(filter_module    ) != std::wstring::npos ) ||
-			( !filter_sourcefile.empty() && symbol->sourcefile.find(filter_sourcefile) != std::wstring::npos );
+			( !filter_procname  .empty() && symbol->procname  .find(filter_procname  ) == std::wstring::npos ) ||
+			( !filter_module    .empty() && symbol->module    .find(filter_module    ) == std::wstring::npos ) ||
+			( !filter_sourcefile.empty() && symbol->sourcefile.find(filter_sourcefile) == std::wstring::npos );
 
 		viewstate.setFlag(id, ViewState::Flag_Filtered, filtered);
 	}
