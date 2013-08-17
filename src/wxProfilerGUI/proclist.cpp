@@ -167,14 +167,17 @@ void ProcList::showList(const Database::List &list)
 
 void ProcList::displayList()
 {
+	theMainWin->setProgress(L"Saving list state...");
 	int *item_state = new int[database->getSymbolIDCount()]();
 	// TODO: use GetNextItem?
 	for (long i=0; i<GetItemCount(); i++)
 		item_state[GetItemData(i)] = GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 
+	theMainWin->setProgress(L"Clearing list...");
 	Freeze();
 	DeleteAllItems();
 
+	theMainWin->setProgress(L"Populating list...", list.items.size());
 	const ViewState *viewstate = theMainWin->getViewState();
 
 	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
@@ -220,10 +223,13 @@ void ProcList::displayList()
 
 		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)
 			EnsureVisible(c);
+
+		theMainWin->updateProgress(i-list.items.begin());
 	}
 
 	delete[] item_state;
 	Thaw();
+	theMainWin->setProgress(NULL);
 }
 
 void ProcList::setColumnValue(int row, ColumnType id, const wxString &value)
