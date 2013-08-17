@@ -94,7 +94,7 @@ MainWin::MainWin(const wxString& title,
 	menuFile->Append(MainWin_SaveAs, _T("Save &As..."), _T("Saves the profile data to a file"));
 	menuFile->Append(MainWin_ExportAsCsv, _T("&Export as CSV..."), _T("Export the profile data to a CSV file"));
 	menuFile->AppendSeparator();
-	menuFile->Append(MainWin_LoadMinidumpSymbols,_T("Load symbols from minidump"), _T("Loads symbols for modules recorded in the minidump included with this capture."))
+	menuFile->Append(MainWin_LoadMinidumpSymbols,_T("Load symbols from &minidump"), _T("Loads symbols for modules recorded in the minidump included with this capture."))
 		->Enable(database->has_minidump);
 	menuFile->AppendSeparator();
 	menuFile->Append(MainWin_Quit, _T("E&xit\tAlt-X"), _T("Quit this program"));
