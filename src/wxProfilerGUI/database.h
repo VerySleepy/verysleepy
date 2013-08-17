@@ -114,7 +114,7 @@ public:
 
 private:
 	std::vector<Symbol *> symbols;
-	std::deque<CallStack> callstacks;
+	std::vector<CallStack> callstacks;
 	std::map<std::wstring, LINEINFOMAP > fileinfo;
 	List mainList;
 	std::wstring profilepath;

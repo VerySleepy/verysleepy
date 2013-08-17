@@ -30,6 +30,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <set>
 #include "mainwin.h"
 #include "../profiler/symbolinfo.h"
+#include <algorithm>
 
 Database *theDatabase;
 
@@ -238,17 +239,6 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 		(int)file.GetSize(), theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
-	class CallStackPtrComp
-	{
-		CallStack *p;
-	public:
-		CallStackPtrComp(CallStack *_p): p(_p) {}
-		bool operator <(const CallStackPtrComp b) const { return p->stack < b.p->stack; }
-		CallStack *Get() const { return p; }
-	};
-
-	std::set<CallStackPtrComp> callstackSet;
-
 	while(!file.Eof())
 	{
 		wxString line = str.ReadLine();
@@ -288,22 +278,40 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 			}
 		}
 
-		std::set<CallStackPtrComp>::iterator iter = callstackSet.find(&callstack);
-		if(iter != callstackSet.end()) {
-			iter->Get()->samplecount += callstack.samplecount;
-			continue;
-		}
 #if _MSC_VER >= 1600
 		callstacks.push_back(std::move(callstack));
 #else
 		callstacks.push_back(callstack);
 #endif
-		// TODO: this code is WRONG! The address of pushed items can change due to vector resizes!
-		callstackSet.insert(&callstacks[callstacks.size()-1]);
 
 		wxFileOffset offset = file.TellI();
 		if(offset != wxInvalidOffset)
 			progressdlg.Update(offset);
+	}
+
+	struct Pred
+	{
+		bool operator () (const CallStack &a, const CallStack &b)
+		{
+			long l = a.stack.size() - b.stack.size();
+			return l ? l<0 : a.stack < b.stack;
+		}
+	};
+
+	// Sort and filter repeating callstacks
+	{
+		std::sort(callstacks.begin(), callstacks.end(), Pred());
+
+		std::vector<CallStack> filtered;
+		for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
+		{
+			if (!filtered.empty() && filtered.back().stack == i->stack)
+				filtered.back().samplecount += i->samplecount;
+			else
+				filtered.push_back(*i);
+		}
+
+		std::swap(filtered, callstacks);
 	}
 }
 
@@ -380,7 +388,7 @@ void Database::scanMainList()
 	mainList.totalcount = 0;
 
 	int progress = 0;
-	for (std::deque<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
 	{  
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -416,7 +424,7 @@ void Database::scanMainList()
 std::vector<const Database::CallStack*> Database::getCallstacksContaining(const Database::Symbol *symbol) const
 {
 	std::vector<const CallStack *> ret;
-	for (std::deque<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
 	{ 
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -438,7 +446,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 {
 	List list;
 	std::map<const Symbol *, double> counts;
-	for (std::deque<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
 	{ 
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
@@ -473,7 +481,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 {
 	List list;
 	std::map<const Symbol *, double> counts;
-	for (std::deque<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
+	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); i++)
 	{ 
 		// Only use call stacks that include the current root
 		if (currentRoot && !i->contains(currentRoot)) continue;
