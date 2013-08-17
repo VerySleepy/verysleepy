@@ -189,13 +189,25 @@ void ProcList::displayList()
 		float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
 		float exclusivepercent = i->exclusive * 100.0f / list.totalcount;
 
-		int c = InsertItem(GetItemCount(), sym->procname.c_str(), -1);
+		long c = GetItemCount();
+
+		wxListItem item;
+		item.SetId(c);
+		item.SetText(sym->procname);
+
 		if(sym->isCollapseFunction || sym->isCollapseModule) {
-			SetItemTextColour(c,wxColor(0,128,0));
+			item.SetTextColour(wxColor(0,128,0));
 		}
 		if(viewstate->flags[sym->id] & ViewState::Flag_Highlighted) {
-			SetItemBackgroundColour(c, wxColor(255,255,0));
+			item.SetBackgroundColour(wxColor(255,255,0));
 		}
+
+		item.SetData(sym->id);
+		item.SetState(item_state[sym->id]);
+		item.SetStateMask(wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
+
+		InsertItem(item);
+
 		setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs" ,exclusive));
 		setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs" ,inclusive));
 		setColumnValue(c, COL_EXCLUSIVEPCT,	wxString::Format("%0.2f%%",exclusivepercent));
@@ -206,14 +218,8 @@ void ProcList::displayList()
 		setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile.c_str());
 		setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline).c_str());
 
-		SetItemData(c, sym->id);
-
-		if (int state = item_state[sym->id])
-		{
-			SetItemState(c, state, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
-			if (state & wxLIST_STATE_FOCUSED)
-				EnsureVisible(c);
-		}
+		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)
+			EnsureVisible(c);
 	}
 
 	delete[] item_state;
