@@ -457,8 +457,8 @@ LateSymbolInfo::~LateSymbolInfo()
 	unloadMinidump();
 }
 
-// Allow debugging Minidump PDB load errors using dbgview.
-// If we ever get a log view in the main window, we could use that instead.
+// Send debugger output to the wxWidgets current logging facility.
+// The UI implements a logging facility in the form of a log panel.
 struct DebugOutputCallbacksWide : public IDebugOutputCallbacksWide
 {
 	HRESULT	STDMETHODCALLTYPE QueryInterface(__in REFIID InterfaceId, __out PVOID* Interface) { return E_NOINTERFACE; }
