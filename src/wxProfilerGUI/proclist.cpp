@@ -184,11 +184,6 @@ void ProcList::displayList()
 		if (isroot && viewstate->flags[sym->id] & ViewState::Flag_Filtered)
 			continue;
 
-		double inclusive = i->inclusive;
-		double exclusive = i->exclusive;
-		float inclusivepercent = i->inclusive * 100.0f / list.totalcount;
-		float exclusivepercent = i->exclusive * 100.0f / list.totalcount;
-
 		long c = GetItemCount();
 
 		wxListItem item;
@@ -208,15 +203,20 @@ void ProcList::displayList()
 
 		InsertItem(item);
 
-		setColumnValue(c, COL_EXCLUSIVE,	wxString::Format("%0.2fs" ,exclusive));
-		setColumnValue(c, COL_INCLUSIVE,	wxString::Format("%0.2fs" ,inclusive));
-		setColumnValue(c, COL_EXCLUSIVEPCT,	wxString::Format("%0.2f%%",exclusivepercent));
-		setColumnValue(c, COL_INCLUSIVEPCT,	wxString::Format("%0.2f%%",inclusivepercent));
-		setColumnValue(c, COL_SAMPLES,		wxString::Format("%0.2fs" ,exclusive));
-		setColumnValue(c, COL_CALLSPCT,		wxString::Format("%0.2f%%",exclusivepercent));
-		setColumnValue(c, COL_MODULE,		sym->module.c_str());
-		setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile.c_str());
-		setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline).c_str());
+		wxString inclusive = wxString::Format("%0.2fs", i->inclusive);
+		wxString exclusive = wxString::Format("%0.2fs", i->exclusive);
+		wxString inclusivepercent = wxString::Format("%0.2f%%", i->inclusive * 100.0f / list.totalcount);
+		wxString exclusivepercent = wxString::Format("%0.2f%%", i->exclusive * 100.0f / list.totalcount);
+
+		setColumnValue(c, COL_EXCLUSIVE,	exclusive);
+		setColumnValue(c, COL_INCLUSIVE,	inclusive);
+		setColumnValue(c, COL_EXCLUSIVEPCT,	exclusivepercent);
+		setColumnValue(c, COL_INCLUSIVEPCT,	inclusivepercent);
+		setColumnValue(c, COL_SAMPLES,		exclusive);
+		setColumnValue(c, COL_CALLSPCT,		exclusivepercent);
+		setColumnValue(c, COL_MODULE,		sym->module);
+		setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile);
+		setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline));
 
 		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)
 			EnsureVisible(c);
@@ -226,7 +226,7 @@ void ProcList::displayList()
 	Thaw();
 }
 
-void ProcList::setColumnValue(int row, ColumnType id, const wchar_t *value)
+void ProcList::setColumnValue(int row, ColumnType id, const wxString &value)
 {
 	int listcol = columns[id].listctrl_column;
 	if (listcol != -1)

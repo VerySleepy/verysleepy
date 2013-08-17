@@ -88,7 +88,7 @@ private:
 
 	Column columns[MAX_COLUMNS];
 	void setupColumn(ColumnType id, int width, SortType defsort, const wxString &name);
-	void setColumnValue(int row, ColumnType id, const wchar_t *value);
+	void setColumnValue(int row, ColumnType id, const wxString &value);
 
 	/// Sorts the in-memory list. Does not affect GUI.
 	void sortList();
