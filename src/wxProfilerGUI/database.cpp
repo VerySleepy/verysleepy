@@ -235,8 +235,12 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 {
 	wxTextInputStream str(file);
 
+	// Windows progress bar is limited to 0x10000 max.
+	static const __int64 PROGRESS_MAX = 0x8000LL;
+
+	int filesize = file.GetSize();
 	wxProgressDialog progressdlg(APPNAME, "Loading profile database...",
-		(int)file.GetSize(), theMainWin,
+		PROGRESS_MAX, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
 	while(!file.Eof())
@@ -285,8 +289,8 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 #endif
 
 		wxFileOffset offset = file.TellI();
-		if(offset != wxInvalidOffset)
-			progressdlg.Update(offset);
+		if (offset != wxInvalidOffset && offset != filesize)
+			progressdlg.Update(PROGRESS_MAX * offset / filesize);
 	}
 
 	struct Pred
@@ -300,11 +304,20 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 
 	// Sort and filter repeating callstacks
 	{
+		progressdlg.Update(0, "Sorting...");
+		progressdlg.Pulse();
+
 		std::sort(callstacks.begin(), callstacks.end(), Pred());
+
+		progressdlg.Update(0, "Filtering...");
 
 		std::vector<CallStack> filtered;
 		for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 		{
+			int n = i - callstacks.begin();
+			if (n % 256 == 0)
+				progressdlg.Update(PROGRESS_MAX * n / callstacks.size());
+
 			if (!filtered.empty() && filtered.back().stack == i->stack)
 				filtered.back().samplecount += i->samplecount;
 			else
