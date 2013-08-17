@@ -40,6 +40,7 @@ enum
 	MainWin_SaveAs,
 	MainWin_ExportAsCsv,
 	MainWin_LoadMinidumpSymbols,
+	MainWin_View_Back,
 	MainWin_View_Collapse_OS,
 	MainWin_View_Stats,
 	MainWin_ResetToRoot,
@@ -98,6 +99,8 @@ MainWin::MainWin(const wxString& title,
 
 	// View options and layout.
 	wxMenu *menuView = new wxMenu;
+	menuView->Append(MainWin_View_Back,_T("Back\tAlt-Left"), _T("Go back to the previously-visited symbol"));
+	menuView->AppendSeparator();
 	menuView->Append(MainWin_View_Stats,_T("Show Profiling Statistics"), _T("Shows any extra information logged while profiling"));
 	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls")); 
 	collapseOSCalls->Check(config.Read("MainWinCollapseOS",1)!=0);
@@ -220,7 +223,7 @@ MainWin::MainWin(const wxString& title,
 
 	filters->FitColumns();
 
-	viewstate.flags.resize(database->getSymbolIDCount());
+	clear();
 	buildFilterAutocomplete();
 	refresh();
 }
@@ -289,6 +292,8 @@ EVT_MENU(MainWin_Open,  MainWin::OnOpen)
 EVT_MENU(MainWin_SaveAs,  MainWin::OnSaveAs)
 EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
 EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
+EVT_MENU(MainWin_View_Back, MainWin::OnBack)
+EVT_UPDATE_UI(MainWin_View_Back, MainWin::OnBackUpdate)
 EVT_MENU(MainWin_ResetToRoot, MainWin::OnResetToRoot)
 EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::OnResetToRootUpdate)
 EVT_MENU(MainWin_ResetFilters, MainWin::OnResetFilters)
@@ -332,8 +337,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
 	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
 
-	viewstate.flags.clear();
-	viewstate.flags.resize(database->getSymbolIDCount());
+	clear();
 	refresh();
 }
 
@@ -386,6 +390,17 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 	// Thus, we need to call reload with loadMinidump==true only once
 	// (as opposed to remembering whether we want to see minidump symbols).
 	reload(true);
+}
+
+void MainWin::OnBack(wxCommandEvent& event)
+{
+	history.pop();
+	inspectSymbol(database->getSymbol(history.top()), false);
+}
+
+void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
+{
+	event.Enable(history.size()>1);
 }
 
 void MainWin::OnResetToRoot(wxCommandEvent& WXUNUSED(event))
@@ -491,13 +506,25 @@ void MainWin::focusSymbol(const Database::Symbol *symbol)
 	//callStack->focusSymbol(symbol);
 }
 
-void MainWin::inspectSymbol(const Database::Symbol *symbol)
+void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=true*/)
 {
 	showSource(symbol);
 	proclist->focusSymbol(symbol);
 	callers->showList(database->getCallers(symbol));
 	callees->showList(database->getCallees(symbol));
 	callStack->showCallStack(symbol);
+
+	if (addtohistory && symbol)
+		if (history.empty() || history.top() != symbol->id)
+			history.push(symbol->id);
+
+}
+
+void MainWin::clear()
+{
+	viewstate.flags.clear();
+	viewstate.flags.resize(database->getSymbolIDCount());
+	history = std::stack<Database::Symbol::ID>();
 }
 
 void MainWin::refresh()

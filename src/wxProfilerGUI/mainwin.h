@@ -31,6 +31,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "logview.h"
 
 #include <wx/propgrid/propgrid.h>
+#include <stack>
 
 /// Cache per-symbol view settings so we don't
 /// have to compute them on every refresh.
@@ -73,16 +74,24 @@ public:
 	void OnClose(wxCloseEvent& event);
 	void OnQuit(wxCommandEvent& event);
 	void OnOpen(wxCommandEvent& event);
+
 	void OnSaveAs(wxCommandEvent& event);
 	void OnExportAsCsv(wxCommandEvent& event);
 	void OnLoadMinidumpSymbols(wxCommandEvent& event);
 	void OnCollapseOS(wxCommandEvent& event);
 	void OnStats(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	void OnBack(wxCommandEvent& event);
+	void OnBackUpdate(wxUpdateUIEvent& event);
 	void OnResetToRoot(wxCommandEvent& event);
 	void OnResetToRootUpdate(wxUpdateUIEvent& event);
 	void OnResetFilters(wxCommandEvent& event);
 	void OnFiltersChanged(wxPropertyGridEvent& event);
+
+	/// Called after loading a database
+	/// (on construction, and in OnOpen).
+	/// Initialize anything database-specific here.
+	void clear();
 
 	/// Refresh proc lists.
 	/// Preserves selection.
@@ -103,7 +112,7 @@ public:
 	/// Opens the corresponding symbol properties in all related views.
 	/// Implies focusSymbol(symbol).
 	/// Called when double-clicking on a particular symbol.
-	void inspectSymbol(const Database::Symbol *symbol);
+	void inspectSymbol(const Database::Symbol *symbol, bool addtohistory=true);
 
 	/// Called by SourceView to update the status bar.
 	void setSourcePos(const std::wstring& currentfile, int currentline);
@@ -145,6 +154,8 @@ private:
 	wxMenuItem *collapseOSCalls;
 
 	ViewState viewstate;
+
+	std::stack<Database::Symbol::ID> history;
 
 	void buildFilterAutocomplete();
 
