@@ -23,6 +23,7 @@ Compression=lzma
 SolidCompression=yes
 OutputDir=.
 ArchitecturesInstallIn64BitMode=x64
+UninstallDisplayIcon={app}\sleepy.exe
 
 
 [Languages]
