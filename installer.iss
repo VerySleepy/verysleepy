@@ -1,17 +1,20 @@
 ; Very Sleepy install script, for Inno Setup
 
+#define APPNAME "Very Sleepy"
+#define APPSITE "codersnotes.com"
+
 [Setup]
-AppName=Very Sleepy
+AppName={#APPNAME}
 AppVersion=0.82
 
 ; AppId is used to identify the program in the registry.
-AppId=Very Sleepy
-AppPublisher=codersnotes.com
-AppPublisherURL=http://www.codersnotes.com
-AppSupportURL=http://www.codersnotes.com
-AppUpdatesURL=http://www.codersnotes.com
-DefaultDirName={pf}\Very Sleepy
-DefaultGroupName=Very Sleepy
+AppId={#APPNAME}
+AppPublisher={#APPSITE}
+AppPublisherURL=http://{#APPSITE}/
+AppSupportURL=http://{#APPSITE}/
+AppUpdatesURL=http://{#APPSITE}/
+DefaultDirName={pf}\{#APPNAME}
+DefaultGroupName={#APPNAME}
 AllowNoIcons=yes
 LicenseFile=license.rtf
 OutputBaseFilename=setup
@@ -62,11 +65,11 @@ Source: "osmodules.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\Very Sleepy"; Filename: "{app}\sleepy.exe"
-Name: "{group}\Very Sleepy (32-bit)"; Filename: "{app}\32\sleepy.exe"; Check: Is64BitInstallMode
+Name: "{group}\{#APPNAME}"; Filename: "{app}\sleepy.exe"
+Name: "{group}\{#APPNAME} (32-bit)"; Filename: "{app}\32\sleepy.exe"; Check: Is64BitInstallMode
 
 [Run]
-Filename: "{app}\sleepy.exe"; Description: "{cm:LaunchProgram,Very Sleepy}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\sleepy.exe"; Description: "{cm:LaunchProgram,{#APPNAME}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
 const
@@ -88,7 +91,7 @@ begin
 
     MsiPage := CreateInputOptionPage(wpWelcome,
       'Previous Version', 'An older version was detected.',
-      'Would you like to first remove the older version of Very Sleepy?',
+      'Would you like to first remove the older version of {#APPNAME}?',
       True, False);
 
     MsiPage.Add('Uninstall the older version first.');
