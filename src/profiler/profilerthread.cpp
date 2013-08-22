@@ -36,6 +36,8 @@ http://www.gnu.org/copyleft/gpl.html..
 
 #pragma comment(lib, "winmm.lib")
 
+#define FORMAT_VERSION "0.82"
+
 // DE: 20090325: Profiler has a list of threads to profile
 // RM: 20130614: Profiler time can now be limited (-1 = until cancelled)
 ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_)
@@ -325,9 +327,10 @@ void ProfilerThread::saveData()
 			return;
 	}
 
-
-	zip.PutNextEntry(L"Version " _T(VERSION) L" required");
-	txt << VERSION << "\n";
+	// Change FORMAT_VERSION when the file format changes
+	// (and becomes unreadable by older versions of Sleepy).
+	zip.PutNextEntry(L"Version " _T(FORMAT_VERSION) L" required");
+	txt << FORMAT_VERSION << "\n";
 
 
 	if (!out.IsOk() || !zip.IsOk())
