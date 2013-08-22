@@ -412,7 +412,7 @@ std::wstring SymbolInfo::saveMinidump()
 	{
 		wxLogWarning(
 			L"Warning: minidumps of 32-bit processes saved by 64-bit processes will most likely not be saved correctly.\n"
-			L"Use the 32-bit version of " APPNAME L" to profile 32-bit processes if a minidump needs to be included."
+			L"Use the 32-bit version of " _T(APPNAME) L" to profile 32-bit processes if a minidump needs to be included."
 		);
 	}
 #endif
