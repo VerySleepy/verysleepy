@@ -138,6 +138,7 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 				"0.8",
 				"0.81",
 				"0.82",
+				"0.83",
 			};
 
 			bool isSupported = false;
