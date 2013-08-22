@@ -326,7 +326,7 @@ void ProfilerThread::saveData()
 	}
 
 
-	zip.PutNextEntry(L"Version " VERSION L" required");
+	zip.PutNextEntry(L"Version " _T(VERSION) L" required");
 	txt << VERSION << "\n";
 
 

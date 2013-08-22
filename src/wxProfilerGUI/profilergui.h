@@ -44,9 +44,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <vector>
 #include <map>
 
-#define VERSION			L"0.82"
-#define APPNAME			L"Very Sleepy"
-#define VENDORNAME		L"codersnotes.com"
+#include "../appinfo.h"
 
 extern wxIcon sleepy_icon;
 

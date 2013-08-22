@@ -15,3 +15,38 @@ button_up PNG "Button-Up.png"
 button_down PNG "Button-Down.png"
 button_add PNG "Button-Add.png"
 button_remove PNG "Button-Remove.png"
+
+#include "appinfo.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    VERSION_MAJOR,VERSION_MINOR,0,0
+ PRODUCTVERSION VERSION_MAJOR,VERSION_MINOR,0,0
+ FILEFLAGSMASK  0x3fL
+#ifdef _DEBUG
+ FILEFLAGS      VER_DEBUG
+#else
+ FILEFLAGS      0
+#endif
+ FILEOS         VOS__WINDOWS32
+ FILETYPE       VFT_APP
+ FILESUBTYPE    0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName",      VENDOR   "\0"
+            VALUE "FileDescription",  APPNAME  "\0"
+            VALUE "FileVersion",      VERSION  "\0"
+            VALUE "InternalName",     "sleepy" "\0"
+            VALUE "LegalCopyright",   "Copyright (C) " VENDOR " and contributors" "\0"
+            VALUE "OriginalFilename", "sleepy.exe" "\0"
+            VALUE "ProductName",      APPNAME "\0"
+            VALUE "ProductVersion",   APPNAME "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END

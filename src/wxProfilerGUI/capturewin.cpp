@@ -71,7 +71,7 @@ END_EVENT_TABLE()
 unsigned WM_TASKBARBUTTONCREATED = RegisterWindowMessage(L"TaskbarButtonCreated");
 
 CaptureWin::CaptureWin()
-:	wxDialog(NULL, -1, wxString(APPNAME _T(" - profiling")),
+:	wxDialog(NULL, -1, wxString(_T(APPNAME) _T(" - profiling")),
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_DIALOG_STYLE)
 {
@@ -199,7 +199,7 @@ void CaptureWin::OnPause(wxCommandEvent& event)
 		pauseButton->SetBitmapLabel(LoadPngResource(L"button_pause"));
 	}
 
-	SetTitle(paused ? APPNAME L" - paused" : APPNAME L" - profiling");
+	SetTitle(paused ? _T(APPNAME) L" - paused" : _T(APPNAME) L" - profiling");
 
 	if (win7taskBar)
 	{

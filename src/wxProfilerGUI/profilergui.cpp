@@ -66,7 +66,7 @@ std::wstring cmdline_load, cmdline_save, cmdline_run;
 long cmdline_timeout = -1;  // -1 means profile until cancelled
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
-wxConfig config(APPNAME L" " VERSION, VENDORNAME);
+wxConfig config(_T(APPNAME) L" " _T(VERSION), _T(VENDOR));
 
 ProfilerGUI::ProfilerGUI()
 {
@@ -241,7 +241,7 @@ void ProfilerGUI::ShowAboutBox()
 		"This program is released under the GNU Public License.\n"
 		"See LICENSE.TXT for more information."
 		);
-	info.SetWebSite(_T("http://www.codersnotes.com/sleepy"), APPNAME _T(" web site"));
+	info.SetWebSite(_T(APPURL), _T(APPNAME) _T(" web site"));
 
 	AboutDlg dlg(info);
 	dlg.ShowModal();
@@ -249,7 +249,7 @@ void ProfilerGUI::ShowAboutBox()
 
 wxString ProfilerGUI::PromptOpen(wxWindow *parent)
 {
-	wxFileDialog dlg(parent, "Open File", "", "", APPNAME L"Profiles (*.sleepy)|*.sleepy", 
+	wxFileDialog dlg(parent, "Open File", "", "", _T(APPNAME) L" Profiles (*.sleepy)|*.sleepy", 
 		wxFD_OPEN);
 	if (dlg.ShowModal() != wxID_CANCEL)
 		return dlg.GetPath();
