@@ -1,7 +1,8 @@
 ; Very Sleepy install script, for Inno Setup
 
 #define APPNAME "Very Sleepy"
-#define APPSITE "codersnotes.com"
+#define VENDOR  "codersnotes.com"
+#define APPURL  "http://www.codersnotes.com/sleepy/sleepy"
 
 [Setup]
 AppName={#APPNAME}
@@ -9,10 +10,9 @@ AppVersion=0.82
 
 ; AppId is used to identify the program in the registry.
 AppId={#APPNAME}
-AppPublisher={#APPSITE}
-AppPublisherURL=http://{#APPSITE}/
-AppSupportURL=http://{#APPSITE}/
-AppUpdatesURL=http://{#APPSITE}/
+AppPublisher={#VENDOR}
+AppPublisherURL=http://{#VENDOR}/
+AppSupportURL={#APPURL}
 DefaultDirName={pf}\{#APPNAME}
 DefaultGroupName={#APPNAME}
 AllowNoIcons=yes
