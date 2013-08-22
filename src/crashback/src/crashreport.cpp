@@ -8,9 +8,9 @@
 #include "resource.h"
 #include "dbghelp.h"
 
-#define HOSTNAME	"www.codersnotes.com"
+#define HOSTNAME	"thecybershadow.net"
 #define PORT		80
-#define PAGE		"/crashback.pl"
+#define PAGE		"/sleepy/crashback.php"
 
 #define MAX_FILES	64
 
