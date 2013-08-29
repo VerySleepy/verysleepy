@@ -239,6 +239,7 @@
     <ClCompile Include="src\wxProfilerGUI\threadpicker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\appinfo.h" />
     <ClInclude Include="src\profiler\processinfo.h" />
     <ClInclude Include="src\profiler\profiler.h" />
     <ClInclude Include="src\profiler\profilerthread.h" />

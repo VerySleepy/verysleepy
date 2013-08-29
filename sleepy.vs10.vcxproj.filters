@@ -170,6 +170,7 @@
     <ClInclude Include="src\wxProfilerGUI\logview.h">
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
+    <ClInclude Include="src\appinfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="keywords.txt" />
