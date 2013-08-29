@@ -33,10 +33,9 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <assert.h>
 #include <algorithm>
 #include <Psapi.h>
+#include "../appinfo.h"
 
 #pragma comment(lib, "winmm.lib")
-
-#define FORMAT_VERSION "0.82"
 
 // DE: 20090325: Profiler has a list of threads to profile
 // RM: 20130614: Profiler time can now be limited (-1 = until cancelled)

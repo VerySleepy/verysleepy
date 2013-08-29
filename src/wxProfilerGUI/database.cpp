@@ -31,6 +31,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "mainwin.h"
 #include "../profiler/symbolinfo.h"
 #include <algorithm>
+#include "../appinfo.h"
 
 Database *theDatabase;
 
@@ -109,62 +110,37 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	}
 	clear();
 
-	wxFFileInputStream in(profilepath);
-	wxZipInputStream zip(in);
-	wxZipInputStream zipver(in);
-
-	if (!in.IsOk() || !zip.IsOk() || !zipver.IsOk())
-	{
-		wxLogError("The profile data cannot be read.");
-		return false;
-	}
+	wxFFileInputStream input(profilepath);
+	if (!input.IsOk()) { wxLogError("Input stream error opening profile data."); return false; }
 
 	// Check the version number required.
-	while(true)
 	{
-		wxZipEntry *entry = zipver.GetNextEntry();
-		if ( !entry )
-			break;
-		 
-		wxString name = entry->GetInternalName();
+		wxZipInputStream zipver(input);
+		if (!zipver.IsOk()) { wxLogError("ZIP error opening profile data."); return false; }
 
-		if (name.Left(8) == "Version " && name.Right(9) == " required")
+		bool versionFound = false;
+		while (wxZipEntry *entry = zipver.GetNextEntry())
 		{
-			wxString ver = name.Mid(8, name.Length()-(8+9));
+			wxString name = entry->GetInternalName();
 
-			// Add other versions here any time the file format changes.
-			const char *supportedVersions[] = {
-				"0.7",
-				"0.8",
-				"0.81",
-				"0.82",
-				"0.83",
-			};
-
-			bool isSupported = false;
-			for (int n=0;n<sizeof(supportedVersions)/sizeof(char*);n++)
+			if (name.Left(8) == "Version " && name.Right(9) == " required")
 			{
-				if (ver == supportedVersions[n])
+				versionFound = true;
+				wxString ver = name.Mid(8, name.Length()-(8+9));
+				if (ver != FORMAT_VERSION)
 				{
-					isSupported = true;
-					break;
+					wxLogError("Cannot load capture file: %s", name.c_str());
+					return false;
 				}
-			}
-
-			if (!isSupported)
-			{
-				wxLogWarning("Cannot load capture file: %s", name.c_str());
-				return false;
 			}
 		}
 	}
 
-	while(true)
+	wxZipInputStream zip(input);
+	if (!zip.IsOk()) { wxLogError("ZIP error opening profile data."); return false; }
+
+	while (wxZipEntry *entry = zip.GetNextEntry())
 	{
-		wxZipEntry *entry = zip.GetNextEntry();
-		if ( !entry )
-			break;
-		 
 		wxString name = entry->GetInternalName();
 
 			 if (name == "Symbols.txt")		loadSymbols(zip);
