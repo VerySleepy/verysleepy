@@ -49,6 +49,7 @@ Source: "dbghelp_x64\symsrv.yes"                         ; DestDir: "{app}"   ; 
 
 ; 32-bit version for 64-bit systems
 Source: "obj\Win32\Release\sleepy.exe"                   ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
+Source: "src\crashback\bin\Win32\Release\crashreport.exe"; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\dbghelp.dll"                        ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\dbghelpw.dll"                       ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\symsrv.dll"                         ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
