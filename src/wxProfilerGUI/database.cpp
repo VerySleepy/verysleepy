@@ -460,6 +460,7 @@ void Database::scanMainList()
 	{
 		Item item;
 		item.symbol = symbols[id];
+		item.address = item.symbol->address;
 		item.exclusive = exclusive[id];
 		item.inclusive = inclusive[id];
 		mainList.items.push_back(item);
@@ -490,7 +491,7 @@ std::vector<const Database::CallStack*> Database::getCallstacksContaining(const 
 Database::List Database::getCallers(const Database::Symbol *symbol) const
 {
 	List list;
-	std::map<const Symbol *, double> counts;
+	std::map<Address, double> counts;
 	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
@@ -503,7 +504,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 			if (s == currentRoot) break;       // Stop handling the call stack if we encounter the root
 			if (s == symbol)
 			{
-				const Symbol *caller = i->symbols[n+1];
+				Address caller = i->addresses[n+1];
 
 				counts[caller] += i->samplecount;
 				list.totalcount += i->samplecount;
@@ -511,10 +512,11 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 		}
 	}
 
-	for (std::map<const Symbol *, double>::const_iterator i = counts.begin(); i != counts.end(); ++i)
+	for (std::map<Address, double>::const_iterator i = counts.begin(); i != counts.end(); ++i)
 	{
 		Item item;
-		item.symbol = i->first;
+		item.address = i->first;
+		item.symbol = addrinfo.find(item.address)->second.symbol;
 		item.inclusive = i->second;
 		item.exclusive = i->second;
 		list.items.push_back(item);
@@ -551,6 +553,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 	{
 		Item item;
 		item.symbol = i->first;
+		item.address = item.symbol->address;
 		item.inclusive = i->second;
 		item.exclusive = i->second;
 		list.items.push_back(item);

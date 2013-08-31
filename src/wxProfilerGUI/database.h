@@ -85,6 +85,7 @@ public:
 	struct Item
 	{
 		const Symbol *symbol;
+		Address address;
 		double inclusive, exclusive;
 	};
 
