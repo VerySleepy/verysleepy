@@ -31,7 +31,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "logview.h"
 
 #include <wx/propgrid/propgrid.h>
-#include <stack>
+#include <deque>
 
 /// Cache per-symbol view settings so we don't
 /// have to compute them on every refresh.

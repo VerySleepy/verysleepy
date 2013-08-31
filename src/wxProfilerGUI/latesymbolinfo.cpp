@@ -120,11 +120,18 @@ void LateSymbolInfo::unloadMinidump()
 	{
 		debugClient5->EndSession(DEBUG_END_ACTIVE_TERMINATE);
 		debugClient5->Release();
+		debugClient5 = NULL;
 	}
 	if (debugControl4)
+	{
 		debugControl4->Release();
+		debugControl4 = NULL;
+	}
 	if (debugSymbols3)
+	{
 		debugSymbols3->Release();
+		debugSymbols3 = NULL;
+	}
 
 	if (!file_to_delete.empty())
 	{

@@ -1,5 +1,5 @@
 /*=====================================================================
-latesymbolinfo.cpp
+latesymbolinfo.h
 --------------
 Copyright (C) Vladimir Panteleev
 
