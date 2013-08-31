@@ -45,6 +45,7 @@ class CallstackView : public wxWindow
 		COL_MODULE,
 		COL_SOURCEFILE,
 		COL_SOURCELINE,
+		COL_ADDRESS,
 		MAX_COLUMNS
 	};
 

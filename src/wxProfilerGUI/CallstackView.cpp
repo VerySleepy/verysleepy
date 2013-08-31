@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/aui/auibar.h>
 #include "contextmenu.h"
 #include "mainwin.h"
+#include "../utils/stringutils.h"
 
 class wxStaticTextTransparent: public wxControl
 {
@@ -82,6 +83,7 @@ CallstackView::CallstackView(wxWindow *parent,Database *_database)
 	setupColumn(COL_MODULE,			-1,		_T("Module"));
 	setupColumn(COL_SOURCEFILE,		245,	_T("Source File"));
 	setupColumn(COL_SOURCELINE,		-1,		_T("Source Line"));
+	setupColumn(COL_ADDRESS,		-1,		_T("Address"));
 
 	toolBar = new wxAuiToolBar(this,-1);
 	toolBar->AddTool(0,"-",LoadPngResource(L"button_prev"));
@@ -205,6 +207,7 @@ void CallstackView::updateList()
 		listCtrl->SetItem(i, COL_MODULE    , database->getModuleName(snow->module));
 		listCtrl->SetItem(i, COL_SOURCEFILE, database->getFileName  (snow->sourcefile));
 		listCtrl->SetItem(i, COL_SOURCELINE, wxString::Format("%d", database->getAddrInfo(snow->address)->sourceline));
+		listCtrl->SetItem(i, COL_ADDRESS   , ::toHexString(now->addresses[i]));
 
 		wxFont font = listCtrl->GetFont();
 		if(snow == currSymbol)

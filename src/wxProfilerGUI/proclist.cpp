@@ -70,6 +70,7 @@ ProcList::ProcList(wxWindow *parent, bool isroot, Database *database)
 	setupColumn(COL_MODULE,			-1,		SORT_UP,	_T("Module"));
 	setupColumn(COL_SOURCEFILE,		245,	SORT_UP,	_T("Source File"));
 	setupColumn(COL_SOURCELINE,		-1,		SORT_UP,	_T("Source Line"));
+	setupColumn(COL_ADDRESS,		-1,		SORT_UP,	_T("Address"));
 
 	if (isroot)
 		sort_column = COL_EXCLUSIVE;
@@ -150,7 +151,8 @@ void ProcList::sortList()
 	case COL_INCLUSIVEPCT: std::sort(list.items.begin(), list.items.end(), InclusivePred ()); break;
 	case COL_MODULE:       std::sort(list.items.begin(), list.items.end(), ModulePred    ()); break;
 	case COL_SOURCEFILE:   std::sort(list.items.begin(), list.items.end(), SourceFilePred()); break;
-	case COL_SOURCELINE:   std::sort(list.items.begin(), list.items.end(), AddressPred   ()); break;
+	case COL_SOURCELINE:
+	case COL_ADDRESS:      std::sort(list.items.begin(), list.items.end(), AddressPred   ()); break;
 	}
 
 	if (sort_dir == SORT_DOWN)
@@ -220,6 +222,7 @@ void ProcList::displayList()
 		setColumnValue(c, COL_MODULE,		database->getModuleName(sym->module));
 		setColumnValue(c, COL_SOURCEFILE,	database->getFileName  (sym->sourcefile));
 		setColumnValue(c, COL_SOURCELINE,	::toString(database->getAddrInfo(sym->address)->sourceline));
+		setColumnValue(c, COL_ADDRESS,	    ::toHexString(sym->address));
 
 		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)
 			EnsureVisible(c);
