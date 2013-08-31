@@ -25,7 +25,6 @@ http://www.gnu.org/copyleft/gpl.html.
 #define __DATABASE_H_666_
 
 #include "profilergui.h"
-#include "latesymbolinfo.h"
 #include <unordered_map>
 
 bool IsOsFunction(wxString proc);
@@ -167,7 +166,7 @@ private:
 	bool includeCallstack(const CallStack &callstack) const;
 
 	// Any additional symbols we can load after opening a capture
-	LateSymbolInfo late_sym_info;
+	class LateSymbolInfo *late_sym_info;
 };
 
 #endif //__DATABASE_H_666_

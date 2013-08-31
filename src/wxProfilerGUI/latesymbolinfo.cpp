@@ -133,27 +133,19 @@ void LateSymbolInfo::unloadMinidump()
 	}
 }
 
-bool LateSymbolInfo::isUnresolved( const std::wstring &procname )
-{
-	return procname[0]=='[' && procname[procname.length()-1] == ']' && procname != L"[unknown]";
-}
-
 wchar_t LateSymbolInfo::buffer[4096];
 
-void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, std::wstring &sourcefile, unsigned &sourceline)
+void LateSymbolInfo::filterSymbol(Database::Address address, std::wstring &module, std::wstring &procname, std::wstring &sourcefile, unsigned &sourceline)
 {
-	if (debugSymbols3 && isUnresolved(procname))
+	if (debugSymbols3)
 	{
-		ULONG64 offset = 0;
-		swscanf_s(procname.c_str(), L"[%I64x]", &offset);
-		if (!offset) return;
-
 		ULONG moduleindex;
-		if (debugSymbols3->GetModuleByOffset(offset, 0, &moduleindex, NULL) == S_OK)
+		if (debugSymbols3->GetModuleByOffset(address, 0, &moduleindex, NULL) == S_OK)
 			if (debugSymbols3->GetModuleNameStringWide(DEBUG_MODNAME_MODULE, moduleindex, 0, buffer, _countof(buffer), NULL) == S_OK)
 				module = buffer;
 
-		if (debugSymbols3->GetNameByOffsetWide(offset, buffer, _countof(buffer), NULL, NULL) == S_OK)
+		if (debugSymbols3->GetNameByOffsetWide(address, buffer, _countof(buffer), NULL, NULL) == S_OK)
+		{
 			if (module.compare(buffer) != 0)
 			{
 				procname = buffer;
@@ -163,31 +155,13 @@ void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, 
 				if (procname.length() > modlength+1 && module.compare(0, modlength, procname, 0, modlength)==0 && procname[modlength] == '!')
 					procname.erase(0, modlength+1);
 			}
+		}
 
-			filterIP(offset, sourcefile, sourceline);
-	}
-}
-
-void LateSymbolInfo::filterIP(ULONG64 offset, std::wstring &sourcefile, unsigned &sourceline)
-{
-	if (!sourceline)
-	{
 		ULONG line;
-		if (debugSymbols3->GetLineByOffsetWide(offset, &line, buffer, _countof(buffer), NULL, NULL) == S_OK)
+		if (debugSymbols3->GetLineByOffsetWide(address, &line, buffer, _countof(buffer), NULL, NULL) == S_OK)
 		{
 			sourcefile = buffer;
 			sourceline = line;
 		}
-	}
-}
-
-void LateSymbolInfo::filterIP(const std::wstring &memaddr, std::wstring &srcfile, unsigned &linenum)
-{
-	if (debugSymbols3)
-	{
-		ULONG64 offset = 0;
-		swscanf_s(memaddr.c_str(), L"0x%I64x", &offset);
-		if (offset)
-			filterIP(offset, srcfile, linenum);
 	}
 }

@@ -33,6 +33,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <algorithm>
 #include "../appinfo.h"
 #include "../utils/except.h"
+#include "latesymbolinfo.h"
 
 Database *theDatabase;
 
@@ -77,11 +78,13 @@ Database::Database()
 {
 	assert(!theDatabase);
 	theDatabase = this;
+	late_sym_info = new LateSymbolInfo();
 }
 
 Database::~Database()
 {
 	clear();
+	delete late_sym_info;
 }
 
 void Database::clear()
@@ -229,7 +232,7 @@ void Database::loadSymbols(wxInputStream &file)
 		stream >> info.sourceline;
 
 		// Late symbol lookup
-		late_sym_info.filterSymbol(modulename, procname, sourcefilename, info.sourceline);
+		late_sym_info->filterSymbol(addr, modulename, procname, sourcefilename, info.sourceline);
 
 		// Convert filename and module strings to a numeric IDs
 		FileID   fileid   = map_string(files  , filemap  , sourcefilename);
@@ -575,7 +578,7 @@ void Database::loadMinidump(wxInputStream &file)
 
 	try
 	{
-		late_sym_info.loadMinidump(dumppath, true);
+		late_sym_info->loadMinidump(dumppath, true);
 	}
 	catch (SleepyException &e)
 	{

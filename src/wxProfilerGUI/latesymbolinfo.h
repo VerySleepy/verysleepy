@@ -24,6 +24,7 @@ http://www.gnu.org/copyleft/gpl.html..
 
 #include <string>
 #include <windows.h>
+#include "database.h"
 
 /*=====================================================================
 LateSymbolInfo
@@ -37,18 +38,14 @@ public:
 	LateSymbolInfo();
 	~LateSymbolInfo();
 
+	void loadMinidump(std::wstring &dumppath, bool delete_when_done);
 	void unloadMinidump();
 
-	void loadMinidump(std::wstring &dumppath, bool delete_when_done);
-	void filterSymbol(std::wstring &module, std::wstring &procname, std::wstring &sourcefile, unsigned &sourceline);
-	void filterIP(const std::wstring &memaddr, std::wstring &srcfile, unsigned &linenum);
+	void filterSymbol(Database::Address address, std::wstring &module, std::wstring &procname, std::wstring &sourcefile, unsigned &sourceline);
 
 private:
 	static wchar_t buffer[4096];
 	std::wstring file_to_delete;
-
-	static bool isUnresolved(const std::wstring &procname);
-	void filterIP(ULONG64 offset, std::wstring &srcfile, unsigned &linenum);
 
 	// Dbgeng COM objects for minidump symbols
 	struct IDebugClient5  *debugClient5;
