@@ -226,6 +226,7 @@
     <ClCompile Include="src\wxProfilerGUI\capturewin.cpp" />
     <ClCompile Include="src\wxProfilerGUI\contextmenu.cpp" />
     <ClCompile Include="src\wxProfilerGUI\database.cpp" />
+    <ClCompile Include="src\wxProfilerGUI\latesymbolinfo.cpp" />
     <ClCompile Include="src\wxProfilerGUI\launchdlg.cpp" />
     <ClCompile Include="src\wxProfilerGUI\logview.cpp" />
     <ClCompile Include="src\wxProfilerGUI\mainwin.cpp" />
@@ -239,6 +240,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\appinfo.h" />
+    <ClInclude Include="src\wxProfilerGUI\latesymbolinfo.h" />
     <ClInclude Include="src\profiler\processinfo.h" />
     <ClInclude Include="src\profiler\profiler.h" />
     <ClInclude Include="src\profiler\profilerthread.h" />

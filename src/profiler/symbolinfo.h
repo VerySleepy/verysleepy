@@ -82,39 +82,6 @@ private:
 
 extern SymLogFn *g_symLog;
 
-/*=====================================================================
-LateSymbolInfo
-----------
-Handles symbols we load after loading a profile capture,
-e.g. symbols loaded from included minidumps.
-=====================================================================*/
-class LateSymbolInfo
-{
-public:
-	LateSymbolInfo();
-	~LateSymbolInfo();
-
-	void unloadMinidump();
-
-	void loadMinidump(std::wstring &dumppath, bool delete_when_done);
-	void filterSymbol(std::wstring &module, std::wstring &procname, std::wstring &sourcefile, unsigned &sourceline);
-	void filterIP(const std::wstring &memaddr, std::wstring &srcfile, unsigned &linenum);
-
-private:
-	static wchar_t buffer[4096];
-	std::wstring file_to_delete;
-
-	static bool isUnresolved(const std::wstring &procname);
-	void filterIP(ULONG64 offset, std::wstring &srcfile, unsigned &linenum);
-
-	// Dbgeng COM objects for minidump symbols
-	struct IDebugClient5  *debugClient5;
-	struct IDebugControl4 *debugControl4;
-	struct IDebugSymbols3 *debugSymbols3;
-
-
-};
-
 #endif //__SYMBOLINFO_H_666_
 
 
