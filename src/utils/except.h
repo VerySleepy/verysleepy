@@ -8,10 +8,14 @@ class SleepyException : public std::runtime_error
 	std::wstring _what;
 
 public:
+	SleepyException(const std::string &what)
+		: _what(std::wstring(what.begin(), what.end())), std::runtime_error(what) {}
+
 	SleepyException(const std::wstring &what)
-		: _what(what), std::runtime_error(std::string(what.begin(), what.end()))
-	{
-	}
+		: _what(what), std::runtime_error(std::string(what.begin(), what.end())) {}
+
+	SleepyException(const wchar_t *what)
+		: _what(std::wstring(what)), std::runtime_error(std::string(_what.begin(), _what.end())) {}
 
 	const std::wstring &wwhat() { return _what; }
 };

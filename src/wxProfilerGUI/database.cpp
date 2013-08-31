@@ -112,51 +112,56 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	}
 	clear();
 
-	wxFFileInputStream input(profilepath);
-	if (!input.IsOk()) { wxLogError("Input stream error opening profile data."); return false; }
-
-	// Check the version number required.
+	try
 	{
-		wxZipInputStream zipver(input);
-		if (!zipver.IsOk()) { wxLogError("ZIP error opening profile data."); return false; }
+		wxFFileInputStream input(profilepath);
+		enforce(input.IsOk(), "Input stream error opening profile data.");
 
-		bool versionFound = false;
-		while (wxZipEntry *entry = zipver.GetNextEntry())
+		// Check the version number required.
+		{
+			wxZipInputStream zipver(input);
+			enforce(zipver.IsOk(), "ZIP error opening profile data.");
+
+			bool versionFound = false;
+			while (wxZipEntry *entry = zipver.GetNextEntry())
+			{
+				wxString name = entry->GetInternalName();
+
+				if (name.Left(8) == "Version " && name.Right(9) == " required")
+				{
+					versionFound = true;
+					wxString ver = name.Mid(8, name.Length()-(8+9));
+					enforce(ver == FORMAT_VERSION, wxString::Format("Cannot load capture file: %s", name.c_str()).c_str());
+				}
+			}
+
+			enforce(versionFound, "Unrecognized capture file");
+		}
+
+		wxZipInputStream zip(input);
+		enforce(zip.IsOk(), "ZIP error opening profile data.");
+
+		while (wxZipEntry *entry = zip.GetNextEntry())
 		{
 			wxString name = entry->GetInternalName();
 
-			if (name.Left(8) == "Version " && name.Right(9) == " required")
-			{
-				versionFound = true;
-				wxString ver = name.Mid(8, name.Length()-(8+9));
-				if (ver != FORMAT_VERSION)
-				{
-					wxLogError("Cannot load capture file: %s", name.c_str());
-					return false;
-				}
-			}
+				 if (name == "Symbols.txt")		loadSymbols(zip);
+			else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
+			else if (name == "IPCounts.txt")	loadIpCounts(zip);
+			else if (name == "Stats.txt")		loadStats(zip);
+			else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
+			else if (name.Left(8) == "Version ") {}
+			else
+				wxLogWarning("Other fluff found in capture file (%s)", name.c_str());
 		}
+
+		setRoot(NULL);
 	}
-
-	wxZipInputStream zip(input);
-	if (!zip.IsOk()) { wxLogError("ZIP error opening profile data."); return false; }
-
-	while (wxZipEntry *entry = zip.GetNextEntry())
+	catch (SleepyException &e)
 	{
-		wxString name = entry->GetInternalName();
-
-			 if (name == "Symbols.txt")		loadSymbols(zip);
-		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
-		else if (name == "IPCounts.txt")	loadIpCounts(zip);
-		else if (name == "Stats.txt")		loadStats(zip);
-		else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
-		else if (name.Left(8) == "Version ") {}
-		else {
-			wxLogWarning("Other fluff found in capture file (%s)", name.c_str());
-		}
+		wxLogError("%ls", e.wwhat());
+		return false;
 	}
-
-	setRoot(NULL);
 	return true;
 }
 
@@ -217,7 +222,7 @@ void Database::loadSymbols(wxInputStream &file)
 
 		bool inserted;
 		AddrInfo &info = map_emplace(addrinfo, addr, &inserted);
-		// TODO: check if inserted is true
+		enforce(inserted, "Duplicate address in symbol list");
 		::readQuote(stream, modulename);
 		stream >> procname;
 		::readQuote(stream, sourcefilename);
