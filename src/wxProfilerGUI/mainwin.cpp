@@ -245,7 +245,7 @@ static wxArrayString arrayFromSet( const wxStringHashSet& set )
 	wxArrayString dest;
 	dest.reserve(set.size());
 
-	for (wxStringHashSet::const_iterator iter=set.begin(); iter != set.end(); ++iter )
+	for (auto iter = set.begin(); iter != set.end(); ++iter)
 	{
 		if( *iter != "" )
 			dest.Add(*iter);

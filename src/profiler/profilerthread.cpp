@@ -46,9 +46,9 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	profilers.reserve(target_threads.size());
-	for(std::vector<HANDLE>::const_iterator it = target_threads.begin(); it != target_threads.end(); ++it){
+	for (auto it = target_threads.begin(); it != target_threads.end(); ++it)
 		profilers.push_back(Profiler(target_process_, *it, callstacks, flatcounts));
-	}
+
 	numsamplessofar = 0;
 	done = false;
 	failed = false;
@@ -210,16 +210,14 @@ void ProfilerThread::saveData()
 	std::map<PROFILER_ADDR, bool> used_addresses;
 	SAMPLE_TYPE totalCounts = 0;
 
-	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
-		i != flatcounts.end(); ++i)
+	for (auto i = flatcounts.begin(); i != flatcounts.end(); ++i)
 	{
 		PROFILER_ADDR addr = i->first;
 		used_addresses[addr] = true;
 		totalCounts += i->second;
 	}
 
-	for(std::map<CallStack, SAMPLE_TYPE>::const_iterator i = callstacks.begin(); 
-		i != callstacks.end(); ++i)
+	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
 	{
 		const CallStack &callstack = i->first;
 		for (size_t n=0;n<callstack.depth;n++)
@@ -232,7 +230,7 @@ void ProfilerThread::saveData()
 	beginProgress(L"Querying and saving symbols", used_addresses.size());
 	zip.PutNextEntry(_T("Symbols.txt"));
 
-	for (std::map<PROFILER_ADDR, bool>::iterator i = used_addresses.begin(); i != used_addresses.end(); ++i)
+	for (auto i = used_addresses.begin(); i != used_addresses.end(); ++i)
 	{
 		int proclinenum;
 		std::wstring procfile;
@@ -252,8 +250,7 @@ void ProfilerThread::saveData()
 
 	txt << totalCounts << "\n";
 
-	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
-		i != flatcounts.end(); ++i)
+	for (auto i = flatcounts.begin(); i != flatcounts.end(); ++i)
 	{
 		PROFILER_ADDR addr = i->first;
 		SAMPLE_TYPE count = i->second;
@@ -268,8 +265,7 @@ void ProfilerThread::saveData()
 	beginProgress(L"Saving callstacks", callstacks.size());
 	zip.PutNextEntry(_T("Callstacks.txt"));
 
-	for(std::map<CallStack, SAMPLE_TYPE>::const_iterator i = callstacks.begin(); 
-		i != callstacks.end(); ++i)
+	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
 	{
 		const CallStack &callstack = i->first;
 		SAMPLE_TYPE count = i->second;
@@ -309,7 +305,7 @@ void ProfilerThread::run()
 		sampleLoop();
 	} catch(ProfilerExcep& e) {
 		// see if it's an actual error, or did the thread just finish naturally
-		for(std::vector<Profiler>::const_iterator it = profilers.begin(); it != profilers.end(); ++it)
+		for (auto it = profilers.begin(); it != profilers.end(); ++it)
 		{
 			const Profiler& profiler(*it);
 			if (!profiler.targetExited())

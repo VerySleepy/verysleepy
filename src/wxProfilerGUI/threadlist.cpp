@@ -100,7 +100,8 @@ std::vector<const ThreadInfo*> ThreadList::getSelectedThreads(bool all)
 		}
 	} else {
 		selectedThreads.reserve(this->selected_threads.size());
-		for(std::set<int>::const_iterator it = this->selected_threads.begin(); it != this->selected_threads.end(); ++it){
+		for (auto it = this->selected_threads.begin(); it != this->selected_threads.end(); ++it)
+		{
 			int selected_thread = *it;
 			if(selected_thread >= 0 && selected_thread < (int)threads.size())
 			{

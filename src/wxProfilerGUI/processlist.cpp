@@ -363,7 +363,8 @@ void ProcessList::updateProcesses()
 	fillList();
 	if(processWasSelected){
 		int index = 0;
-		for(std::vector<ProcessInfo>::const_iterator it = this->processes.begin(); it != this->processes.end(); ++it){
+		for (auto it = this->processes.begin(); it != this->processes.end(); ++it)
+		{
 			const ProcessInfo& processInfo(*it);
 			if(processInfo.getID() == selectedProcessId){
 				this->SetFocus();

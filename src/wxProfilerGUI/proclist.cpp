@@ -182,7 +182,7 @@ void ProcList::displayList()
 	theMainWin->setProgress(L"Populating list...", list.items.size());
 	const ViewState *viewstate = theMainWin->getViewState();
 
-	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
+	for (auto i = list.items.begin(); i != list.items.end(); ++i)
 	{
 		const Database::Symbol *sym = i->symbol;
 

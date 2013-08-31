@@ -322,8 +322,7 @@ bool Profiler::targetExited() const
 
 //void Profiler::saveIPs(std::ostream& stream)
 //{
-//	for(std::map<Sample, int>::const_iterator i = counts.begin(); 
-//		i != counts.end(); ++i)
+//	for (auto i = counts.begin(); i != counts.end(); ++i)
 //	{
 //		const Sample &sample = i->first;
 //		int count = i->second;

@@ -381,7 +381,7 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 	}
 
 	// DE: 20090325 attaches to specific a list of threads
-	for(std::vector<const ThreadInfo*>::const_iterator it = selectedThreads.begin(); it != selectedThreads.end(); ++it)
+	for (auto it = selectedThreads.begin(); it != selectedThreads.end(); ++it)
 	{
 		const ThreadInfo* threadInfo(*it);
 
