@@ -185,12 +185,20 @@ static ID map_string(std::vector<std::wstring> &list, std::unordered_map<std::ws
 		return id;
 }
 
+// Windows progress bar is limited to 0x10000 max.
+static const __int64 kMaxProgress = 0x8000LL;
+
 // read symbol table
 void Database::loadSymbols(wxInputStream &file)
 {
 	wxTextInputStream str(file, wxT(" \t"), wxConvAuto(wxFONTENCODING_UTF8));
 
 	std::unordered_map<std::wstring, const Symbol*> locsymbols;
+
+	int filesize = file.GetSize();
+	wxProgressDialog progressdlg(APPNAME, "Loading symbols...",
+		kMaxProgress, theMainWin,
+		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
 	while (!file.Eof())
 	{
@@ -243,6 +251,10 @@ void Database::loadSymbols(wxInputStream &file)
 		}
 
 		info.symbol = sym;
+
+		wxFileOffset offset = file.TellI();
+		if (offset != wxInvalidOffset && offset != filesize)
+			progressdlg.Update(kMaxProgress * offset / filesize);
 	}
 }
 
@@ -251,15 +263,12 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 {
 	wxTextInputStream str(file);
 
-	// Windows progress bar is limited to 0x10000 max.
-	static const __int64 PROGRESS_MAX = 0x8000LL;
-
 	int filesize = file.GetSize();
 	wxProgressDialog progressdlg(APPNAME, "Loading callstacks...",
-		PROGRESS_MAX, theMainWin,
+		kMaxProgress, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
-	while(!file.Eof())
+	while (!file.Eof())
 	{
 		wxString line = str.ReadLine();
 		if (line.IsEmpty())
@@ -309,7 +318,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 
 		wxFileOffset offset = file.TellI();
 		if (offset != wxInvalidOffset && offset != filesize)
-			progressdlg.Update(PROGRESS_MAX * offset / filesize);
+			progressdlg.Update(kMaxProgress * offset / filesize);
 	}
 
 	struct Pred
@@ -335,7 +344,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 		{
 			int n = i - callstacks.begin();
 			if (n % 256 == 0)
-				progressdlg.Update(PROGRESS_MAX * n / callstacks.size());
+				progressdlg.Update(kMaxProgress * n / callstacks.size());
 
 			if (!filtered.empty() && filtered.back().addresses == i->addresses)
 				filtered.back().samplecount += i->samplecount;
