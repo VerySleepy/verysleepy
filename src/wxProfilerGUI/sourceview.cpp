@@ -80,7 +80,7 @@ SourceView::~SourceView()
 	
 }
 
-void SourceView::showFile(std::wstring path, int proclinenum, const LINEINFOMAP *lineinfomap)
+void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<double> &linecounts)
 {
 	currentfile = path;
 
@@ -139,13 +139,12 @@ void SourceView::showFile(std::wstring path, int proclinenum, const LINEINFOMAP 
 	while(fgetws(line,countof(line),file))
 	{
 		wchar_t outLine[1024*20];
-		LINEINFOMAP::const_iterator result = lineinfomap->find(linenum);
-		
-		if(result != lineinfomap->end()) {
-			swprintf(outLine, countof(outLine), L"{\\b\\cf2 %0.2fs\t}",result->second.count);
-		} else {
+
+		if (linecounts.size() > linenum && linecounts[linenum])
+			swprintf(outLine, countof(outLine), L"{\\b\\cf2 %0.2fs\t}",linecounts[linenum]);
+		else
 			wcscpy(outLine, L"\t");
-		}
+
 		wchar_t *out = outLine+wcslen(outLine);
 		wchar_t *in = line;
 		while(*in) {

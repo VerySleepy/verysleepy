@@ -101,8 +101,9 @@ CallstackView::CallstackView(wxWindow *parent,Database *_database)
 void CallstackView::OnSelected(wxListEvent& event)
 {
 	itemSelected = event.m_itemIndex;
-	if(callstackActive < callstacks.size() && (size_t)itemSelected < callstacks[callstackActive]->stack.size()) {
-		const Database::Symbol *symbol =  callstacks[callstackActive]->stack[itemSelected];
+	if (callstackActive < callstacks.size() && (size_t)itemSelected < callstacks[callstackActive]->symbols.size())
+	{
+		const Database::Symbol *symbol = callstacks[callstackActive]->symbols[itemSelected];
 		theMainWin->focusSymbol(symbol);
 	}
 	itemSelected = ~0;
@@ -182,34 +183,35 @@ void CallstackView::updateList()
 
 	const ViewState *viewstate = theMainWin->getViewState();
 
-	for(unsigned i=0;i<now->stack.size();i++) {
-		const Database::Symbol *snow = now->stack[i];
-		if(i == listCtrl->GetItemCount()) {
+	for(unsigned i = 0; i < now->symbols.size(); i++)
+	{
+		const Database::Symbol *snow = now->symbols[i];
+
+		if (i == listCtrl->GetItemCount())
 			listCtrl->InsertItem(i,snow->procname.c_str());
-		} else {
-			listCtrl->SetItem(i,COL_NAME,snow->procname.c_str());
-		}
-		if(snow->isCollapseFunction || snow->isCollapseModule) {
-			listCtrl->SetItemTextColour(i,wxColor(0,128,0));
-		} else {
-			listCtrl->SetItemTextColour(i,wxColor(0,0,0));
-		}
-		if(viewstate->flags[snow->id] & ViewState::Flag_Highlighted) {
-			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,0));
-		}
 		else
-		{
+			listCtrl->SetItem(i,COL_NAME,snow->procname.c_str());
+
+		if (snow->isCollapseFunction || snow->isCollapseModule)
+			listCtrl->SetItemTextColour(i,wxColor(0,128,0));
+		else
+			listCtrl->SetItemTextColour(i,wxColor(0,0,0));
+
+		if(viewstate->flags[snow->id] & ViewState::Flag_Highlighted)
+			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,0));
+		else
 			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,255));
-		}
-		listCtrl->SetItem(i,COL_MODULE,snow->module.c_str());
-		listCtrl->SetItem(i,COL_SOURCEFILE,snow->sourcefile.c_str());
-		listCtrl->SetItem(i,COL_SOURCELINE,wxString::Format("%d",snow->sourceline));
+
+		listCtrl->SetItem(i, COL_MODULE    , database->getModuleName(snow->module));
+		listCtrl->SetItem(i, COL_SOURCEFILE, database->getFileName  (snow->sourcefile));
+		listCtrl->SetItem(i, COL_SOURCELINE, wxString::Format("%d", database->getAddrInfo(snow->address)->sourceline));
+
 		wxFont font = listCtrl->GetFont();
-		if(snow == currSymbol) {
+		if(snow == currSymbol)
 			font.SetWeight(wxFONTWEIGHT_BOLD);
-		} else {
+		else
 			font.SetWeight(wxFONTWEIGHT_NORMAL);
-		}
+
 		listCtrl->SetItemFont(i, font);
 		if(i == itemSelected) {
 			listCtrl->SetItemState(i,wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
@@ -218,9 +220,9 @@ void CallstackView::updateList()
 		}
 		listCtrl->SetItemData(i, snow->id);
 	}
-	while(listCtrl->GetItemCount() > int(now->stack.size())) {
+
+	while (listCtrl->GetItemCount() > int(now->symbols.size()))
 		listCtrl->DeleteItem(listCtrl->GetItemCount()-1);
-	}
 }
 
 void CallstackView::OnTool(wxCommandEvent &event)

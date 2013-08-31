@@ -60,9 +60,6 @@
     <ClCompile Include="src\wxProfilerGUI\launchdlg.cpp">
       <Filter>wxProfilerGUI</Filter>
     </ClCompile>
-    <ClCompile Include="src\wxProfilerGUI\lineinfo.cpp">
-      <Filter>wxProfilerGUI</Filter>
-    </ClCompile>
     <ClCompile Include="src\wxProfilerGUI\mainwin.cpp">
       <Filter>wxProfilerGUI</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
     <ClInclude Include="src\wxProfilerGUI\launchdlg.h">
-      <Filter>wxProfilerGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\wxProfilerGUI\lineinfo.h">
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
     <ClInclude Include="src\wxProfilerGUI\mainwin.h">

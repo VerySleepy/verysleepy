@@ -25,7 +25,6 @@ http://www.gnu.org/copyleft/gpl.html.
 #define __SOURCEVIEW_H_666_
 
 #include "profilergui.h"
-#include "lineinfo.h"
 
 class MainWin;
 
@@ -49,7 +48,7 @@ public:
 	void OnPaint(wxPaintEvent& event);
 	void OnUpdateUI(wxUpdateUIEvent& event);
 
-	void showFile(std::wstring path, int linenum, const LINEINFOMAP *lineinfomap);
+	void showFile(std::wstring path, int linenum, const std::vector<double> &linecounts);
 
 	const std::wstring& getCurrentFile() const { return currentfile; }
 private:

@@ -136,7 +136,7 @@ struct ExclusivePred  { bool operator () (const Database::Item &a, const Databas
 struct InclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) { return a.inclusive          < b.inclusive         ; } };
 struct ModulePred     { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->module     < b.symbol->module    ; } };
 struct SourceFilePred { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->sourcefile < b.symbol->sourcefile; } };
-struct SourceLinePred { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->sourceline < b.symbol->sourceline; } };
+struct AddressPred    { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->address    < b.symbol->address   ; } };
 
 void ProcList::sortList()
 {
@@ -150,7 +150,7 @@ void ProcList::sortList()
 	case COL_INCLUSIVEPCT: std::sort(list.items.begin(), list.items.end(), InclusivePred ()); break;
 	case COL_MODULE:       std::sort(list.items.begin(), list.items.end(), ModulePred    ()); break;
 	case COL_SOURCEFILE:   std::sort(list.items.begin(), list.items.end(), SourceFilePred()); break;
-	case COL_SOURCELINE:   std::sort(list.items.begin(), list.items.end(), SourceLinePred()); break;
+	case COL_SOURCELINE:   std::sort(list.items.begin(), list.items.end(), AddressPred   ()); break;
 	}
 
 	if (sort_dir == SORT_DOWN)
@@ -168,7 +168,7 @@ void ProcList::showList(const Database::List &list)
 void ProcList::displayList()
 {
 	theMainWin->setProgress(L"Saving list state...");
-	int *item_state = new int[database->getSymbolIDCount()]();
+	int *item_state = new int[database->getSymbolCount()]();
 	// TODO: use GetNextItem?
 	for (long i=0; i<GetItemCount(); i++)
 		item_state[GetItemData(i)] = GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
@@ -217,9 +217,9 @@ void ProcList::displayList()
 		setColumnValue(c, COL_INCLUSIVEPCT,	inclusivepercent);
 		setColumnValue(c, COL_SAMPLES,		exclusive);
 		setColumnValue(c, COL_CALLSPCT,		exclusivepercent);
-		setColumnValue(c, COL_MODULE,		sym->module);
-		setColumnValue(c, COL_SOURCEFILE,	sym->sourcefile);
-		setColumnValue(c, COL_SOURCELINE,	::toString(sym->sourceline));
+		setColumnValue(c, COL_MODULE,		database->getModuleName(sym->module));
+		setColumnValue(c, COL_SOURCEFILE,	database->getFileName  (sym->sourcefile));
+		setColumnValue(c, COL_SOURCELINE,	::toString(database->getAddrInfo(sym->address)->sourceline));
 
 		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)
 			EnsureVisible(c);

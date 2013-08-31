@@ -165,10 +165,6 @@ void ProfilerThread::sampleLoop()
 
 void ProfilerThread::saveData()
 {
-	int numsymbols = 0;
-	std::map<PROFILER_ADDR, int> symbols;
-	std::map<std::wstring, int> symbolidtable;
-
 	//get process id of the process the target thread is running in
 	//const DWORD process_id = GetProcessIdOfThread(profiler.getTarget());
 
@@ -183,8 +179,7 @@ void ProfilerThread::saveData()
 	}
 
 	//------------------------------------------------------------------------
-	//copy minidump
-	//------------------------------------------------------------------------
+
 	if (!minidump.empty())
 	{
 		zip.PutNextEntry(_T("minidump.dmp"));
@@ -197,13 +192,10 @@ void ProfilerThread::saveData()
 	}
 
 	//------------------------------------------------------------------------
-	//save instruction pointer count results
-	//------------------------------------------------------------------------
-
-	wchar_t tmp[4096] = L"?";
-
+	beginProgress(L"Saving stats", 100);
 	zip.PutNextEntry(_T("Stats.txt"));
 
+	wchar_t tmp[4096] = L"?";
 	GetModuleFileNameEx(target_process, NULL, tmp, 4096);
 	time_t rawtime;
 	time(&rawtime);
@@ -212,19 +204,18 @@ void ProfilerThread::saveData()
 	txt << "Date: " << asctime(localtime(&rawtime));
 	txt << "Samples: " << numsamplessofar << "\n";
 
-
-
-	zip.PutNextEntry(_T("IPCounts.txt"));
-
+	//------------------------------------------------------------------------
 	beginProgress(L"Summarizing results");
 
-	// Build up addr->procedure symbol table.
 	std::map<PROFILER_ADDR, bool> used_addresses;
+	SAMPLE_TYPE totalCounts = 0;
+
 	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
 		i != flatcounts.end(); ++i)
 	{
 		PROFILER_ADDR addr = i->first;
 		used_addresses[addr] = true;
+		totalCounts += i->second;
 	}
 
 	for(std::map<CallStack, SAMPLE_TYPE>::const_iterator i = callstacks.begin(); 
@@ -237,38 +228,9 @@ void ProfilerThread::saveData()
 		}
 	}
 
-	SAMPLE_TYPE totalCounts = 0;
-	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
-		i != flatcounts.end(); ++i)
-	{
-		totalCounts += i->second;
-	}
-
-	txt << totalCounts << "\n";
-
-	beginProgress(L"Saving samples", flatcounts.size());
-
-	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
-		i != flatcounts.end(); ++i)
-	{
-		PROFILER_ADDR addr = i->first;
-
-		std::wstring addr_file;
-		int addr_line;
-		sym_info->getLineForAddr(addr, addr_file, addr_line);
-
-		SAMPLE_TYPE count = i->second;
-
-		txt << ::toHexString(addr) << " " << count << 
-			"         \"" << addr_file << "\" " << addr_line << "\n";
-
-		if (updateProgress())
-			return;
-	}
-
+	//------------------------------------------------------------------------
+	beginProgress(L"Querying and saving symbols", used_addresses.size());
 	zip.PutNextEntry(_T("Symbols.txt"));
-
-	beginProgress(L"Querying symbols", used_addresses.size());
 
 	for (std::map<PROFILER_ADDR, bool>::iterator i = used_addresses.begin(); i != used_addresses.end(); ++i)
 	{
@@ -276,38 +238,35 @@ void ProfilerThread::saveData()
 		std::wstring procfile;
 		PROFILER_ADDR addr = i->first;
 
-		const std::wstring proc_name = "\"" + sym_info->getProcForAddr(addr, procfile, proclinenum) + "\"";
-		const std::wstring full_proc_name = "\"" + sym_info->getModuleNameForAddr(addr) + "\" " + 
-			proc_name + " \"" + procfile + "\"" + " " + ::toString(proclinenum);
-
-		if (symbolidtable.find(full_proc_name) == symbolidtable.end())
-			symbolidtable[full_proc_name] = numsymbols++;
-
-		symbols[addr] = symbolidtable[full_proc_name];
+		const std::wstring proc_name = sym_info->getProcForAddr(addr, procfile, proclinenum);
+		txt << ::toHexString(addr) << " \"" << sym_info->getModuleNameForAddr(addr) << "\" " <<
+			proc_name << " \"" << procfile << "\" " << ::toString(proclinenum) << '\n';
 
 		if (updateProgress())
 			return;
 	}
 
-	beginProgress(L"Saving symbols", symbolidtable.size());
+	//------------------------------------------------------------------------
+	beginProgress(L"Saving IP counts", flatcounts.size());
+	zip.PutNextEntry(_T("IPCounts.txt"));
 
-	for(std::map<std::wstring, int>::const_iterator i = symbolidtable.begin(); i != symbolidtable.end(); ++i)
+	txt << totalCounts << "\n";
+
+	for(std::map<PROFILER_ADDR, SAMPLE_TYPE>::const_iterator i = flatcounts.begin(); 
+		i != flatcounts.end(); ++i)
 	{
-		std::wstring str = i->first;
-		int id = i->second;
+		PROFILER_ADDR addr = i->first;
+		SAMPLE_TYPE count = i->second;
 
-		txt << "sym" << id << " " << str << "\n";
+		txt << ::toHexString(addr) << " " << count << "\n";
 
 		if (updateProgress())
 			return;
 	}
 
 	//------------------------------------------------------------------------
-	//write callstack counts to disk
-	//------------------------------------------------------------------------
-	zip.PutNextEntry(_T("Callstacks.txt"));
-
 	beginProgress(L"Saving callstacks", callstacks.size());
+	zip.PutNextEntry(_T("Callstacks.txt"));
 
 	for(std::map<CallStack, SAMPLE_TYPE>::const_iterator i = callstacks.begin(); 
 		i != callstacks.end(); ++i)
@@ -317,15 +276,14 @@ void ProfilerThread::saveData()
 
 		txt << count;
 		for( size_t d=0;d<callstack.depth;d++ )
-		{
-			txt << " sym" << symbols[callstack.addr[d]];
-		}
+			txt << " " << ::toHexString(callstack.addr[d]);
 		txt << "\n";
 
 		if (updateProgress())
 			return;
 	}
 
+	//------------------------------------------------------------------------
 	// Change FORMAT_VERSION when the file format changes
 	// (and becomes unreadable by older versions of Sleepy).
 	zip.PutNextEntry(L"Version " _T(FORMAT_VERSION) L" required");

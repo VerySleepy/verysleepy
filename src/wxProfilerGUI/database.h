@@ -25,13 +25,13 @@ http://www.gnu.org/copyleft/gpl.html.
 #define __DATABASE_H_666_
 
 #include "profilergui.h"
-#include "lineinfo.h"
 #include "../profiler/symbolinfo.h"
 #include <deque>
+#include <unordered_map>
 
-bool IsOsFunction(wxString function);
-void AddOsFunction(wxString function);
-void RemoveOsFunction(wxString function);
+bool IsOsFunction(wxString proc);
+void AddOsFunction(wxString proc);
+void RemoveOsFunction(wxString proc);
 
 bool IsOsModule(wxString mod);
 void AddOsModule(wxString mod);
@@ -45,17 +45,41 @@ Database
 class Database
 {
 public:
+	typedef unsigned long long Address;
+	typedef long FileID;
+	typedef long ModuleID;
+
+	/// Represents one function (as it appears in function lists).
 	struct Symbol
 	{
 		typedef long ID;
+		ID id;
 
-		ID           id;
-		std::wstring module;
+		/// Points to the address of the start of the symbol
+		/// (or the closest thing we have to that).
+		/// Multiple addresses may belong to the same symbol.
+		Address  address;
+
 		std::wstring procname;
-		std::wstring sourcefile;
-		int          sourceline;
-		bool         isCollapseFunction;
-		bool         isCollapseModule;
+		FileID       sourcefile;
+		ModuleID     module;
+
+		bool isCollapseFunction;
+		bool isCollapseModule;
+	};
+
+	/// Represents one address we encountered during profiling
+	struct AddrInfo
+	{
+		AddrInfo() : symbol(NULL), sourceline(0), count(0), percentage(0) {}
+
+		// Symbol info
+		const Symbol *symbol;
+		int           sourceline;
+
+		// IP counts
+		double count;
+		float  percentage;
 	};
 
 	struct Item
@@ -74,18 +98,12 @@ public:
 
 	struct CallStack
 	{
-		std::vector<const Symbol *> stack;
-		double samplecount;
+		std::vector<Address> addresses;
 
-		bool contains (const Symbol *s) const
-		{
-			for (std::vector<const Symbol *>::const_iterator it=stack.begin();it!=stack.end();++it)
-			{
-				const Symbol *symbol = *it;
-				if (symbol==s) return true;
-			}
-			return false;
-		}
+		// symbols[i] == addrsymbols[addresses[i]]. For convenience/performance.
+		std::vector<const Symbol *> symbols;
+
+		double samplecount;
 	};
 
 	Database();
@@ -93,10 +111,17 @@ public:
 	void clear();
 
 	bool loadFromPath(const std::wstring& profilepath,bool collapseOSCalls,bool loadMinidump);
-	bool reload(bool collapseOSCalls,bool loadMinidump);
-	void scanMainList();
-	int getSymbolIDCount() { return max_symbol_id + 1; } /// Size of an array capable of storing an element for every Symbol::id
-	const Symbol *getSymbol(Symbol::ID id) { return symbols[id]; }
+	bool reload(bool collapseOSCalls, bool loadMinidump);
+
+	const Symbol *getSymbol(Symbol::ID id) const { return symbols[id]; }
+	Symbol::ID getSymbolCount() const { return symbols.size(); }
+	const std::wstring &getFileName(FileID id) const { return files[id]; }
+	FileID getFileCount() const { return files.size(); }
+	const std::wstring &getModuleName(ModuleID id) const { return modules[id]; }
+	ModuleID getModuleCount() const { return modules.size(); }
+
+	const AddrInfo *getAddrInfo(Address addr) { return &addrinfo[addr]; }
+
 	void setRoot(const Symbol *root);
 	const Symbol *getRoot() const { return currentRoot; }
 
@@ -104,7 +129,7 @@ public:
 	List getCallers(const Symbol *symbol) const;
 	List getCallees(const Symbol *symbol) const;
 	std::vector<const CallStack*> getCallstacksContaining(const Symbol *symbol) const;
-	const LINEINFOMAP *getLineInfo(const std::wstring &srcfile) const;
+	std::vector<double> getLineCounts(FileID sourcefile);
 
 	std::vector<std::wstring> stats;
 
@@ -113,22 +138,33 @@ public:
 	bool has_minidump;
 
 private:
+	/// Symbol::ID -> Symbol*
 	std::vector<Symbol *> symbols;
+
+	/// filename <-> FileID
+	std::vector<std::wstring> files;
+	std::unordered_map<std::wstring, FileID> filemap;
+
+	/// module name <-> ModuleID
+	std::vector<std::wstring> modules;
+	std::unordered_map<std::wstring, ModuleID> modulemap;
+
+	/// Address -> module/procname/sourcefile/sourceline
+	std::unordered_map<Address, AddrInfo> addrinfo;
+
 	std::vector<CallStack> callstacks;
-	std::map<std::wstring, LINEINFOMAP > fileinfo;
 	List mainList;
 	std::wstring profilepath;
 	const Symbol *currentRoot;
-	Symbol::ID max_symbol_id;
-
-	Symbol::ID translateSymbolID(const std::wstring &name);
 
 	void loadSymbols(wxInputStream &file);
-	void loadProcList(wxInputStream &file,bool collapseKernelCalls);
+	void loadCallstacks(wxInputStream &file,bool collapseKernelCalls);
 	void loadIpCounts(wxInputStream &file);
 	void loadStats(wxInputStream &file);
 	void loadMinidump(wxInputStream &file);
+	void scanMainList();
 
+	bool includeCallstack(const CallStack &callstack) const;
 	// Any additional symbols we can load after opening a capture
 	LateSymbolInfo late_sym_info;
 };

@@ -90,23 +90,24 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	if (selection.size() == 0)
 		return;
 
+	// Focused symbol properties
+	wxString procname       = sym->procname;
+	wxString sourcefilename = database->getFileName  (sym->sourcefile);
+	wxString modulename     = database->getModuleName(sym->module    );
+
 	if (selection.size() == 1)
 	{
-		wxString mod = sym->module.c_str();
-		wxString function = sym->procname.c_str();
-		wxString source = sym->sourcefile.c_str();
-
-		wxString modUpper = mod;
+		wxString modUpper = modulename;
 		modUpper.UpperCase();
 
-		menu->AppendCheckItem(ID_COLLAPSE_FUNC,"Collapse child calls")->Check(IsOsFunction(function));
-		menu->AppendCheckItem(ID_COLLAPSE_MOD,wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
-		menu->AppendCheckItem(ID_SET_ROOT,wxString::Format("Set root to %s", function));
+		menu->AppendCheckItem(ID_COLLAPSE_FUNC, "Collapse child calls")->Check(IsOsFunction(procname));
+		menu->AppendCheckItem(ID_COLLAPSE_MOD , wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
+		menu->AppendCheckItem(ID_SET_ROOT     , wxString::Format("Set root to %s", procname));
 		menu->AppendSeparator();
 
-		menu->AppendCheckItem(ID_FILTER_FUNC,wxString::Format("Filter functions to %s", function));
-		menu->AppendCheckItem(ID_FILTER_MODULE,wxString::Format("Filter Module to %s", mod));
-		menu->AppendCheckItem(ID_FILTER_SOURCE,wxString::Format("Filter Source to %s", source));
+		menu->AppendCheckItem(ID_FILTER_FUNC  , wxString::Format("Filter functions to %s", procname      ));
+		menu->AppendCheckItem(ID_FILTER_MODULE, wxString::Format("Filter Module to %s"   , modulename    ));
+		menu->AppendCheckItem(ID_FILTER_SOURCE, wxString::Format("Filter Source to %s"   , sourcefilename));
 		menu->AppendSeparator();
 	}
 
@@ -120,18 +121,18 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	switch(funcWindow.option)
 	{
 	case ID_COLLAPSE_FUNC:
-		if (IsOsFunction(sym->procname))
-			RemoveOsFunction(sym->procname);
+		if (IsOsFunction(procname))
+			RemoveOsFunction(procname);
 		else
-			AddOsFunction(sym->procname);
+			AddOsFunction(procname);
 		theMainWin->refresh();
 		break;
 
 	case ID_COLLAPSE_MOD:
-		if (IsOsModule(sym->module))
-			RemoveOsModule(sym->module);
+		if (IsOsModule(modulename))
+			RemoveOsModule(modulename);
 		else
-			AddOsModule(sym->module);
+			AddOsModule(modulename);
 		theMainWin->refresh();
 		break;
 
@@ -141,15 +142,15 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 		break;
 
 	case ID_FILTER_FUNC:
-		theMainWin->setFilter("procname", sym->procname);
+		theMainWin->setFilter("procname", procname);
 		break;
 
 	case ID_FILTER_MODULE:
-		theMainWin->setFilter("module", sym->module);
+		theMainWin->setFilter("module", modulename);
 		break;
 
 	case ID_FILTER_SOURCE:
-		theMainWin->setFilter("sourcefile", sym->sourcefile);
+		theMainWin->setFilter("sourcefile", sourcefilename);
 		break;
 
 	case ID_HIGHLIGHT:

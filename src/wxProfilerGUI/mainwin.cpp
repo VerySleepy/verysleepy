@@ -256,25 +256,31 @@ static wxArrayString arrayFromSet( const wxStringHashSet& set )
 
 void MainWin::buildFilterAutocomplete()
 {
-	const Database::List &list = database->getMainList();
 	wxStringHashSet procnameAutocomplete;
 	wxStringHashSet moduleAutocomplete;
 	wxStringHashSet sourcefileAutocomplete;
 
-	setProgress(L"Collecting autocomplete data...", list.items.size());
+	setProgress(L"Collecting autocomplete data...", database->getSymbolCount());
 
-	for (std::vector<Database::Item>::const_iterator i = list.items.begin(); i != list.items.end(); ++i)
+	for (Database::Symbol::ID id = 0; id < database->getSymbolCount(); id++)
 	{
-		const Database::Symbol *symbol = i->symbol;
-		procnameAutocomplete  .insert(symbol->procname  );
-		moduleAutocomplete    .insert(symbol->module    );
-		sourcefileAutocomplete.insert(symbol->sourcefile);
+		const Database::Symbol *symbol = database->getSymbol(id);
+		procnameAutocomplete.insert(symbol->procname  );
 
 		addSplitValues(procnameAutocomplete  , symbol->procname  , ':');
-		addSplitValues(sourcefileAutocomplete, symbol->sourcefile, '\\');
 
-		updateProgress(i - list.items.begin());
+		updateProgress(id);
 	}
+
+	for (Database::FileID id = 0; id < database->getFileCount(); id++)
+	{
+		const std::wstring &filename = database->getFileName(id);
+		sourcefileAutocomplete.insert(filename);
+		addSplitValues(sourcefileAutocomplete, filename, '\\');
+	}
+
+	for (Database::ModuleID id = 0; id < database->getModuleCount(); id++)
+		moduleAutocomplete.insert(database->getModuleName(id));
 
 	setProgress(L"Applying autocomplete data...");
 
@@ -382,15 +388,16 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 		if(!file.IsOk())
 			wxLogSysError("Could not export profile data.");
 		wxTextOutputStream txt(file);
-		for each(const Database::Item &item in database->getMainList().items) {
+		for each (const Database::Item &item in database->getMainList().items)
+		{
 			txt << item.symbol->procname << ",";
 			txt << item.exclusive << ",";
 			txt << item.inclusive << ",";
 			txt << (item.exclusive*100.0f/database->getMainList().totalcount) << ",";
 			txt << (item.inclusive*100.0f/database->getMainList().totalcount) << ",";
-			txt << item.symbol->module << ",";
-			txt << item.symbol->sourcefile << ",";
-			txt << item.symbol->sourceline << "\n";
+			txt << database->getModuleName(item.symbol->module) << ",";
+			txt << database->getFileName(item.symbol->sourcefile) << ",";
+			txt << database->getAddrInfo(item.symbol->address)->sourceline << "\n";
 		}
 	}
 }
@@ -513,18 +520,12 @@ void MainWin::showSource( const Database::Symbol * symbol )
 	if (sourceAndLog->GetSelection() != 0)
 		sourceAndLog->SetSelection(0); // Open source tab
 
-	const LINEINFOMAP *lineInfo = database->getLineInfo(symbol->sourcefile);
+	std::vector<double> linecounts = database->getLineCounts(symbol->sourcefile);
 
 	if (symbol->procname == L"KiFastSystemCallRet")
-		sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, NULL);
+		sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, std::vector<double>());
 	else
-	if(lineInfo)
-		sourceview->showFile(symbol->sourcefile, symbol->sourceline, lineInfo);
-	else
-	{
-		LINEINFOMAP dummymap;
-		sourceview->showFile(symbol->sourcefile, symbol->sourceline, &dummymap);
-	}
+		sourceview->showFile(database->getFileName(symbol->sourcefile), database->getAddrInfo(symbol->address)->sourceline, linecounts);
 }
 
 void MainWin::focusSymbol(const Database::Symbol *symbol)
@@ -562,7 +563,7 @@ void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=
 void MainWin::reset()
 {
 	viewstate.flags.clear();
-	viewstate.flags.resize(database->getSymbolIDCount());
+	viewstate.flags.resize(database->getSymbolCount());
 	history.clear();
 	historyPos = 0;
 
@@ -608,14 +609,15 @@ void MainWin::applyFilters()
 	std::wstring filter_module     = filters->GetProperty("module"    )->GetValueAsString();
 	std::wstring filter_sourcefile = filters->GetProperty("sourcefile")->GetValueAsString();
 
-	for (Database::Symbol::ID id = 0; id < database->getSymbolIDCount(); id++)
+	for (Database::Symbol::ID id = 0; id < database->getSymbolCount(); id++)
 	{
 		const Database::Symbol *symbol = database->getSymbol(id);
 
+		// TODO: Filter module and file names only once
 		bool filtered =
-			( !filter_procname  .empty() && symbol->procname  .find(filter_procname  ) == std::wstring::npos ) ||
-			( !filter_module    .empty() && symbol->module    .find(filter_module    ) == std::wstring::npos ) ||
-			( !filter_sourcefile.empty() && symbol->sourcefile.find(filter_sourcefile) == std::wstring::npos );
+			( !filter_procname  .empty() &&                         symbol->procname   .find(filter_procname  ) == std::wstring::npos ) ||
+			( !filter_module    .empty() && database->getModuleName(symbol->module    ).find(filter_module    ) == std::wstring::npos ) ||
+			( !filter_sourcefile.empty() && database->getFileName  (symbol->sourcefile).find(filter_sourcefile) == std::wstring::npos );
 
 		viewstate.setFlag(id, ViewState::Flag_Filtered, filtered);
 	}

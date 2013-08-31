@@ -38,20 +38,20 @@ Database *theDatabase;
 StringSet osModules(L"osmodules.txt",false);
 StringSet osFunctions(L"osfunctions.txt",true);
 
-bool IsOsFunction(wxString function)
+bool IsOsFunction(wxString proc)
 {
-	return osFunctions.Contains(function);
+	return osFunctions.Contains(proc);
 }
 
-void AddOsFunction(wxString function)
+void AddOsFunction(wxString proc)
 {
-	osFunctions.Add(function);
+	osFunctions.Add(proc);
 	theMainWin->reload();
 }
 
-void RemoveOsFunction(wxString function)
+void RemoveOsFunction(wxString proc)
 {
-	osFunctions.Remove(function);
+	osFunctions.Remove(proc);
 	theMainWin->reload();
 }
 
@@ -90,12 +90,13 @@ void Database::clear()
 			delete *i;
 
 	symbols.clear();
+	files.clear();
+	filemap.clear();
+	addrinfo.clear();
 	callstacks.clear();
-	fileinfo.clear();
 	mainList.items.clear();
 	mainList.totalcount = 0;
 	has_minidump = false;
-	max_symbol_id = -1;
 }
 
 bool Database::reload(bool collapseOSCalls, bool loadMinidump)
@@ -144,7 +145,7 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 		wxString name = entry->GetInternalName();
 
 			 if (name == "Symbols.txt")		loadSymbols(zip);
-		else if (name == "Callstacks.txt")	loadProcList(zip,collapseOSCalls);
+		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
 		else if (name == "IPCounts.txt")	loadIpCounts(zip);
 		else if (name == "Stats.txt")		loadStats(zip);
 		else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
@@ -158,57 +159,95 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	return true;
 }
 
-/// Translate a symbol ID string, as it appears in a text file, to an unique numeric ID.
-/// Currently, we assume the convention as currently implemented when writing the capture -
-/// every symbol ID is just the string "sym" followed by a decimal number.
-Database::Symbol::ID Database::translateSymbolID(const std::wstring &name)
+/// Add or find an entry to the map with the specified key.
+/// Copies true to *pinserted if a new entry was added, false if an existing one was found.
+/// Returns a reference to the new/existing value.
+template<class MAP>
+static typename MAP::value_type::second_type& map_emplace(MAP &map, const typename MAP::key_type &key, bool *pinserted=NULL)
 {
-	Database::Symbol::ID id;
-	if (name.length() < 4 || name[0]!='s' || name[1]!='y' || name[2]!='m' || !wxString(name).substr(3).ToLong(&id))
+	auto pair = map.emplace(std::make_pair(key, MAP::value_type::second_type()));
+	if (pinserted) *pinserted = pair.second;
+	return pair.first->second;
+}
+
+/// Add or find an entry in a string[id] vector / id[string] map pair, and return its ID.
+template<typename ID>
+static ID map_string(std::vector<std::wstring> &list, std::unordered_map<std::wstring, ID>&map, std::wstring key)
+{
+	bool inserted;
+	ID &id = map_emplace(map, key, &inserted);
+	if (inserted) // new entry
 	{
-		wxLogError(L"Invalid symbol name: %s", name.c_str());
-		return 0;
+		list.push_back(key);
+		return id = list.size() - 1;
 	}
-	if (max_symbol_id < id)
-		max_symbol_id = id;
-	return id;
+	else // existing entry
+		return id;
 }
 
 // read symbol table
 void Database::loadSymbols(wxInputStream &file)
 {
 	wxTextInputStream str(file, wxT(" \t"), wxConvAuto(wxFONTENCODING_UTF8));
-	while(!file.Eof())
+
+	std::unordered_map<std::wstring, const Symbol*> locsymbols;
+
+	while (!file.Eof())
 	{
 		wxString line = str.ReadLine();
 		if (line.IsEmpty())
 			break;
 
 		std::wistringstream stream(line.c_str().AsWChar());
-		Symbol *sym = new Symbol;
 
-		std::wstring idstr;
-		stream >> idstr;
-		sym->id = translateSymbolID(idstr);
+		std::wstring addrstr;
+		stream >> addrstr;
+		Address addr = hexStringTo64UInt(addrstr);
 
-		::readQuote(stream, sym->module);
-		::readQuote(stream, sym->procname);
-		::readQuote(stream, sym->sourcefile);
-		stream >> sym->sourceline;
+		std::wstring sourcefilename, modulename, procname;
 
-		late_sym_info.filterSymbol(sym->module, sym->procname, sym->sourcefile, sym->sourceline);
+		bool inserted;
+		AddrInfo &info = map_emplace(addrinfo, addr, &inserted);
+		// TODO: check if inserted is true
+		::readQuote(stream, modulename);
+		stream >> procname;
+		::readQuote(stream, sourcefilename);
+		stream >> info.sourceline;
 
-		sym->isCollapseFunction = osFunctions.Contains(sym->procname.c_str());
-		sym->isCollapseModule = osModules.Contains(sym->module.c_str());
+		// Late symbol lookup
+		late_sym_info.filterSymbol(modulename, procname, sourcefilename, info.sourceline);
 
-		if (symbols.size() <= (size_t)sym->id)
-			symbols.resize(sym->id+1);
-		symbols[sym->id] = sym;
+		// Convert filename and module strings to a numeric IDs
+		FileID   fileid   = map_string(files  , filemap  , sourcefilename);
+		ModuleID moduleid = map_string(modules, modulemap, modulename    );
+
+		// Build a key string for grouping addresses belonging to the same symbol
+		std::wostringstream locstream;
+		locstream << modulename << '/' << sourcefilename << '/' << procname;
+		std::wstring loc = locstream.str();
+
+		// Create a new symbol entry, or lookup the existing one, based on the key
+		const Symbol *&sym = map_emplace(locsymbols, loc, &inserted);
+		if (inserted) // new symbol, judging by its location?
+		{
+			Symbol *newsym = new Symbol;
+			newsym->id                 = symbols.size();
+			newsym->address            = addr;
+			newsym->procname           = procname;
+			newsym->sourcefile         = fileid;
+			newsym->module             = moduleid;
+			newsym->isCollapseFunction = osFunctions.Contains(procname  .c_str());
+			newsym->isCollapseModule   = osModules  .Contains(modulename.c_str());
+			symbols.push_back(newsym);
+			sym = newsym;
+		}
+
+		info.symbol = sym;
 	}
 }
 
 // read callstacks
-void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
+void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 {
 	wxTextInputStream str(file);
 
@@ -216,7 +255,7 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 	static const __int64 PROGRESS_MAX = 0x8000LL;
 
 	int filesize = file.GetSize();
-	wxProgressDialog progressdlg(APPNAME, "Loading profile database...",
+	wxProgressDialog progressdlg(APPNAME, "Loading callstacks...",
 		PROGRESS_MAX, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
@@ -231,33 +270,36 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 		CallStack callstack;
 		stream >> callstack.samplecount;
 
-		while(true)
+		while (true)
 		{
-			std::wstring idstr;
-			stream >> idstr;
-			if (idstr.empty())
+			std::wstring addrstr;
+			stream >> addrstr;
+			if (addrstr.empty())
 				break;
+			Address addr = hexStringTo64UInt(addrstr);
 
-			const Symbol *sym = symbols[translateSymbolID(idstr)];
+			if (collapseKernelCalls && addrinfo[addr].symbol->isCollapseFunction)
+				callstack.addresses.clear();
 
-			if(collapseKernelCalls && sym->isCollapseFunction) {
-				callstack.stack.clear();
-			}
-
-			callstack.stack.push_back(sym);
+			callstack.addresses.push_back(addr);
 		}
 
-		if(collapseKernelCalls) {
-			if(callstack.stack.size() && callstack.stack[0]->isCollapseModule) {
-				while(callstack.stack.size() >= 2) {
-					if(	!callstack.stack[1]->isCollapseModule )
-					{
+		if (collapseKernelCalls)
+		{
+			if (callstack.addresses.size() && addrinfo[callstack.addresses[0]].symbol->isCollapseModule)
+			{
+				while (callstack.addresses.size() >= 2)
+				{
+					if (!addrinfo[callstack.addresses[1]].symbol->isCollapseModule)
 						break;
-					}
-					callstack.stack.erase(callstack.stack.begin());
+					callstack.addresses.erase(callstack.addresses.begin());
 				}
 			}
 		}
+
+		callstack.symbols.resize(callstack.addresses.size());
+		for (size_t i=0; i<callstack.addresses.size(); i++)
+			callstack.symbols[i] = addrinfo[callstack.addresses[i]].symbol;
 
 #if _MSC_VER >= 1600
 		callstacks.push_back(std::move(callstack));
@@ -274,8 +316,8 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 	{
 		bool operator () (const CallStack &a, const CallStack &b)
 		{
-			long l = a.stack.size() - b.stack.size();
-			return l ? l<0 : a.stack < b.stack;
+			long l = a.addresses.size() - b.addresses.size();
+			return l ? l<0 : a.addresses < b.addresses;
 		}
 	};
 
@@ -295,7 +337,7 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 			if (n % 256 == 0)
 				progressdlg.Update(PROGRESS_MAX * n / callstacks.size());
 
-			if (!filtered.empty() && filtered.back().stack == i->stack)
+			if (!filtered.empty() && filtered.back().addresses == i->addresses)
 				filtered.back().samplecount += i->samplecount;
 			else
 				filtered.push_back(*i);
@@ -307,10 +349,10 @@ void Database::loadProcList(wxInputStream &file,bool collapseKernelCalls)
 
 void Database::loadIpCounts(wxInputStream &file)
 {
-	double totallinecount = 0;
+	double totalcount = 0;
 	wxTextInputStream str(file);
 
-	str >> totallinecount;
+	str >> totalcount;
 
 	int c = 0;
 	while(!file.Eof())
@@ -321,23 +363,16 @@ void Database::loadIpCounts(wxInputStream &file)
 
 		std::wistringstream stream(line.c_str().AsWChar());
 
-		std::wstring memaddr;
-		stream >> memaddr;
-
+		std::wstring addrstr;
 		double count;
+
+		stream >> addrstr;
 		stream >> count;
 
-		std::wstring srcfile;
-		int linenum;
-
-		::readQuote(stream, srcfile);
-		stream >> linenum;
-
-		late_sym_info.filterIP(memaddr, srcfile, linenum);
-
-		LineInfo& lineinfo = (fileinfo[srcfile])[linenum];
-		lineinfo.count += count;
-		lineinfo.percentage += 100.0f * ((float)count / (float)totallinecount);
+		Address addr = hexStringTo64UInt(addrstr);
+		AddrInfo *info = &addrinfo[addr];
+		info->count += count;
+		info->percentage += 100.0f * ((float)count / (float)totalcount);
 	}
 }
 
@@ -366,9 +401,16 @@ void Database::setRoot(const Database::Symbol *root)
 	scanMainList();
 }
 
+bool Database::includeCallstack(const CallStack &callstack) const
+{
+	if (currentRoot)
+		return std::find(callstack.symbols.begin(), callstack.symbols.end(), currentRoot) != callstack.symbols.end();
+	return true;
+}
+
 void Database::scanMainList()
 {
-	std::vector<double> exclusive(getSymbolIDCount()), inclusive(getSymbolIDCount());
+	std::vector<double> exclusive(symbols.size()), inclusive(symbols.size());
 
 	wxProgressDialog progressdlg(APPNAME, "Scanning profile database...",
 		(int)callstacks.size(), theMainWin,
@@ -383,13 +425,13 @@ void Database::scanMainList()
 	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{  
 		// Only use call stacks that include the current root
-		if (currentRoot && !i->contains(currentRoot)) continue;
+		if (!includeCallstack(*i)) continue;
 
-		exclusive[i->stack[0]->id] += i->samplecount;
-		std::vector<bool> seen(getSymbolIDCount());
-		for (size_t n=0;n<i->stack.size();n++)
+		exclusive[i->symbols[0]->id] += i->samplecount;
+		std::vector<bool> seen(symbols.size());
+		for (size_t n=0;n<i->symbols.size();n++)
 		{
-			Symbol::ID id = i->stack[n]->id;
+			Symbol::ID id = i->symbols[n]->id;
 
 			// we filter out duplicates, to avoid getting funny numbers when 
 			// using recursive functions.
@@ -405,10 +447,10 @@ void Database::scanMainList()
 		progressdlg.Update(progress++);
 	}
 
-	for (Symbol::ID id=0; id < getSymbolIDCount(); id++)
+	for (Symbol::ID id=0; id < symbols.size(); id++)
 	{
 		Item item;
-		item.symbol = getSymbol(id);
+		item.symbol = symbols[id];
 		item.exclusive = exclusive[id];
 		item.inclusive = inclusive[id];
 		mainList.items.push_back(item);
@@ -421,12 +463,12 @@ std::vector<const Database::CallStack*> Database::getCallstacksContaining(const 
 	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
-		if (currentRoot && !i->contains(currentRoot)) continue;
+		if (!includeCallstack(*i)) continue;
 
 		// Only include callstacks that have our symbol in.
-		for (size_t n=0;n<i->stack.size();n++)
+		for (size_t n=0;n<i->symbols.size();n++)
 		{
-			if (i->stack[n] == symbol)
+			if (i->symbols[n] == symbol)
 			{
 				ret.push_back(&*i);
 				break;
@@ -443,15 +485,16 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
-		if (currentRoot && !i->contains(currentRoot)) continue;
+		if (!includeCallstack(*i)) continue;
 
 		// Only include callstacks that have our symbol in.
-		for (size_t n=0;n<i->stack.size()-1;n++)
+		for (size_t n=0;n<i->symbols.size()-1;n++)
 		{
-			if (i->stack[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
-			if (i->stack[n] == symbol)
+			const Symbol *s = i->symbols[n];
+			if (s == currentRoot) break;       // Stop handling the call stack if we encounter the root
+			if (s == symbol)
 			{
-				const Symbol *caller = i->stack[n+1];
+				const Symbol *caller = i->symbols[n+1];
 
 				counts[caller] += i->samplecount;
 				list.totalcount += i->samplecount;
@@ -478,20 +521,20 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 	for (std::vector<CallStack>::const_iterator i = callstacks.begin(); i != callstacks.end(); ++i)
 	{ 
 		// Only use call stacks that include the current root
-		if (currentRoot && !i->contains(currentRoot)) continue;
+		if (!includeCallstack(*i)) continue;
 
 		double callstackCost = i->samplecount;
 
 		// Only include callstacks that have our symbol in.
-		for (size_t n=1;n<i->stack.size();n++)
+		for (size_t n=1;n<i->symbols.size();n++)
 		{
-			if (i->stack[n] == symbol)
+			if (i->symbols[n] == symbol)
 			{
-				const Symbol *callee = i->stack[n-1];
+				const Symbol *callee = i->symbols[n-1];
 				counts[callee] += callstackCost;
 				list.totalcount += callstackCost;
 			}
-			if (i->stack[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
+			if (i->symbols[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
 		}
 	}
 
@@ -505,17 +548,6 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 	}
 
 	return list;
-}
-
-const LINEINFOMAP *Database::getLineInfo(const std::wstring &srcfile) const
-{
-	std::map<std::wstring, LINEINFOMAP >::const_iterator i = fileinfo.find(srcfile);
-	if (i != fileinfo.end())
-	{
-		return &i->second;
-	} else {
-		return NULL;
-	}
 }
 
 void Database::loadMinidump(wxInputStream &file)
@@ -535,4 +567,20 @@ void Database::loadMinidump(wxInputStream &file)
 	{
 		wxLogError("%ls", e.what());
 	}
+}
+
+std::vector<double> Database::getLineCounts(FileID sourcefile)
+{
+	std::vector<double> linecounts;
+
+	for each (auto &pair in addrinfo)
+		if (pair.second.symbol->sourcefile == sourcefile)
+		{
+			int sourceline = pair.second.sourceline;
+			if (linecounts.size() <= sourceline)
+				linecounts.resize(sourceline+1);
+			linecounts[sourceline] += pair.second.count;
+		}
+
+	return linecounts;
 }

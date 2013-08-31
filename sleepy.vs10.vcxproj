@@ -227,7 +227,6 @@
     <ClCompile Include="src\wxProfilerGUI\contextmenu.cpp" />
     <ClCompile Include="src\wxProfilerGUI\database.cpp" />
     <ClCompile Include="src\wxProfilerGUI\launchdlg.cpp" />
-    <ClCompile Include="src\wxProfilerGUI\lineinfo.cpp" />
     <ClCompile Include="src\wxProfilerGUI\logview.cpp" />
     <ClCompile Include="src\wxProfilerGUI\mainwin.cpp" />
     <ClCompile Include="src\wxProfilerGUI\optionsdlg.cpp" />
@@ -256,7 +255,6 @@
     <ClInclude Include="src\wxProfilerGUI\contextmenu.h" />
     <ClInclude Include="src\wxProfilerGUI\database.h" />
     <ClInclude Include="src\wxProfilerGUI\launchdlg.h" />
-    <ClInclude Include="src\wxProfilerGUI\lineinfo.h" />
     <ClInclude Include="src\wxProfilerGUI\logview.h" />
     <ClInclude Include="src\wxProfilerGUI\mainwin.h" />
     <ClInclude Include="src\wxProfilerGUI\optionsdlg.h" />
