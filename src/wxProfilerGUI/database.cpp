@@ -195,7 +195,7 @@ void Database::loadSymbols(wxInputStream &file)
 
 	std::unordered_map<std::wstring, const Symbol*> locsymbols;
 
-	int filesize = file.GetSize();
+	size_t filesize = file.GetSize();
 	wxProgressDialog progressdlg(APPNAME, "Loading symbols...",
 		kMaxProgress, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
@@ -263,7 +263,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 {
 	wxTextInputStream str(file);
 
-	int filesize = file.GetSize();
+	size_t filesize = file.GetSize();
 	wxProgressDialog progressdlg(APPNAME, "Loading callstacks...",
 		kMaxProgress, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
@@ -588,8 +588,8 @@ std::vector<double> Database::getLineCounts(FileID sourcefile)
 	for each (auto &pair in addrinfo)
 		if (pair.second.symbol->sourcefile == sourcefile)
 		{
-			int sourceline = pair.second.sourceline;
-			if (linecounts.size() <= sourceline)
+			unsigned sourceline = pair.second.sourceline;
+			if (linecounts.size() <= size_t(sourceline))
 				linecounts.resize(sourceline+1);
 			linecounts[sourceline] += pair.second.count;
 		}

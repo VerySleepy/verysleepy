@@ -130,7 +130,7 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 
 	Show(false);
 	std::wstring displaytext = L"{\\rtf1\\ansi\\fdeff0{\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;\\red0\\green128\\blue0;\\red0\\green0\\blue255;}\\cf1";
-	int linenum = 1;//1-based counting
+	unsigned linenum = 1;//1-based counting
 	//int showpos = 0;//index of character to make visible in order to scroll to line where proc is defined.
 	const int MARGIN_WIDTH = 7;
 	wchar_t line[1024*10];

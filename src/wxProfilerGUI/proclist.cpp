@@ -221,7 +221,7 @@ void ProcList::displayList()
 		setColumnValue(c, COL_CALLSPCT,		exclusivepercent);
 		setColumnValue(c, COL_MODULE,		database->getModuleName(sym->module));
 		setColumnValue(c, COL_SOURCEFILE,	database->getFileName  (sym->sourcefile));
-		setColumnValue(c, COL_SOURCELINE,	::toString(database->getAddrInfo(sym->address)->sourceline));
+		setColumnValue(c, COL_SOURCELINE,	::toString((int)database->getAddrInfo(sym->address)->sourceline));
 		setColumnValue(c, COL_ADDRESS,	    ::toHexString(i->address));
 
 		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)

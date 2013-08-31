@@ -541,7 +541,7 @@ bool LateSymbolInfo::isUnresolved( const std::wstring &procname )
 
 wchar_t LateSymbolInfo::buffer[4096];
 
-void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, std::wstring &sourcefile, int &sourceline)
+void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, std::wstring &sourcefile, unsigned &sourceline)
 {
 	if (debugSymbols3 && isUnresolved(procname))
 	{
@@ -569,7 +569,7 @@ void LateSymbolInfo::filterSymbol(std::wstring &module, std::wstring &procname, 
 	}
 }
 
-void LateSymbolInfo::filterIP(ULONG64 offset, std::wstring &sourcefile, int &sourceline)
+void LateSymbolInfo::filterIP(ULONG64 offset, std::wstring &sourcefile, unsigned &sourceline)
 {
 	if (!sourceline)
 	{
@@ -582,7 +582,7 @@ void LateSymbolInfo::filterIP(ULONG64 offset, std::wstring &sourcefile, int &sou
 	}
 }
 
-void LateSymbolInfo::filterIP(const std::wstring &memaddr, std::wstring &srcfile, int &linenum)
+void LateSymbolInfo::filterIP(const std::wstring &memaddr, std::wstring &srcfile, unsigned &linenum)
 {
 	if (debugSymbols3)
 	{

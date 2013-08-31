@@ -46,13 +46,13 @@ class Database
 {
 public:
 	typedef unsigned long long Address;
-	typedef long FileID;
-	typedef long ModuleID;
+	typedef size_t FileID;
+	typedef size_t ModuleID;
 
 	/// Represents one function (as it appears in function lists).
 	struct Symbol
 	{
-		typedef long ID;
+		typedef size_t ID;
 		ID id;
 
 		/// Points to the address of the start of the symbol
@@ -75,7 +75,7 @@ public:
 
 		// Symbol info
 		const Symbol *symbol;
-		int           sourceline;
+		unsigned      sourceline;
 
 		// IP counts
 		double count;
