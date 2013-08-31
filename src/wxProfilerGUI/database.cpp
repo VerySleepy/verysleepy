@@ -495,7 +495,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 	{
 		Item item;
 		item.address = i->first;
-		item.symbol = addrinfo.find(item.address)->second.symbol;
+		item.symbol = addrinfo.at(item.address).symbol;
 		item.inclusive = i->second;
 		item.exclusive = i->second;
 		list.items.push_back(item);
