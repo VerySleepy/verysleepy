@@ -165,6 +165,9 @@
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
     <ClInclude Include="src\appinfo.h" />
+    <ClInclude Include="src\utils\except.h">
+      <Filter>utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="keywords.txt" />

@@ -34,6 +34,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <shlwapi.h>
 #include <Dbgeng.h>
 #include <comdef.h>
+#include "../utils/except.h"
 
 SymLogFn *g_symLog = NULL;
 
@@ -148,34 +149,21 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 
 	for( int n=0;n<4;n++ )
 	{
-		if (!dbgHelpMs.SymInitializeW(process_handle, L"", FALSE))
-		{
-			DWORD error = GetLastError();
-			throw SymbolInfoExcep(L"SymInitialize failed.");
-		}
+		wenforce(dbgHelpMs.SymInitializeW(process_handle, L"", FALSE), "SymInitialize");
 
 		// Hook the debug output, so we actually can provide a clue as to
 		// what's happening.
 		dbgHelpMs.SymRegisterCallbackW64(process_handle, symCallback, NULL);
 
 		// Add our PDB search paths.
-		if (!dbgHelpMs.SymSetSearchPathW(process_handle, sympath.c_str()))
-		{
-			DWORD error = GetLastError();
-			throw SymbolInfoExcep(L"SymSetSearchPath failed.");
-		}
+		wenforce(dbgHelpMs.SymSetSearchPathW(process_handle, sympath.c_str()), "SymSetSearchPathW");
 
 		// Load symbol information for all modules.
 		// Normally SymInitialize would do this, but we instead do it ourselves afterwards
 		// so that we can hook the debug output for it.
-		if (!dbgHelpMs.SymRefreshModuleList(process_handle))
-		{
-			DWORD error = GetLastError();
-			throw SymbolInfoExcep(L"SymRefreshModuleList failed.");
-		}
+		wenforce(dbgHelpMs.SymRefreshModuleList(process_handle), "SymRefreshModuleList");
 
-		if (!dbgHelpMs.SymEnumerateModulesW64(process_handle, EnumModules, this))
-			throw SymbolInfoExcep(L"SymEnumerateModules64 failed.");
+		wenforce(dbgHelpMs.SymEnumerateModulesW64(process_handle, EnumModules, this), "SymEnumerateModules64");
 
 		if (!modules.empty())
 			break;
@@ -203,11 +191,7 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 
 	// Now that we've loaded all the modules and debug info for the regular stuff,
 	// we initialize the GCC dbghelp and let it have a go at the ones we couldn't do.
-	if (!gcc->SymInitializeW(process_handle, NULL, FALSE))
-	{
-		DWORD error = GetLastError();
-		throw SymbolInfoExcep(L"SymInitialize failed.");
-	}
+	wenforce(gcc->SymInitializeW(process_handle, NULL, FALSE), "SymInitialize");
 
 	gcc->SymSetDbgPrint(&symWineCallback);
 
@@ -234,41 +218,6 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 	if (g_symLog)
 		g_symLog(L"\nFinished.\n");
 	sortModules();
-}
-
-template<class T>
-T wenforce(T cond, const char* where = NULL)
-{
-	if (cond)
-		return cond;
-
-	DWORD code = GetLastError();
-
-	std::wostringstream message;
-	if (where)
-		message << where;
-
-	if (code)
-	{
-		wchar_t *lpMsgBuf = NULL;
-		FormatMessageW(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			code,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPWSTR)&lpMsgBuf,
-			0,
-			NULL);
-
-		message << ": " << lpMsgBuf;
-		if (lpMsgBuf)
-			LocalFree(lpMsgBuf);
-		message << " (error " << code << ")";
-	}
-	else
-		message << " failed";
-
-	throw SymbolInfoExcep(message.str());
 }
 
 SymbolInfo::~SymbolInfo()
@@ -443,7 +392,7 @@ void comenforce(HRESULT result, const char* where = NULL)
 	message << ": " << error.ErrorMessage();
 	message << " (error " << result << ")";
 
-	throw SymbolInfoExcep(message.str());
+	throw SleepyException(message.str());
 }
 
 

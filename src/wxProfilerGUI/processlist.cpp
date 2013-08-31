@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../profiler/symbolinfo.h"
 #include "../utils/osutils.h"
 #include <algorithm>
+#include "../utils/except.h"
 
 BEGIN_EVENT_TABLE(ProcessList, wxListCtrl)
 EVT_LIST_ITEM_SELECTED(PROCESS_LIST, ProcessList::OnSelected)
@@ -93,15 +94,17 @@ void ProcessList::reloadSymbols(bool download)
 	{
 		const ProcessInfo* process_info = getSelectedProcess();
 		if (!process_info)
-			throw SymbolInfoExcep(L"No process selected");
+			throw SleepyException(L"No process selected");
 
 		HANDLE process_handle = process_info->getProcessHandle();
 		if (process_handle)
 		{
 			syminfo->loadSymbols(process_handle, download);
 		}
-	} catch(SymbolInfoExcep&e) {
-		::MessageBox(NULL, std::wstring(L"Error: " + e.what()).c_str(), L"Profiler Error", MB_OK);
+	}
+	catch (SleepyException &e)
+	{
+		::MessageBox(NULL, std::wstring(L"Error: " + e.wwhat()).c_str(), L"Profiler Error", MB_OK);
 		delete syminfo;
 		syminfo = NULL;
 	}

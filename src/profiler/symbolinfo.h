@@ -48,17 +48,6 @@ public:
 	DbgHelp *dbghelp;
 };
 
-class SymbolInfoExcep
-{
-public:
-	SymbolInfoExcep(const std::wstring& s_) : s(s_) {}
-	~SymbolInfoExcep(){}	
-
-	const std::wstring& what() const { return s; }
-private:
-	std::wstring s;
-};
-
 /*=====================================================================
 SymbolInfo
 ----------

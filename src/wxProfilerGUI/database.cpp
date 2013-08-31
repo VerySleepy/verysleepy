@@ -32,6 +32,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../profiler/symbolinfo.h"
 #include <algorithm>
 #include "../appinfo.h"
+#include "../utils/except.h"
 
 Database *theDatabase;
 
@@ -575,9 +576,9 @@ void Database::loadMinidump(wxInputStream &file)
 	{
 		late_sym_info.loadMinidump(dumppath, true);
 	}
-	catch (SymbolInfoExcep &e)
+	catch (SleepyException &e)
 	{
-		wxLogError("%ls", e.what());
+		wxLogError("%ls", e.wwhat());
 	}
 }
 

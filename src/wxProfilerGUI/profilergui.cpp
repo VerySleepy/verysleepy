@@ -35,6 +35,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/osutils.h"
 #include <wx/stdpaths.h>
 #include "crashback.h"
+#include "../utils/except.h"
 
 // DE: 20090325 Linking fails in debug target under visual studio 2005
 // RJM: works for me :-/
@@ -435,10 +436,12 @@ AttachInfo *ProfilerGUI::RunProcess(std::wstring run_cmd,std::wstring run_cwd)
 		{
 			output->sym_info->loadSymbols(output->process_handle, false);
 			break;
-		} catch(SymbolInfoExcep &e) {
+		}
+		catch (SleepyException &e)
+		{
 			if (retry == 0)
 			{
-				::MessageBox(NULL, std::wstring(L"Error: " + e.what()).c_str(), L"Profiler Error", MB_OK);
+				::MessageBox(NULL, std::wstring(L"Error: " + e.wwhat()).c_str(), L"Profiler Error", MB_OK);
 				delete output;
 				return NULL;
 			}

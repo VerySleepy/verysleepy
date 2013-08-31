@@ -245,6 +245,7 @@
     <ClInclude Include="src\profiler\symbolinfo.h" />
     <ClInclude Include="src\profiler\threadinfo.h" />
     <ClInclude Include="src\utils\dbginterface.h" />
+    <ClInclude Include="src\utils\except.h" />
     <ClInclude Include="src\utils\mythread.h" />
     <ClInclude Include="src\utils\osutils.h" />
     <ClInclude Include="src\utils\sortlist.h" />
