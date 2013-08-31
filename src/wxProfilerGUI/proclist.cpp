@@ -137,7 +137,7 @@ struct ExclusivePred  { bool operator () (const Database::Item &a, const Databas
 struct InclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) { return a.inclusive          < b.inclusive         ; } };
 struct ModulePred     { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->module     < b.symbol->module    ; } };
 struct SourceFilePred { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->sourcefile < b.symbol->sourcefile; } };
-struct AddressPred    { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->address    < b.symbol->address   ; } };
+struct AddressPred    { bool operator () (const Database::Item &a, const Database::Item &b) { return a.address            < b.address           ; } };
 
 void ProcList::sortList()
 {
