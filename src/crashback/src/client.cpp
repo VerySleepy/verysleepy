@@ -197,7 +197,7 @@ extern "C" void cbStartup()
 	if ( GetFileAttributes( cbReportExePath ) == INVALID_FILE_ATTRIBUTES )
 		return;
 
-	swprintf_s( cbReportCmdLine, 1024, L"%s 0x%x", cbReportExePath, GetCurrentProcessId() );
+	swprintf_s( cbReportCmdLine, 1024, L"\"%s\" 0x%x", cbReportExePath, GetCurrentProcessId() );
 
 	cbGetProgramName();
 	cbGetCmdLine();
