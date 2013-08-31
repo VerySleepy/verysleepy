@@ -3,6 +3,7 @@
 
 typedef enum
 {
+	CB_CRASH_NONE, // CbReport is invalid
 	CB_CRASH_WIN32_SEH,
 	CB_CRASH_CRT_TERMINATE,
 	CB_CRASH_CRT_UNEXPECTED,

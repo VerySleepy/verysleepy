@@ -205,12 +205,19 @@ bool GenerateDump()
 	HANDLE hFile = CreateFile( dumpFile, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 
 	MINIDUMP_EXCEPTION_INFORMATION miniExcep;
-	miniExcep.ThreadId = cbReportData->threadId;
-	miniExcep.ExceptionPointers = cbReportData->exceptionPtrs;
-	miniExcep.ClientPointers = TRUE;
+	PMINIDUMP_EXCEPTION_INFORMATION pminiExcep;
+	if (cbReportData->type) // cbReportData is valid
+	{
+		miniExcep.ThreadId = cbReportData->threadId;
+		miniExcep.ExceptionPointers = cbReportData->exceptionPtrs;
+		miniExcep.ClientPointers = TRUE;
+		pminiExcep = &miniExcep;
+	}
+	else
+		pminiExcep = NULL;
 
 	bool ok = MiniDumpWriteDump( hTarget, targetProcessId, hFile, MiniDumpNormal,
-		&miniExcep, NULL, NULL ) != 0;
+		pminiExcep, NULL, NULL ) != 0;
 
 	CloseHandle( hFile );
 	CloseHandle( hTarget );
@@ -261,6 +268,7 @@ bool SaveInfo()
 	strftime( timeStamp, 64, "%Y-%m-%d %H:%M:%S", &timeinfo );
 
 	const char *types[] = {
+		"CB_CRASH_NONE",
 		"CB_CRASH_WIN32_SEH",
 		"CB_CRASH_CRT_TERMINATE",
 		"CB_CRASH_CRT_UNEXPECTED",
