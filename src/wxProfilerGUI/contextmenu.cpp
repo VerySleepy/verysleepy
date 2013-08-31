@@ -65,14 +65,16 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	FunctionMenuWindow funcWindow(list);
 	wxMenu *menu = new wxMenu;
 
+	Database::Address addr;
 	const Database::Symbol* sym;
-	std::vector<Database::Symbol::ID> selection;
+	std::vector<Database::Address> selection;
 
 	{
 		long i = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 		if (i < 0)
 			return;
-		sym = database->getSymbol(list->GetItemData(i));
+		addr = list->GetItemData(i);
+		sym = database->getAddrInfo(addr)->symbol;
 	}
 
 	for (long item = -1;;)
@@ -83,8 +85,7 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 		if (item == -1)
 			break;
 
-		Database::Symbol::ID id = list->GetItemData(item);
-		selection.push_back(id);
+		selection.push_back(list->GetItemData(item));
 	}
 
 	if (selection.size() == 0)
@@ -112,7 +113,7 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	}
 
 	wxString highlightTarget = selection.size()==1 ? sym->procname : L"selected";
-	if (theMainWin->getViewState()->flags[sym->id] & ViewState::Flag_Highlighted)
+	if (set_get(theMainWin->getViewState()->highlighted, addr))
 		menu->AppendCheckItem(ID_UNHIGHLIGHT, wxString::Format("Unhighlight %s", highlightTarget));
 	else
 		menu->AppendCheckItem(ID_HIGHLIGHT  , wxString::Format("Highlight %s"  , highlightTarget));

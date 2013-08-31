@@ -265,9 +265,9 @@ void MainWin::buildFilterAutocomplete()
 	for (Database::Symbol::ID id = 0; id < database->getSymbolCount(); id++)
 	{
 		const Database::Symbol *symbol = database->getSymbol(id);
-		procnameAutocomplete.insert(symbol->procname  );
+		procnameAutocomplete.insert(symbol->procname);
 
-		addSplitValues(procnameAutocomplete  , symbol->procname  , ':');
+		addSplitValues(procnameAutocomplete, symbol->procname, ':');
 
 		updateProgress(id);
 	}
@@ -419,7 +419,7 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 void MainWin::OnBack(wxCommandEvent& event)
 {
 	historyPos--;
-	inspectSymbol(database->getSymbol(history[historyPos]), false);
+	inspectSymbol(database->getAddrInfo(history[historyPos])->symbol, false);
 }
 
 void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
@@ -430,7 +430,7 @@ void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
 void MainWin::OnForward(wxCommandEvent& event)
 {
 	historyPos++;
-	inspectSymbol(database->getSymbol(history[historyPos]), false);
+	inspectSymbol(database->getAddrInfo(history[historyPos])->symbol, false);
 }
 
 void MainWin::OnForwardUpdate(wxUpdateUIEvent& event)
@@ -548,12 +548,12 @@ void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=
 	if (addtohistory && symbol)
 	{
 		if (history.empty())
-			history.push_back(symbol->id);
+			history.push_back(symbol->address);
 		else
-		if (history[historyPos] != symbol->id)
+		if (history[historyPos] != symbol->address)
 		{
 			history.resize(historyPos+1);
-			history.push_back(symbol->id);
+			history.push_back(symbol->address);
 			historyPos++;
 		}
 		assert(historyPos==history.size()-1);
@@ -562,8 +562,8 @@ void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=
 
 void MainWin::reset()
 {
-	viewstate.flags.clear();
-	viewstate.flags.resize(database->getSymbolCount());
+	viewstate.highlighted.clear();
+	viewstate.filtered.clear();
 	history.clear();
 	historyPos = 0;
 
@@ -619,7 +619,7 @@ void MainWin::applyFilters()
 			( !filter_module    .empty() && database->getModuleName(symbol->module    ).find(filter_module    ) == std::wstring::npos ) ||
 			( !filter_sourcefile.empty() && database->getFileName  (symbol->sourcefile).find(filter_sourcefile) == std::wstring::npos );
 
-		viewstate.setFlag(id, ViewState::Flag_Filtered, filtered);
+		set_set(viewstate.filtered, symbol->address, filtered);
 	}
 }
 
@@ -630,10 +630,10 @@ void MainWin::setFilter(const wxString &name, const wxString &value)
 	refresh();
 }
 
-void MainWin::setHighlight(const std::vector<Database::Symbol::ID> &ids, bool set)
+void MainWin::setHighlight(const std::vector<Database::Address> &addresses, bool set)
 {
-	for each (Database::Symbol::ID id in ids)
-		viewstate.setFlag(id, ViewState::Flag_Highlighted, set);
+	for each (Database::Address address in addresses)
+		set_set(viewstate.highlighted, address, set);
 	refresh();
 }
 

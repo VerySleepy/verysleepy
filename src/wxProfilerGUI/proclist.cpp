@@ -170,10 +170,11 @@ void ProcList::showList(const Database::List &list)
 void ProcList::displayList()
 {
 	theMainWin->setProgress(L"Saving list state...");
-	int *item_state = new int[database->getSymbolCount()]();
+	std::unordered_map<Database::Address, int> item_state;
 	// TODO: use GetNextItem?
 	for (long i=0; i<GetItemCount(); i++)
-		item_state[GetItemData(i)] = GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
+		if (int state = GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED))
+			item_state[GetItemData(i)] = state;
 
 	theMainWin->setProgress(L"Clearing list...");
 	Freeze();
@@ -186,7 +187,7 @@ void ProcList::displayList()
 	{
 		const Database::Symbol *sym = i->symbol;
 
-		if (isroot && viewstate->flags[sym->id] & ViewState::Flag_Filtered)
+		if (isroot && set_get(viewstate->filtered, sym->address))
 			continue;
 
 		long c = GetItemCount();
@@ -195,15 +196,15 @@ void ProcList::displayList()
 		item.SetId(c);
 		item.SetText(sym->procname);
 
-		if(sym->isCollapseFunction || sym->isCollapseModule) {
+		if (sym->isCollapseFunction || sym->isCollapseModule)
 			item.SetTextColour(wxColor(0,128,0));
-		}
-		if(viewstate->flags[sym->id] & ViewState::Flag_Highlighted) {
-			item.SetBackgroundColour(wxColor(255,255,0));
-		}
 
-		item.SetData(sym->id);
-		item.SetState(item_state[sym->id]);
+		if (set_get(viewstate->highlighted, sym->address))
+			item.SetBackgroundColour(wxColor(255,255,0));
+
+		int state = map_get(item_state, sym->address, 0);
+		item.SetData(sym->address);
+		item.SetState(state);
 		item.SetStateMask(wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 
 		InsertItem(item);
@@ -221,16 +222,15 @@ void ProcList::displayList()
 		setColumnValue(c, COL_CALLSPCT,		exclusivepercent);
 		setColumnValue(c, COL_MODULE,		database->getModuleName(sym->module));
 		setColumnValue(c, COL_SOURCEFILE,	database->getFileName  (sym->sourcefile));
-		setColumnValue(c, COL_SOURCELINE,	::toString((int)database->getAddrInfo(sym->address)->sourceline));
+		setColumnValue(c, COL_SOURCELINE,	::toString((int)database->getAddrInfo(i->address)->sourceline));
 		setColumnValue(c, COL_ADDRESS,	    ::toHexString(i->address));
 
-		if (item_state[sym->id] & wxLIST_STATE_FOCUSED)
+		if (state & wxLIST_STATE_FOCUSED)
 			EnsureVisible(c);
 
 		theMainWin->updateProgress(i-list.items.begin());
 	}
 
-	delete[] item_state;
 	Thaw();
 	theMainWin->setProgress(NULL);
 }
@@ -265,7 +265,7 @@ void ProcList::focusSymbol(const Database::Symbol *symbol)
 const Database::Symbol * ProcList::getFocusedSymbol()
 {
 	long i = GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
-	return i >= 0 ? database->getSymbol(GetItemData(i)) : NULL;
+	return i >= 0 ? database->getAddrInfo(GetItemData(i))->symbol : NULL;
 }
 
 void ProcList::OnSelected(wxListEvent& event)
@@ -276,7 +276,7 @@ void ProcList::OnSelected(wxListEvent& event)
 
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
+	const Database::Symbol *symbol = database->getAddrInfo(GetItemData(event.m_itemIndex))->symbol;
 	if (isroot)
 		theMainWin->inspectSymbol(symbol);
 	else
@@ -289,7 +289,7 @@ void ProcList::OnActivated(wxListEvent& event)
 {
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = database->getSymbol(GetItemData(event.m_itemIndex));
+	const Database::Symbol *symbol = database->getAddrInfo(GetItemData(event.m_itemIndex))->symbol;
 	if (!isroot)
 		theMainWin->inspectSymbol(symbol);
 }

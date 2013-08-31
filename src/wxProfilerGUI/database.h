@@ -25,7 +25,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #define __DATABASE_H_666_
 
 #include "profilergui.h"
-#include <unordered_map>
+#include "../utils/container.h"
 
 bool IsOsFunction(wxString proc);
 void AddOsFunction(wxString proc);
@@ -50,6 +50,9 @@ public:
 	/// Represents one function (as it appears in function lists).
 	struct Symbol
 	{
+		/// Note: IDs may not persist across DB reloads
+		/// (e.g. due to changes in symbol load settings).
+		/// Use addresses to persistently refer to symbols in the GUI.
 		typedef size_t ID;
 		ID id;
 
@@ -83,7 +86,11 @@ public:
 	struct Item
 	{
 		const Symbol *symbol;
+
+		/// Might be different from symbol->address
+		/// (e.g. it's the call site for callstacks).
 		Address address;
+
 		double inclusive, exclusive;
 	};
 

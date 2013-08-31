@@ -37,20 +37,7 @@ http://www.gnu.org/copyleft/gpl.html.
 /// have to compute them on every refresh.
 struct ViewState
 {
-	enum Flag : unsigned char
-	{
-		Flag_Highlighted = 1,
-		Flag_Filtered    = 2,
-	};
-
-	/// Index is Database::Symbol::ID
-	std::vector<Flag> flags;
-
-	void setFlag(Database::Symbol::ID id, Flag flag, bool set)
-	{
-		Flag *p = &flags[id];
-		*p = (ViewState::Flag)((*p & ~flag) | (set ? flag : 0));
-	}
+	std::unordered_set<Database::Address> highlighted, filtered;
 };
 
 /*=====================================================================
@@ -123,7 +110,7 @@ public:
 	const ViewState *getViewState() { return &viewstate; }
 
 	void setFilter(const wxString &name, const wxString &value);
-	void setHighlight(const std::vector<Database::Symbol::ID> &ids, bool set);
+	void setHighlight(const std::vector<Database::Address> &addresses, bool set);
 
 	/// Non-modal (status bar) progress display
 	void setProgress(const wchar_t *text, int max=0);
@@ -162,7 +149,7 @@ private:
 
 	ViewState viewstate;
 
-	std::deque<Database::Symbol::ID> history;
+	std::deque<Database::Address> history;
 	size_t historyPos;
 
 	wxGauge *gauge;

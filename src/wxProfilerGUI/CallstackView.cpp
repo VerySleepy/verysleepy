@@ -188,6 +188,7 @@ void CallstackView::updateList()
 	for(unsigned i = 0; i < now->symbols.size(); i++)
 	{
 		const Database::Symbol *snow = now->symbols[i];
+		Database::Address addr = now->addresses[i];
 
 		if (i == listCtrl->GetItemCount())
 			listCtrl->InsertItem(i,snow->procname.c_str());
@@ -199,15 +200,15 @@ void CallstackView::updateList()
 		else
 			listCtrl->SetItemTextColour(i,wxColor(0,0,0));
 
-		if(viewstate->flags[snow->id] & ViewState::Flag_Highlighted)
+		if (set_get(viewstate->highlighted, snow->address))
 			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,0));
 		else
 			listCtrl->SetItemBackgroundColour(i, wxColor(255,255,255));
 
 		listCtrl->SetItem(i, COL_MODULE    , database->getModuleName(snow->module));
 		listCtrl->SetItem(i, COL_SOURCEFILE, database->getFileName  (snow->sourcefile));
-		listCtrl->SetItem(i, COL_SOURCELINE, wxString::Format("%d", database->getAddrInfo(snow->address)->sourceline));
-		listCtrl->SetItem(i, COL_ADDRESS   , ::toHexString(now->addresses[i]));
+		listCtrl->SetItem(i, COL_SOURCELINE, wxString::Format("%d", database->getAddrInfo(addr)->sourceline));
+		listCtrl->SetItem(i, COL_ADDRESS   , ::toHexString(addr));
 
 		wxFont font = listCtrl->GetFont();
 		if(snow == currSymbol)
@@ -221,7 +222,7 @@ void CallstackView::updateList()
 		} else {
 			listCtrl->SetItemState(i, 0, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 		}
-		listCtrl->SetItemData(i, snow->id);
+		listCtrl->SetItemData(i, snow->address);
 	}
 
 	while (listCtrl->GetItemCount() > int(now->symbols.size()))

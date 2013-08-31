@@ -168,32 +168,6 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	return true;
 }
 
-/// Add or find an entry to the map with the specified key.
-/// Copies true to *pinserted if a new entry was added, false if an existing one was found.
-/// Returns a reference to the new/existing value.
-template<class MAP>
-static typename MAP::value_type::second_type& map_emplace(MAP &map, const typename MAP::key_type &key, bool *pinserted=NULL)
-{
-	auto pair = map.emplace(std::make_pair(key, MAP::value_type::second_type()));
-	if (pinserted) *pinserted = pair.second;
-	return pair.first->second;
-}
-
-/// Add or find an entry in a string[id] vector / id[string] map pair, and return its ID.
-template<typename ID>
-static ID map_string(std::vector<std::wstring> &list, std::unordered_map<std::wstring, ID>&map, std::wstring key)
-{
-	bool inserted;
-	ID &id = map_emplace(map, key, &inserted);
-	if (inserted) // new entry
-	{
-		list.push_back(key);
-		return id = list.size() - 1;
-	}
-	else // existing entry
-		return id;
-}
-
 // Windows progress bar is limited to 0x10000 max.
 static const __int64 kMaxProgress = 0x8000LL;
 
