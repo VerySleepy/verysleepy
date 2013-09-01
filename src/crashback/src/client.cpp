@@ -77,6 +77,7 @@ void cbReport( CbCrashType type, EXCEPTION_POINTERS *excep )
 	}
 
 	// Get some info.
+	cbReportData->type = type;
 	cbReportData->threadId = GetCurrentThreadId();
 	strcpy_s( cbReportData->programName, 32, cbProgName );
 	strcpy_s( cbReportData->cmdLine, 1024, cbCmdLine );
