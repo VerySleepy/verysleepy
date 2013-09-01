@@ -195,9 +195,11 @@ AboutDlg::AboutDlg()
 		L"See LICENSE.TXT for more information.");
 
 	AddControl(new wxStaticLine(this), wxSizerFlags().Expand());
-	AddControl(new wxHyperlinkCtrl(this, wxID_ANY,
+	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(this, wxID_ANY,
 		_T(APPNAME) _T(" web site"),
-		_T(APPURL)), wxSizerFlags().Center());
+		_T(APPURL));
+	link->SetToolTip(_T(APPURL));
+	AddControl(link, wxSizerFlags().Center());
 
 	wxSizer *sizerBtns = CreateButtonSizer(wxOK);
 	if ( sizerBtns )
@@ -236,7 +238,11 @@ void AboutDlg::AddDev(const wxString& name, const wxString& url, const wxString 
 	if (url.empty())
 		s->Add(new wxStaticText(this, wxID_ANY, name));
 	else
-		s->Add(new wxHyperlinkCtrl(this, wxID_ANY, name, url));
+	{
+		wxHyperlinkCtrl* link = new wxHyperlinkCtrl(this, wxID_ANY, name, url);
+		link->SetToolTip(url);
+		s->Add(link);
+	}
 	if (!role.empty())
 		s->Add(new wxStaticText(this, wxID_ANY, L" (" + role + ")"));
 	m_sizerText->Add(s);
