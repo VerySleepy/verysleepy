@@ -43,8 +43,8 @@ so that orphaned forks (which often remain unnoticed and succumb to bitrot) coul
 Prerequisites:
 
 * Visual C++ 2010 (or compatible, e.g. 2012)
-* [wxWidgets 2.9.2](http://sourceforge.net/projects/wxwindows/files/2.9.2/)
-  * Versions other than 2.9.2 might work, but may have compatibility issues.
+* [wxWidgets 2.9.5](http://sourceforge.net/projects/wxwindows/files/2.9.5/)
+  * Versions other than 2.9.5 might work, but may have compatibility issues.
 
 After building wxWidgets (see below), you can build Sleepy using the project files (with the Visual Studio IDE or msbuild).
 
@@ -67,7 +67,7 @@ Options:
 
 * For a release build, use `BUILD=release` instead.
 * For 64-bit, add `TARGET_CPU=AMD64`.
-* You could also use the Visual Studio project/solution files to build wxWidgets, however (as of 2.9.2) these are Win32-only.
+* You could also use the Visual Studio project/solution files to build wxWidgets, however (as of 2.9.5) these are Win32-only.
 
 Finally, create an environment variable called `WXWIN`, and set it to the full path towards the wxWidgets directory (incl. trailing backslash).
 This variable in referenced in Sleepy's project files - Visual Studio must have in in its environment to be able to find wxWidgets.
