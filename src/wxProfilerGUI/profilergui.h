@@ -124,6 +124,9 @@ protected:
 	virtual void OnInitCmdLine(wxCmdLineParser& parser);
 	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
 
+private:
+	bool Run();
+
 	void CreateProgressWindow();
 	void DestroyProgressWindow();
 

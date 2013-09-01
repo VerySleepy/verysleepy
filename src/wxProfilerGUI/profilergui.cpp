@@ -562,13 +562,24 @@ void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
 	if (initialized)
 		return;
 
-	if (!loop->IsMain())
+	if (!loop->IsMain() || !loop->IsRunning())
 		return;
 
 	initialized = true;
 
 	SetExitOnFrameDelete(false);
 
+	if (!Run())
+	{
+		loop->Exit(1);
+		return;
+	}
+
+	SetExitOnFrameDelete(true);
+}
+
+bool ProfilerGUI::Run()
+{
 	// Explicitly create and set the default logger, so other threads use it.
 	// Otherwise, wxWidgets will create a default logger on request,
 	// but only by the request of the main thread.
@@ -581,50 +592,37 @@ void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
 
 		AttachInfo *info = RunProcess(cmdline_run, L"");
 		if ( !info )
-		{
-			loop->Exit(1);
-			return;
-		}
+			return false;
 
 		bool ok = LaunchProfiler(info, tmp_filename);
 		TerminateProcess(info->process_handle, 0);
 		delete info;
 
 		if (!ok)
-		{
-			loop->Exit(1);
-			return;
-		}
+			return false;
 
 		cmdline_load = tmp_filename;
 	}
 
 	std::wstring filename = ObtainProfileData();
 	if (filename.empty())
-	{
-		loop->Exit(1);
-		return;
-	}
+		return false;
 
 	if (!cmdline_save.empty())
 	{
 		if (!CopyFile(filename.c_str(), cmdline_save.c_str(), FALSE))
 		{
 			wxLogSysError("Could not save profile data.");
-			loop->Exit(1);
-			return;
+			return false;
 		}
 
-		return;
+		return true;
 	}
 
 	if (!LoadProfileData(filename))
-	{
-		loop->Exit(1);
-		return;
-	}
+		return false;
 
-	SetExitOnFrameDelete(true);
+	return true;
 }
 
 int ProfilerGUI::OnExit()
