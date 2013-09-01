@@ -25,6 +25,9 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "launchdlg.h"
 #include "optionsdlg.h"
 #include "../profiler/symbolinfo.h"
+#include <wx/menu.h>
+#include <wx/button.h>
+#include <wx/stattext.h>
 
 // IDs for the controls and the menu commands
 enum

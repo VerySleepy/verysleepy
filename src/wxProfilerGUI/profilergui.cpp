@@ -34,6 +34,9 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/stringutils.h"
 #include "../utils/osutils.h"
 #include <wx/stdpaths.h>
+#include <wx/statbmp.h>
+#include <wx/stattext.h>
+#include <wx/filedlg.h>
 #include "crashback.h"
 #include "../utils/except.h"
 

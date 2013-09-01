@@ -28,6 +28,9 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "CallstackView.h"
 #include <wx/aui/auibook.h>
 #include <wx/hashset.h>
+#include <wx/menu.h>
+#include <wx/filedlg.h>
+#include <wx/gauge.h>
 #include <set>
 
 MainWin *theMainWin;

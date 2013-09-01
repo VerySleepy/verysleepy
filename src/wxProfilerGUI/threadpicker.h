@@ -29,6 +29,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "logview.h"
 #include <vector>
 
+#include <wx/checkbox.h>
 #include <wx/valnum.h>
 
 // DE: 20090325 Include for list to pick thread(s)

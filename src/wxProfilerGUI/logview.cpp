@@ -22,9 +22,9 @@ http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
 
 #include "logview.h"
-#include <windows.h>
 #include <wx/menu.h>
 #include <wx/log.h>
+#include <windows.h>
 
 //////////////////////////////////////////////////////////////////////////
 // LogViewLog

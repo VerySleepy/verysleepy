@@ -27,6 +27,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../profiler/symbolinfo.h"
 #include "../utils/osutils.h"
 #include <algorithm>
+#include <wx/button.h>
 
 #define UPDATE_DELAY 1000	 // 1 second interval
 

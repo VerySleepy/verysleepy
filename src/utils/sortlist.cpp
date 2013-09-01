@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
 #include "sortlist.h"
+#include <wx/dataview.h>
 
 /* XPM */
 static char *sort_none_xpm[] = {

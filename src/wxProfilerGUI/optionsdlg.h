@@ -24,6 +24,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #define __OPTIONSDLG_H__
 
 #include "profilergui.h"
+#include <wx/checkbox.h>
+#include <wx/listbox.h>
 
 class wxDirPickerCtrl;
 

@@ -24,6 +24,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "CallstackView.h"
 #include "contextmenu.h"
 #include "mainwin.h"
+#include <wx/menu.h>
 
 enum {
 	ID_COLLAPSE_FUNC=2001,

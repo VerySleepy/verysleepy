@@ -21,6 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
 #include "launchdlg.h"
+#include <wx/stattext.h>
+#include <wx/button.h>
+#include <wx/filedlg.h>
+#include <wx/dirdlg.h>
 
 BEGIN_EVENT_TABLE(LaunchDlg, wxDialog)
 EVT_BUTTON(wxID_OK, LaunchDlg::OnOK)

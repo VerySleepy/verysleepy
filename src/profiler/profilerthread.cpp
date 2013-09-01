@@ -23,7 +23,6 @@ http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
 #include "../wxprofilergui/profilergui.h"
 #include "profilerthread.h"
-#include <wx/wx.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/txtstrm.h>

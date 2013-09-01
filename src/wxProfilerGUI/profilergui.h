@@ -24,7 +24,6 @@ http://www.gnu.org/copyleft/gpl.html.
 #ifndef __PROFILERGUI_H_666_
 #define __PROFILERGUI_H_666_
 
-#include <wx/wx.h>
 #include <wx/config.h>
 #include <wx/listctrl.h>
 #include <wx/splitter.h>
