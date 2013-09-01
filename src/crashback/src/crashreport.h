@@ -1,6 +1,9 @@
 #ifndef __CRASHREPORT_H__
 #define __CRASHREPORT_H__
 
+/// Reason of the abnormal termination.
+/// Update the types array in crashreport.cpp / SaveInfo()
+/// when adding new members.
 typedef enum
 {
 	CB_CRASH_NONE, // CbReport is invalid
@@ -12,6 +15,8 @@ typedef enum
 	CB_CRASH_CRT_NEW,
 } CbCrashType;
 
+/// The structure shared between sleepy.exe and crashback.exe
+/// using a shared memory object.
 typedef struct
 {
 	CbCrashType type;
