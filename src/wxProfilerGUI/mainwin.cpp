@@ -372,7 +372,7 @@ void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 	{
 		if (!CopyFile(profilepath.c_str(), dlg.GetPath(), FALSE))
 		{
-			wxLogSysError("Could not save profile data.");
+			wxLogSysError("Could not save profile data.\n");
 		}
 		else
 		{
@@ -389,7 +389,7 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 	{
 		wxFileOutputStream file(dlg.GetPath());
 		if(!file.IsOk())
-			wxLogSysError("Could not export profile data.");
+			wxLogSysError("Could not export profile data.\n");
 		wxTextOutputStream txt(file);
 		for each (const Database::Item &item in database->getMainList().items)
 		{

@@ -377,7 +377,7 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 
 	if (output_filename.empty())
 	{
-		wxLogError("There was a problem creating the profile data.");
+		wxLogError("There was a problem creating the profile data.\n");
 		return false;
 	}
 
@@ -418,7 +418,7 @@ AttachInfo *ProfilerGUI::RunProcess(std::wstring run_cmd,std::wstring run_cwd)
 	if ( !CreateProcess( NULL, cmdName, NULL, NULL, FALSE, 0, NULL, cmdCwd, &si, &pi ) )
 	{
 		free(cmdName);
-		wxLogSysError( "Unable to launch process" );
+		wxLogSysError( "Unable to launch process\n" );
 		return NULL;
 	}
 
@@ -619,7 +619,7 @@ bool ProfilerGUI::Run()
 	{
 		if (!CopyFile(filename.c_str(), cmdline_save.c_str(), FALSE))
 		{
-			wxLogSysError("Could not save profile data.");
+			wxLogSysError("Could not save profile data.\n");
 			return false;
 		}
 

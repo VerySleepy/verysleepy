@@ -82,7 +82,7 @@ ThreadPicker::ThreadPicker()
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_FRAME_STYLE)
 {
-    SetIcon(sleepy_icon);
+	SetIcon(sleepy_icon);
 
 	wxMenu *menuFile = new wxMenu;
 	menuFile->Append(wxID_OPEN, _T("&Open...\tCtrl-O"), _T("Opens an existing profile"));
@@ -335,7 +335,7 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 	const ProcessInfo* processInfo = processlist->getSelectedProcess();
 	if(processInfo == NULL)
 	{
-		wxLogError("No process selected.");
+		wxLogError("No process selected.\n");
 		return false;
 	}
 	else
@@ -367,7 +367,7 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 
 	if ( attach_info->process_handle == NULL )
 	{
-		wxLogError("Cannot attach to running process.");
+		wxLogError("Cannot attach to running process.\n");
 		return false;
 	}
 
@@ -379,7 +379,7 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 	}
 	if (selectedThreads.size() == 0)
 	{
-		wxLogError("No thread(s) selected.");
+		wxLogError("No thread(s) selected.\n");
 		return false;
 	}
 
@@ -394,7 +394,7 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 		if (threadHandle == NULL)
 		{
 			DWORD err = GetLastError();
-			wxLogError("Cannot attach to selected thread.");
+			wxLogError("Cannot attach to selected thread.\n");
 		} else {
 			attach_info->thread_handles.push_back(threadHandle);
 		}
@@ -402,7 +402,7 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 
 	// DE: 20090325 attaches to specific a list of threads
 	if (attach_info->thread_handles.size() == 0){
-		wxLogError("Cannot attach to any threads.");
+		wxLogError("Cannot attach to any threads.\n");
 		return false;
 	}
 

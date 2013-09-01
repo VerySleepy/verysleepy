@@ -155,14 +155,14 @@ bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 			else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
 			else if (name.Left(8) == "Version ") {}
 			else
-				wxLogWarning("Other fluff found in capture file (%s)", name.c_str());
+				wxLogWarning("Other fluff found in capture file (%s)\n", name.c_str());
 		}
 
 		setRoot(NULL);
 	}
 	catch (SleepyException &e)
 	{
-		wxLogError("%ls", e.wwhat());
+		wxLogError("%ls\n", e.wwhat());
 		return false;
 	}
 	return true;
@@ -556,7 +556,7 @@ void Database::loadMinidump(wxInputStream &file)
 	}
 	catch (SleepyException &e)
 	{
-		wxLogError("%ls", e.wwhat());
+		wxLogError("%ls\n", e.wwhat());
 	}
 }
 
