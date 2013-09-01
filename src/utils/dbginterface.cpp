@@ -35,10 +35,10 @@ bool dbgHelpInit()
 	DbgHelp *dest;
 
 	// Import the Microsoft dbghelp.dll
-	hMod = LoadLibrary(L"dbghelp.dll");
+	hMod = LoadLibrary(L"dbghelpms.dll");
 	if (!hMod)
 	{
-		::MessageBox(NULL, L"Error: Could not load dbghelp.dll.", L"Error", MB_OK);
+		::MessageBox(NULL, L"Error: Could not load dbghelpms.dll.", L"Error", MB_OK);
 		return false;
 	}
 
