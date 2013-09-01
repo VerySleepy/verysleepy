@@ -65,9 +65,14 @@ T wenforce(T cond, const S& where)
 			0,
 			NULL);
 
-		message << ": " << lpMsgBuf;
 		if (lpMsgBuf)
+		{
+			message << ": " << lpMsgBuf;
 			LocalFree(lpMsgBuf);
+		}
+		else
+			message << " failed";
+
 		message << " (error " << code << ")";
 	}
 	else
