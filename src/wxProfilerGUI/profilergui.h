@@ -112,7 +112,7 @@ public:
 	ProfilerGUI();
 	virtual ~ProfilerGUI();
 	virtual bool OnInit();
-    virtual void OnEventLoopEnter(wxEventLoopBase *loop);
+	virtual bool ProcessIdle();
 	virtual int OnExit();
 
 	static void ShowAboutBox();

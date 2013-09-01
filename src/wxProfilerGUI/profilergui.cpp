@@ -557,13 +557,12 @@ bool ProfilerGUI::OnInit()
 	return true;
 }
 
-void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
+bool ProfilerGUI::ProcessIdle()
 {
-	if (initialized)
-		return;
+	bool result = wxApp::ProcessIdle();
 
-	if (!loop->IsMain() || !loop->IsRunning())
-		return;
+	if (initialized)
+		return result;
 
 	initialized = true;
 
@@ -571,11 +570,13 @@ void ProfilerGUI::OnEventLoopEnter(wxEventLoopBase *loop)
 
 	if (!Run())
 	{
-		loop->Exit(1);
-		return;
+		wxEventLoop::GetActive()->Exit(1);
+		return result;
 	}
 
 	SetExitOnFrameDelete(true);
+
+	return result;
 }
 
 bool ProfilerGUI::Run()
