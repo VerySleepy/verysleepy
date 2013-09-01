@@ -131,7 +131,7 @@ private:
 	void DestroyProgressWindow();
 
 	bool LaunchProfiler(const AttachInfo *info, std::wstring &output_filename);
-	AttachInfo *RunProcess(std::wstring run_cmd,std::wstring run_cwd);
+	AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
 	bool LoadProfileData(const std::wstring &filename);
 	std::wstring ObtainProfileData();
 

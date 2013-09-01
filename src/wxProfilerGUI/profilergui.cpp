@@ -402,29 +402,17 @@ AttachInfo::~AttachInfo()
 		delete sym_info;
 }
 
-AttachInfo *ProfilerGUI::RunProcess(std::wstring run_cmd,std::wstring run_cwd)
+AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd)
 {
-	wchar_t *cmdName = wcsdup(run_cmd.c_str());
-	wchar_t *cmdCwd = NULL;
-	if(run_cwd.size()) {
-		cmdCwd = wcsdup(run_cwd.c_str());
-	}
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	ZeroMemory( &si, sizeof(si) );
-	ZeroMemory( &pi, sizeof(pi) );
-	si.cb = sizeof(si);
+	STARTUPINFO si = {sizeof(si)};
+	PROCESS_INFORMATION pi = {};
 
-	if ( !CreateProcess( NULL, cmdName, NULL, NULL, FALSE, 0, NULL, cmdCwd, &si, &pi ) )
+	std::vector<wchar_t> run_cmd_dup(run_cmd.size() + 1); // CreateProcess lpCommandLine must be mutable
+	std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
+	if ( !CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ) )
 	{
-		free(cmdName);
 		wxLogSysError( "Unable to launch process\n" );
 		return NULL;
-	}
-
-	free(cmdName);
-	if(cmdCwd) {
-		free(cmdCwd);
 	}
 
 	AttachInfo *output = new AttachInfo;
