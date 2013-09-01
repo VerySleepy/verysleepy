@@ -44,12 +44,13 @@ Prerequisites:
 
 * Visual C++ 2010 (or compatible, e.g. 2012)
 * [wxWidgets 2.9.2](http://sourceforge.net/projects/wxwindows/files/2.9.2/)
+  * Versions other than 2.9.2 might work, but may have compatibility issues.
 
 After building wxWidgets (see below), you can build Sleepy using the project files (with the Visual Studio IDE or msbuild).
 
 #### Building wxWidgets
 
-Run one of the Microsoft batch files to set up Visual Studio:
+Run one of the Microsoft batch files to set up the Visual Studio environment:
 
     cd "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"
     vcvars32.bat           // for a regular 32-bit compile
@@ -62,13 +63,14 @@ Now, from the wxWidgets `build\msw` directory:
 
 NMAKE is part of Visual Studio, so vcvars should have added it to your path.
 
-You may need to add a `WXWIN` environment variable (pointing to the wxWidgets directory),
-so that Sleepy knows where you've installed it.
-
 Options:
 
 * For a release build, use `BUILD=release` instead.
 * For 64-bit, add `TARGET_CPU=AMD64`.
+* You could also use the Visual Studio project/solution files to build wxWidgets, however (as of 2.9.2) these are Win32-only.
+
+Finally, create an environment variable called `WXWIN`, and set it to the full path towards the wxWidgets directory (incl. trailing backslash).
+This variable in referenced in Sleepy's project files - Visual Studio must have in in its environment to be able to find wxWidgets.
 
 ### Contributing
 
