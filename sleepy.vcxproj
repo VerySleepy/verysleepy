@@ -222,6 +222,7 @@
     <ClCompile Include="src\utils\sortlist.cpp" />
     <ClCompile Include="src\utils\stringutils.cpp" />
     <ClCompile Include="src\utils\WoW64.cpp" />
+    <ClCompile Include="src\wxProfilerGUI\aboutdlg.cpp" />
     <ClCompile Include="src\wxProfilerGUI\CallstackView.cpp" />
     <ClCompile Include="src\wxProfilerGUI\capturewin.cpp" />
     <ClCompile Include="src\wxProfilerGUI\contextmenu.cpp" />
@@ -241,6 +242,7 @@
   <ItemGroup>
     <ClInclude Include="src\appinfo.h" />
     <ClInclude Include="src\utils\container.h" />
+    <ClInclude Include="src\wxProfilerGUI\aboutdlg.h" />
     <ClInclude Include="src\wxProfilerGUI\latesymbolinfo.h" />
     <ClInclude Include="src\profiler\processinfo.h" />
     <ClInclude Include="src\profiler\profiler.h" />

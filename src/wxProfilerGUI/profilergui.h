@@ -25,6 +25,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #define __PROFILERGUI_H_666_
 
 #include <wx/config.h>
+#include <wx/app.h>
 #include <wx/listctrl.h>
 #include <wx/splitter.h>
 #include <wx/notebook.h>
@@ -33,10 +34,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/txtstrm.h>
-#include <wx/aboutdlg.h>
 #include <wx/cmdline.h>
-#include <wx/statline.h>
-#include <wx/hyperlink.h>
 #include <wx/evtloop.h>
 #include <wx/tipwin.h>
 #include <string>

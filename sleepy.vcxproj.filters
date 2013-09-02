@@ -90,6 +90,9 @@
     <ClCompile Include="src\wxProfilerGUI\latesymbolinfo.cpp">
       <Filter>wxProfilerGUI</Filter>
     </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\aboutdlg.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\profiler\processinfo.h">
@@ -176,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="src\utils\container.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\aboutdlg.h">
+      <Filter>wxProfilerGUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

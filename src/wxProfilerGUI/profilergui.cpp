@@ -34,10 +34,9 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/stringutils.h"
 #include "../utils/osutils.h"
 #include <wx/stdpaths.h>
-#include <wx/statbmp.h>
-#include <wx/stattext.h>
 #include <wx/filedlg.h>
 #include "crashback.h"
+#include "aboutdlg.h"
 #include "../utils/except.h"
 
 // DE: 20090325 Linking fails in debug target under visual studio 2005
@@ -117,137 +116,6 @@ void CleanupTempFiles()
 	}
 	tmp_files.clear();
 }
-
-// ----------------------------------------------------------------------------
-// AboutDlg
-// Less-rubbish about dialog
-// ----------------------------------------------------------------------------
-class AboutDlg : public wxDialog
-{
-public:
-	AboutDlg();
-
-protected:
-	void AddControl(wxWindow *win, const wxSizerFlags& flags);
-	void AddControl(wxWindow *win);
-	void AddText(const wxString& text);
-	void AddDev(const wxString& name, const wxString& url, const wxString &role);
-
-	wxSizer *m_sizerText;
-};
-
-AboutDlg::AboutDlg()
-{
-	Init();
-
-	if ( !wxDialog::Create(NULL, wxID_ANY, _T("About ") _T(APPNAME),
-		wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE) )
-		return;
-
-	m_sizerText = new wxBoxSizer(wxVERTICAL);
-
-	wxString nameAndVersion = _T(APPNAME) _T(" ") _T(VERSION);
-	wxSizer *sizerIconAndTitle = new wxBoxSizer(wxHORIZONTAL);
-	wxIcon icon = wxAboutDialogInfo().GetIcon();
-	if ( icon.Ok() )
-		sizerIconAndTitle->Add(new wxStaticBitmap(this, wxID_ANY, icon), 0, wxRIGHT, 20);
-
-	wxSizer *sizerTitle = new wxBoxSizer(wxVERTICAL);
-	{
-		wxStaticText *label = new wxStaticText(this, wxID_ANY, nameAndVersion);
-		wxFont font(*wxNORMAL_FONT);
-		font.SetPointSize(font.GetPointSize() + 3);
-		font.SetWeight(wxFONTWEIGHT_BOLD);
-		label->SetFont(font);
-
-		sizerTitle->Add(label, 0, wxBOTTOM, 4);
-	}
-	{
-		wxStaticText *label = new wxStaticText(this, wxID_ANY, _T("Open-source CPU profiler"));
-		label->SetFont(*wxITALIC_FONT);
-
-		sizerTitle->Add(label, 0, wxBOTTOM, 4);
-	}
-	sizerTitle->Add(new wxStaticLine(this), wxSizerFlags().Expand());
-
-	sizerIconAndTitle->Add(sizerTitle, 1, wxEXPAND);
-
-	m_sizerText->Add(sizerIconAndTitle, 1, wxEXPAND);
-	m_sizerText->AddSpacer(10);
-
-	AddText(_T(APPNAME) L":");
-	AddDev("Vladimir Panteleev", "http://thecybershadow.net/", "maintainer");
-	AddDev("Richard Munn", "https://github.com/benjymous", "time limit, filters, highlights");
-
-	AddText("Very Sleepy:");
-	AddDev("Richard Mitton", "http://www.codersnotes.com/", "maintainer");
-	AddDev("Dan Engelbrecht", "", "threading");
-	AddDev(L"Johan K" L"\x00F6" L"hler", "", "64-bit");
-	AddDev("... and many other kind people contributing patches.", "", "");
-
-	AddText("Sleepy:");
-	AddDev("Nicholas Chapman", "http://sleepy.sourceforge.net/", "creator");
-
-	AddControl(new wxStaticLine(this), wxSizerFlags().Expand());
-	AddText(L"Copyright \x00A9 authors and contributors.\n"
-		L"\n"
-		L"This program is released under the GNU Public License.\n"
-		L"See LICENSE.TXT for more information.");
-
-	AddControl(new wxStaticLine(this), wxSizerFlags().Expand());
-	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(this, wxID_ANY,
-		_T(APPNAME) _T(" web site"),
-		_T(APPURL));
-	link->SetToolTip(_T(APPURL));
-	AddControl(link, wxSizerFlags().Center());
-
-	wxSizer *sizerBtns = CreateButtonSizer(wxOK);
-	if ( sizerBtns )
-	{
-		m_sizerText->Add(sizerBtns, wxSizerFlags().Expand().Border());
-	}
-
-	wxSizer *sizerTop = new wxBoxSizer(wxVERTICAL);
-	sizerTop->Add(m_sizerText, 1, wxEXPAND|wxALL, 10);
-	SetSizerAndFit(sizerTop);
-
-	CentreOnScreen();
-}
-
-void AboutDlg::AddControl(wxWindow *win, const wxSizerFlags& flags)
-{
-	wxSizerFlags newflags = flags;
-	m_sizerText->Add(win, newflags.Border(wxTOP|wxBOTTOM));
-}
-
-void AboutDlg::AddControl(wxWindow *win)
-{
-	AddControl(win, wxSizerFlags());
-}
-
-void AboutDlg::AddText(const wxString& text)
-{
-	if (!text.empty())
-		AddControl(new wxStaticText(this, wxID_ANY, text));
-}
-
-void AboutDlg::AddDev(const wxString& name, const wxString& url, const wxString &role)
-{
-	wxSizer *s = new wxBoxSizer(wxHORIZONTAL);
-	s->Add(new wxStaticText(this, wxID_ANY, L"     \x00BB   "));
-	if (url.empty())
-		s->Add(new wxStaticText(this, wxID_ANY, name));
-	else
-	{
-		wxHyperlinkCtrl* link = new wxHyperlinkCtrl(this, wxID_ANY, name, url);
-		link->SetToolTip(url);
-		s->Add(link);
-	}
-	if (!role.empty())
-		s->Add(new wxStaticText(this, wxID_ANY, L" (" + role + ")"));
-	m_sizerText->Add(s);
-}
-
 
 void ProfilerGUI::ShowAboutBox()
 {
