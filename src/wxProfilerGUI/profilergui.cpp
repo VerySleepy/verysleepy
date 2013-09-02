@@ -318,6 +318,8 @@ void ProfilerGUI::LoadProfileData(const std::wstring &filename)
 	frame->reset();
 }
 
+/// Returns the path to the profile archive, or an empty string
+/// if the user quit the application.
 std::wstring ProfilerGUI::ObtainProfileData()
 {
 	while (true)
