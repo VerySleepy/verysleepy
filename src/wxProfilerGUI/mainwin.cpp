@@ -32,6 +32,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/filedlg.h>
 #include <wx/gauge.h>
 #include <set>
+#include "../utils/except.h"
 
 MainWin *theMainWin;
 
@@ -358,8 +359,17 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 	if (filename.empty())
 		return;
 
-	database->loadFromPath(filename.c_str().AsWChar(),collapseOSCalls->IsChecked(),false);
-	SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
+	try
+	{
+		database->loadFromPath(filename.c_str().AsWChar(), collapseOSCalls->IsChecked(), false);
+
+		SetTitle(wxString::Format("%s - %s", APPNAME, filename.c_str()));
+	}
+	catch (SleepyException &e)
+	{
+		wxLogError("%ls\n", e.wwhat());
+		clear();
+	}
 
 	reset();
 }
@@ -513,9 +523,23 @@ void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
 
 //////////////////////////////////////////////////////////////////////////
 
+void MainWin::clear()
+{
+	database->clear();
+	SetTitle(wxString::Format("%s", APPNAME));
+}
+
 void MainWin::reload(bool loadMinidump/*=false*/)
 {
-	database->reload(collapseOSCalls->IsChecked(), loadMinidump);
+	try
+	{
+		database->reload(collapseOSCalls->IsChecked(), loadMinidump);
+	}
+	catch (SleepyException &e)
+	{
+		wxLogError("%ls\n", e.wwhat());
+		clear();
+	}
 }
 
 void MainWin::showSource( const Database::Symbol * symbol )

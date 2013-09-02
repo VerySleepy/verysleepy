@@ -116,8 +116,8 @@ public:
 	virtual ~Database();
 	void clear();
 
-	bool loadFromPath(const std::wstring& profilepath,bool collapseOSCalls,bool loadMinidump);
-	bool reload(bool collapseOSCalls, bool loadMinidump);
+	void loadFromPath(const std::wstring& profilepath,bool collapseOSCalls,bool loadMinidump);
+	void reload(bool collapseOSCalls, bool loadMinidump);
 
 	const Symbol *getSymbol(Symbol::ID id) const { return symbols[id]; }
 	Symbol::ID getSymbolCount() const { return symbols.size(); }

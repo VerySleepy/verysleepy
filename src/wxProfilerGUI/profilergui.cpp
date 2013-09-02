@@ -278,7 +278,9 @@ void ProfilerGUI::DestroyProgressWindow()
 	captureWin = NULL;
 }
 
-bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_filename)
+/// Returns the path to the profile archive, or an empty string
+/// if profiling was aborted by the user.
+std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 {
 	//------------------------------------------------------------------------
 	//create the profiler thread
@@ -345,14 +347,14 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	{
 		profilerthread->cancel();
 		profilerthread->waitFor();
-		return false;
+		return std::wstring();
 	}
 
 	{
 		wxProgressDialog dlg(APPNAME, "Waiting for symbol query to start...", 1000, NULL,
 			wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT);
 
-		while(true)
+		while (true)
 		{
 			int permille;
 			std::wstring stage;
@@ -367,24 +369,20 @@ bool ProfilerGUI::LaunchProfiler(const AttachInfo *info, std::wstring &output_fi
 	}
 
 	bool failed = profilerthread->getFailed();
-	output_filename = profilerthread->getFilename();
+	std::wstring output_filename = profilerthread->getFilename();
 
 	delete profilerthread;
 	profilerthread = NULL;
 
 	if (failed)
-		return false;
+		return std::wstring();
 
-	if (output_filename.empty())
-	{
-		wxLogError("There was a problem creating the profile data.\n");
-		return false;
-	}
+	enforce(!output_filename.empty(), "There was a problem creating the profile data.");
 
 	tmp_files.push_back(output_filename);
 	atexit(CleanupTempFiles);
 
-	return true;
+	return output_filename;
 }
 
 AttachInfo::AttachInfo()
@@ -409,13 +407,9 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 
 	std::vector<wchar_t> run_cmd_dup(run_cmd.size() + 1); // CreateProcess lpCommandLine must be mutable
 	std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
-	if ( !CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ) )
-	{
-		wxLogSysError( "Unable to launch process\n" );
-		return NULL;
-	}
+	wenforce(CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ), "CreateProcess");
 
-	AttachInfo *output = new AttachInfo;
+	std::unique_ptr<AttachInfo> output(new AttachInfo);
 	output->process_handle = pi.hProcess;
 	output->thread_handles.push_back(pi.hThread);
 	output->sym_info = new SymbolInfo;
@@ -426,7 +420,7 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 	// So we wait a little and try again. I'm not sure what the correct solution is,
 	// I think possibly monitoring for debug events might be the way to go.
 	int retry = 100;
-	while(retry--)
+	while (retry--)
 	{
 		Sleep(10);
 		try
@@ -434,89 +428,68 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 			output->sym_info->loadSymbols(output->process_handle, false);
 			break;
 		}
-		catch (SleepyException &e)
+		catch (...)
 		{
 			if (retry == 0)
-			{
-				::MessageBox(NULL, std::wstring(L"Error: " + e.wwhat()).c_str(), L"Profiler Error", MB_OK);
-				delete output;
-				return NULL;
-			}
+				throw;
 		}
 	}
 
-	return output;
+	return output.release();
 }
 
-bool ProfilerGUI::LoadProfileData(const std::wstring &filename)
+void ProfilerGUI::LoadProfileData(const std::wstring &filename)
 {
 	Database *database = new Database();
-	if ( !database->loadFromPath(filename,config.Read("MainWinCollapseOS",1)!=0,false) )
-		return false;
+	database->loadFromPath(filename, config.Read("MainWinCollapseOS", 1) != 0, false);
 
 	MainWin *frame = new MainWin(wxString::Format("%s - %s", APPNAME, filename), filename, database);
 	frame->Show(TRUE);
 	frame->Update();
 	frame->Raise();
 	frame->reset();
-	return true;
 }
 
 std::wstring ProfilerGUI::ObtainProfileData()
 {
-	if (!cmdline_load.empty())
-		return cmdline_load;
-
-	AttachInfo *info;
-	bool ok;
-	std::wstring tmp_filename;
-
-try_again:
-	ThreadPicker *threadpicker = new ThreadPicker;
-	int mode = threadpicker->ShowModal();
-	wxLog::FlushActive();
-
-	std::wstring open_filename = threadpicker->open_filename;
-	std::wstring run_filename = threadpicker->run_filename;
-	std::wstring run_cwd = threadpicker->run_cwd;
-	info = threadpicker->attach_info;
-	delete threadpicker;
-
-	switch(mode)
+	while (true)
 	{
-	case ThreadPicker::QUIT:
-		return L"";
+		std::unique_ptr<ThreadPicker> threadpicker(new ThreadPicker);
+		int mode = threadpicker->ShowModal();
+		wxLog::FlushActive();
 
-	case ThreadPicker::OPEN:
-		return open_filename;
-
-	case ThreadPicker::ATTACH:
-		ok = LaunchProfiler(info, tmp_filename);
-		delete info;
-		break;
-
-	case ThreadPicker::RUN:
-		// Create the window before we create the process,
-		// so we don't steal focus from it.
-		CreateProgressWindow();
-
-		info = RunProcess(run_filename,run_cwd);
-		if (!info)
+		switch (mode)
 		{
-			DestroyProgressWindow();
-			goto try_again;
+		case ThreadPicker::QUIT:
+			return std::wstring();
+
+		case ThreadPicker::OPEN:
+			return threadpicker->open_filename;
+
+		case ThreadPicker::ATTACH:
+			return LaunchProfiler(threadpicker->attach_info);
+
+		case ThreadPicker::RUN:
+			// Create the window before we create the process,
+			// so we don't steal focus from it.
+			CreateProgressWindow();
+
+			std::unique_ptr<AttachInfo> info;
+			try
+			{
+				info.reset(RunProcess(threadpicker->run_filename, threadpicker->run_cwd));
+			}
+			catch (SleepyException &e)
+			{
+				DestroyProgressWindow();
+				wxLogError("%ls\n", e.wwhat());
+				continue;
+			}
+
+			wxScopeGuard sgTerm = wxMakeGuard(TerminateProcess, info->process_handle, 0);
+			return LaunchProfiler(info.get());
 		}
-
-		ok = LaunchProfiler(info, tmp_filename);
-		TerminateProcess(info->process_handle, 0);
-		delete info;
-		break;
 	}
-
-	if (!ok)
-		return L"";
-
-	return tmp_filename;
 }
 
 bool ProfilerGUI::OnInit()
@@ -554,25 +527,35 @@ bool ProfilerGUI::OnInit()
 bool ProfilerGUI::ProcessIdle()
 {
 	bool result = wxApp::ProcessIdle();
+	HandleInit();
+	return result;
+}
 
+void ProfilerGUI::HandleInit()
+{
 	if (initialized)
-		return result;
+		return;
 
 	initialized = true;
 
 	SetExitOnFrameDelete(false);
 
-	if (!Run())
+	try
 	{
-		wxEventLoop::GetActive()->Exit(1);
-		return result;
+		if (Run())
+		{
+			SetExitOnFrameDelete(true);
+			return;
+		}
 	}
-
-	SetExitOnFrameDelete(true);
-
-	return result;
+	catch (SleepyException &e)
+	{
+		wxLogError("%ls\n", e.wwhat());
+	}
+	wxEventLoop::GetActive()->Exit(1);
 }
 
+/// Returns true if a frame is still active.
 bool ProfilerGUI::Run()
 {
 	// Explicitly create and set the default logger, so other threads use it.
@@ -581,42 +564,31 @@ bool ProfilerGUI::Run()
 	// Log messages for other threads will be discarded.
 	wxLog::SetActiveTarget(new wxLogGui);
 
+	std::wstring filename;
+
 	if (!cmdline_run.empty())
 	{
-		std::wstring tmp_filename;
-
-		AttachInfo *info = RunProcess(cmdline_run, L"");
-		if ( !info )
-			return false;
-
-		bool ok = LaunchProfiler(info, tmp_filename);
-		TerminateProcess(info->process_handle, 0);
-		delete info;
-
-		if (!ok)
-			return false;
-
-		cmdline_load = tmp_filename;
+		std::unique_ptr<AttachInfo> info(RunProcess(cmdline_run, L""));
+		wxScopeGuard sgTerm = wxMakeGuard(TerminateProcess, info->process_handle, 0);
+		filename = LaunchProfiler(info.get());
 	}
-
-	std::wstring filename = ObtainProfileData();
-	if (filename.empty())
-		return false;
+	else
+	if (!cmdline_load.empty())
+		filename = cmdline_load;
+	else
+	{
+		filename = ObtainProfileData();
+		if (filename.empty())
+			return false; // Profiling was aborted
+	}
 
 	if (!cmdline_save.empty())
 	{
-		if (!CopyFile(filename.c_str(), cmdline_save.c_str(), FALSE))
-		{
-			wxLogSysError("Could not save profile data.\n");
-			return false;
-		}
-
-		return true;
+		wenforce(CopyFile(filename.c_str(), cmdline_save.c_str(), FALSE), "Saving profile data");
+		return false;	// No GUI, just save and exit
 	}
 
-	if (!LoadProfileData(filename))
-		return false;
-
+	LoadProfileData(filename);
 	return true;
 }
 

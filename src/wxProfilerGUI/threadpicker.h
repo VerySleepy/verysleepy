@@ -89,7 +89,8 @@ public:
 	ThreadPicker();
 	virtual ~ThreadPicker();
 
-	bool AttachToProcess(bool allThreads);
+	bool TryAttachToProcess(bool allThreads);
+	void AttachToProcess(bool allThreads);
 	void UpdateSorting();
 
 	void OnOpen(wxCommandEvent& event);
@@ -100,7 +101,6 @@ public:
 	void OnDownload(wxCommandEvent& event);
 	void OnLaunchExe(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
-	void OnAttachProfiler();
 	void OnAttachProfiler(wxCommandEvent& event);
 	void OnAttachProfilerAll(wxCommandEvent& event);
 	void OnDoubleClicked(wxListEvent& event);

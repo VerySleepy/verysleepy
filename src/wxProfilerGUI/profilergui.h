@@ -125,14 +125,15 @@ protected:
 	virtual bool OnCmdLineParsed(wxCmdLineParser& parser);
 
 private:
+	void HandleInit();
 	bool Run();
 
 	void CreateProgressWindow();
 	void DestroyProgressWindow();
 
-	bool LaunchProfiler(const AttachInfo *info, std::wstring &output_filename);
+	std::wstring LaunchProfiler(const AttachInfo *info);
 	AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
-	bool LoadProfileData(const std::wstring &filename);
+	void LoadProfileData(const std::wstring &filename);
 	std::wstring ObtainProfileData();
 
 	class CaptureWin *captureWin;

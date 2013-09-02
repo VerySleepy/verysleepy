@@ -40,6 +40,7 @@ static T enforce(T cond, const S &text)
 }
 
 #include <windows.h>
+#include <sstream>
 
 template<class T, class S>
 T wenforce(T cond, const S& where)

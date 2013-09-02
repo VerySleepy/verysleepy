@@ -103,69 +103,59 @@ void Database::clear()
 	has_minidump = false;
 }
 
-bool Database::reload(bool collapseOSCalls, bool loadMinidump)
+void Database::reload(bool collapseOSCalls, bool loadMinidump)
 {
-	return loadFromPath(profilepath, collapseOSCalls, loadMinidump);
+	loadFromPath(profilepath, collapseOSCalls, loadMinidump);
 }
 
-bool Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCalls, bool loadMinidump)
+void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCalls, bool loadMinidump)
 {
-	if(_profilepath != profilepath) {
+	if(_profilepath != profilepath)
 		profilepath = _profilepath;
-	}
 	clear();
 
-	try
+	wxFFileInputStream input(profilepath);
+	enforce(input.IsOk(), "Input stream error opening profile data.");
+
+	// Check the version number required.
 	{
-		wxFFileInputStream input(profilepath);
-		enforce(input.IsOk(), "Input stream error opening profile data.");
+		wxZipInputStream zipver(input);
+		enforce(zipver.IsOk(), "ZIP error opening profile data.");
 
-		// Check the version number required.
-		{
-			wxZipInputStream zipver(input);
-			enforce(zipver.IsOk(), "ZIP error opening profile data.");
-
-			bool versionFound = false;
-			while (wxZipEntry *entry = zipver.GetNextEntry())
-			{
-				wxString name = entry->GetInternalName();
-
-				if (name.Left(8) == "Version " && name.Right(9) == " required")
-				{
-					versionFound = true;
-					wxString ver = name.Mid(8, name.Length()-(8+9));
-					enforce(ver == FORMAT_VERSION, wxString::Format("Cannot load capture file: %s", name.c_str()).c_str());
-				}
-			}
-
-			enforce(versionFound, "Unrecognized capture file");
-		}
-
-		wxZipInputStream zip(input);
-		enforce(zip.IsOk(), "ZIP error opening profile data.");
-
-		while (wxZipEntry *entry = zip.GetNextEntry())
+		bool versionFound = false;
+		while (wxZipEntry *entry = zipver.GetNextEntry())
 		{
 			wxString name = entry->GetInternalName();
 
-				 if (name == "Symbols.txt")		loadSymbols(zip);
-			else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
-			else if (name == "IPCounts.txt")	loadIpCounts(zip);
-			else if (name == "Stats.txt")		loadStats(zip);
-			else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
-			else if (name.Left(8) == "Version ") {}
-			else
-				wxLogWarning("Other fluff found in capture file (%s)\n", name.c_str());
+			if (name.Left(8) == "Version " && name.Right(9) == " required")
+			{
+				versionFound = true;
+				wxString ver = name.Mid(8, name.Length()-(8+9));
+				enforce(ver == FORMAT_VERSION, wxString::Format("Cannot load capture file: %s", name.c_str()).c_str());
+			}
 		}
 
-		setRoot(NULL);
+		enforce(versionFound, "Unrecognized capture file");
 	}
-	catch (SleepyException &e)
+
+	wxZipInputStream zip(input);
+	enforce(zip.IsOk(), "ZIP error opening profile data.");
+
+	while (wxZipEntry *entry = zip.GetNextEntry())
 	{
-		wxLogError("%ls\n", e.wwhat());
-		return false;
+		wxString name = entry->GetInternalName();
+
+				if (name == "Symbols.txt")		loadSymbols(zip);
+		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
+		else if (name == "IPCounts.txt")	loadIpCounts(zip);
+		else if (name == "Stats.txt")		loadStats(zip);
+		else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
+		else if (name.Left(8) == "Version ") {}
+		else
+			wxLogWarning("Other fluff found in capture file (%s)\n", name.c_str());
 	}
-	return true;
+
+	setRoot(NULL);
 }
 
 // Windows progress bar is limited to 0x10000 max.
@@ -557,6 +547,7 @@ void Database::loadMinidump(wxInputStream &file)
 	catch (SleepyException &e)
 	{
 		wxLogError("%ls\n", e.wwhat());
+		// Continue loading database
 	}
 }
 

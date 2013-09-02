@@ -93,6 +93,8 @@ public:
 	/// Does not refresh().
 	void reload(bool loadMinidump=false);
 
+	void clear();
+
 	/// Switch selection to a given symbol.
 	/// Does not repopulate the secondary views.
 	/// Called when clicking on a particular symbol.

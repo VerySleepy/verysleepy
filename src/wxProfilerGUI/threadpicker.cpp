@@ -28,6 +28,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/menu.h>
 #include <wx/button.h>
 #include <wx/stattext.h>
+#include "../utils/except.h"
 
 // IDs for the controls and the menu commands
 enum
@@ -65,7 +66,6 @@ EVT_BUTTON(ProcWin_Exit, ThreadPicker::OnQuit)
 EVT_CHECKBOX(ProcWin_TimeCheck, ThreadPicker::OnTimeCheck)
 END_EVENT_TABLE()
 
-ThreadPicker *cur_picker = NULL;
 wxProgressDialog *g_symProgress = NULL;
 
 void symLogCallback(const wchar_t *text)
@@ -199,42 +199,31 @@ ThreadPicker::ThreadPicker()
 	Centre();
 
 	g_symLog = symLogCallback;
-	cur_picker = this;
 }
 
 void ThreadPicker::OnOpen(wxCommandEvent& event)
 {
 	open_filename = ProfilerGUI::PromptOpen(this);
 	if (!open_filename.empty())
-	{
 		EndModal(OPEN);
-	}
-}
-
-void ThreadPicker::OnAttachProfiler()
-{
-	if ( AttachToProcess(false) )
-	{
-		EndModal(ATTACH);
-	}
 }
 
 void ThreadPicker::OnAttachProfiler(wxCommandEvent& event)
 {
-	OnAttachProfiler();
+	if (TryAttachToProcess(false))
+		EndModal(ATTACH);
 }
 
 void ThreadPicker::OnAttachProfilerAll(wxCommandEvent& event)
 {
-	if ( AttachToProcess(true) )
-	{
+	if (TryAttachToProcess(true))
 		EndModal(ATTACH);
-	}
 }
 
 void ThreadPicker::OnDoubleClicked(wxListEvent& event)
 {
-	OnAttachProfiler();
+	if (TryAttachToProcess(false))
+		EndModal(ATTACH);
 }
 
 void ThreadPicker::OnClose(wxCloseEvent& event)
@@ -307,7 +296,6 @@ void ThreadPicker::OnTimeCheck(wxCommandEvent& event)
 ThreadPicker::~ThreadPicker()
 {
 	g_symLog = NULL;
-	cur_picker = NULL;
 	delete log;
 }
 
@@ -325,23 +313,29 @@ unsigned int ThreadPicker::getSelectedThread()
 }
 */
 
-bool ThreadPicker::AttachToProcess(bool allThreads)
+bool ThreadPicker::TryAttachToProcess(bool allThreads)
 {
-	if (!IsModal())
+	try
+	{
+		AttachToProcess(allThreads);
+	}
+	catch (SleepyException &e)
+	{
+		wxLogError("%ls\n", e.wwhat());
 		return false;
+	}
+
+	return true;
+}
+
+void ThreadPicker::AttachToProcess(bool allThreads)
+{
+	assert(IsModal());
 
 	attach_info = new AttachInfo;
 
 	const ProcessInfo* processInfo = processlist->getSelectedProcess();
-	if(processInfo == NULL)
-	{
-		wxLogError("No process selected.\n");
-		return false;
-	}
-	else
-	{
-		config.Write("PrevProcess",processInfo->getName().c_str());
-	}
+	enforce(processInfo, "No process selected");
 
 	// RM: 20130614 Check if the user wants the profile to run for a set time period
 	if (time_check->IsChecked() && time_validator->TransferFromWindow() )
@@ -358,18 +352,13 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 	//------------------------------------------------------------------------
 	attach_info->process_handle = processInfo->getProcessHandle(); 
 	attach_info->sym_info = processlist->takeSymbolInfo();
-	if (!attach_info->sym_info)
-		return false;
+	enforce(attach_info->sym_info, "No symbol info");
 	
 	// Check it didn't exit.
 	if (WaitForSingleObject(attach_info->process_handle, 0) == WAIT_OBJECT_0)
 		attach_info->process_handle = NULL;
 
-	if ( attach_info->process_handle == NULL )
-	{
-		wxLogError("Cannot attach to running process.\n");
-		return false;
-	}
+	enforce(attach_info->process_handle, "Cannot attach to running process");
 
 	// DE: 20090325 attaches to specific a list of threads
 	std::vector<const ThreadInfo*> selectedThreads = threadlist->getSelectedThreads(allThreads);
@@ -377,35 +366,26 @@ bool ThreadPicker::AttachToProcess(bool allThreads)
 	{
 		selectedThreads = threadlist->getSelectedThreads(true);
 	}
-	if (selectedThreads.size() == 0)
-	{
-		wxLogError("No thread(s) selected.\n");
-		return false;
-	}
+	enforce(selectedThreads.size(), "No thread(s) selected");
 
 	// DE: 20090325 attaches to specific a list of threads
 	for (auto it = selectedThreads.begin(); it != selectedThreads.end(); ++it)
 	{
-		const ThreadInfo* threadInfo(*it);
-
-		HANDLE threadHandle = threadInfo->getThreadHandle();
-		
-
-		if (threadHandle == NULL)
+		try
 		{
-			DWORD err = GetLastError();
-			wxLogError("Cannot attach to selected thread.\n");
-		} else {
+			const ThreadInfo* threadInfo(*it);
+
+			HANDLE threadHandle = threadInfo->getThreadHandle();
+			wenforce(threadHandle, "Attaching to selected thread");
 			attach_info->thread_handles.push_back(threadHandle);
+		}
+		catch (SleepyException &e)
+		{
+			wxLogError("%ls\n", e.wwhat());
 		}
 	}
 
 	// DE: 20090325 attaches to specific a list of threads
-	if (attach_info->thread_handles.size() == 0){
-		wxLogError("Cannot attach to any threads.\n");
-		return false;
-	}
-
-	return true;
+	enforce(attach_info->thread_handles.size(), "Cannot attach to any threads");
 }
 
