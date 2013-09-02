@@ -392,7 +392,7 @@ void Database::scanMainList()
 
 	wxProgressDialog progressdlg(APPNAME, "Scanning profile database...",
 		(int)callstacks.size(), theMainWin,
-		wxPD_APP_MODAL|wxPD_REMAINING_TIME);
+		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
 	mainList.items.clear();
 	mainList.totalcount = 0;
