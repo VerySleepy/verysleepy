@@ -9,6 +9,16 @@ You can download an installer on [files.thecybershadow.net](http://files.thecybe
 
 ### History
 
+##### Version 0.90 (work in progress):
+
+* Redesign parts of the file format and internal database representation, to allow more exact late symbol loading, as well as a disassembler view in the future
+* Add an "Address" column to all function lists
+  * For the call stack and callers view, the address specifies the address past the call instruction
+* Several fixes to the crash reporter
+* Use wxWidgets 2.9.5
+* Fix problems caused by dbghelp.dll hijacking
+* More user interface improvements
+
 ##### Version 0.83 (2013-08-22):
 
 * Numerous user interface performance, responsiveness and usability improvements
