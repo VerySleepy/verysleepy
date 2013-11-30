@@ -126,7 +126,7 @@ public:
 	const std::wstring &getModuleName(ModuleID id) const { return modules[id]; }
 	ModuleID getModuleCount() const { return modules.size(); }
 
-	const AddrInfo *getAddrInfo(Address addr) { return &addrinfo[addr]; }
+	const AddrInfo *getAddrInfo(Address addr) { return &addrinfo.at(addr); }
 
 	void setRoot(const Symbol *root);
 	const Symbol *getRoot() const { return currentRoot; }

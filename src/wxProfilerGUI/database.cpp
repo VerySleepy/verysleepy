@@ -260,7 +260,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 				break;
 			Address addr = hexStringTo64UInt(addrstr);
 
-			if (collapseKernelCalls && addrinfo[addr].symbol->isCollapseFunction)
+			if (collapseKernelCalls && addrinfo.at(addr).symbol->isCollapseFunction)
 				callstack.addresses.clear();
 
 			callstack.addresses.push_back(addr);
@@ -268,11 +268,11 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 
 		if (collapseKernelCalls)
 		{
-			if (callstack.addresses.size() && addrinfo[callstack.addresses[0]].symbol->isCollapseModule)
+			if (callstack.addresses.size() && addrinfo.at(callstack.addresses[0]).symbol->isCollapseModule)
 			{
 				while (callstack.addresses.size() >= 2)
 				{
-					if (!addrinfo[callstack.addresses[1]].symbol->isCollapseModule)
+					if (!addrinfo.at(callstack.addresses[1]).symbol->isCollapseModule)
 						break;
 					callstack.addresses.erase(callstack.addresses.begin());
 				}
@@ -281,7 +281,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 
 		callstack.symbols.resize(callstack.addresses.size());
 		for (size_t i=0; i<callstack.addresses.size(); i++)
-			callstack.symbols[i] = addrinfo[callstack.addresses[i]].symbol;
+			callstack.symbols[i] = addrinfo.at(callstack.addresses[i]).symbol;
 
 		callstacks.push_back(std::move(callstack));
 
@@ -348,7 +348,7 @@ void Database::loadIpCounts(wxInputStream &file)
 		stream >> count;
 
 		Address addr = hexStringTo64UInt(addrstr);
-		AddrInfo *info = &addrinfo[addr];
+		AddrInfo *info = &addrinfo.at(addr);
 		info->count += count;
 		info->percentage += 100.0f * ((float)count / (float)totalcount);
 	}
