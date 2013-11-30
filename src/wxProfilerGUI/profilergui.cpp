@@ -25,6 +25,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/mstream.h>
 #include <wx/apptrait.h>
 #include <wx/msw/apptrait.h>
+#include <memory>
 
 #include "threadpicker.h"
 #include "capturewin.h"
