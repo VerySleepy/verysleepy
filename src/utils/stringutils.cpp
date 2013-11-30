@@ -74,7 +74,7 @@ unsigned long long hexStringTo64UInt(const std::wstring& s)
 		return 0;//too long, parse error
 
 	unsigned int i = 0;
-	unsigned int x = 0;
+	unsigned long long x = 0;
 	unsigned int nibble;
 
 	//eat '0'
