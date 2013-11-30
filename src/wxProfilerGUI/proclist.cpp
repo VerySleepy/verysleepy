@@ -203,7 +203,8 @@ void ProcList::displayList()
 			item.SetBackgroundColour(wxColor(255,255,0));
 
 		int state = map_get(item_state, sym->address, 0);
-		item.SetData(sym->address);
+		// On x64, wx will downcast this to 32-bit unless it's a pointer.
+		item.SetData((void *)sym->address);
 		item.SetState(state);
 		item.SetStateMask(wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 
