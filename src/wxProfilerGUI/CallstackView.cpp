@@ -222,7 +222,8 @@ void CallstackView::updateList()
 		} else {
 			listCtrl->SetItemState(i, 0, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 		}
-		listCtrl->SetItemData(i, snow->address);
+		// On x64, wx will downcast this to 32-bit unless it's a pointer.
+		listCtrl->SetItemPtrData(i, snow->address);
 	}
 
 	while (listCtrl->GetItemCount() > int(now->symbols.size()))
