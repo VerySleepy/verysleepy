@@ -15,6 +15,7 @@ button_up PNG "Button-Up.png"
 button_down PNG "Button-Down.png"
 button_add PNG "Button-Add.png"
 button_remove PNG "Button-Remove.png"
+button_exportcsv PNG "Button-ExportCSV.png"
 
 #include "appinfo.h"
 

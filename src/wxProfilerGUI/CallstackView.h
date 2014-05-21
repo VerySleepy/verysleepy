@@ -53,6 +53,7 @@ class CallstackView : public wxWindow
 	{
 		TOOL_PREV,
 		TOOL_NEXT,
+		TOOL_EXPORT_CSV,
 	};
 
 	enum ListCtrl {
@@ -61,11 +62,14 @@ class CallstackView : public wxWindow
 
 	std::vector<const Database::CallStack*> callstacks;
 	size_t									callstackActive;
+	wxString								callstackStats;
 	const Database::Symbol					*currSymbol;
 	long									itemSelected;
 
 	void setupColumn(ColumnType id, int width, const wxString &name);
 	void updateList();
+	void updateTools();
+	void exportCSV(wxFileOutputStream &file);
 
 public:
 	CallstackView(wxWindow *parent, Database *database);

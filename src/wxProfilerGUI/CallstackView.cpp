@@ -24,6 +24,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "CallstackView.h"
 #include <algorithm>
 #include <wx/aui/auibar.h>
+#include <wx/filedlg.h>
 #include "contextmenu.h"
 #include "mainwin.h"
 #include "../utils/stringutils.h"
@@ -76,7 +77,7 @@ EVT_CONTEXT_MENU(CallstackView::OnContextMenu)
 END_EVENT_TABLE()
 
 CallstackView::CallstackView(wxWindow *parent,Database *_database)
-:	wxWindow(parent,-1), database(_database), callstackActive(0), itemSelected(~0)
+:	wxWindow(parent,-1), database(_database), callstackActive(0), currSymbol(NULL), itemSelected(~0)
 {
 	listCtrl = new wxListCtrl(this,LIST_CTRL,wxDefaultPosition,wxDefaultSize,wxLC_REPORT);
 	setupColumn(COL_NAME,			150,	_T("Name"));
@@ -86,8 +87,9 @@ CallstackView::CallstackView(wxWindow *parent,Database *_database)
 	setupColumn(COL_ADDRESS,		-1,		_T("Address"));
 
 	toolBar = new wxAuiToolBar(this,-1);
-	toolBar->AddTool(0,"-",LoadPngResource(L"button_prev"));
-	toolBar->AddTool(1,"+",LoadPngResource(L"button_next"));
+	toolBar->AddTool(TOOL_PREV,"-",LoadPngResource(L"button_prev"),_T("Previous"));
+	toolBar->AddTool(TOOL_NEXT,"+",LoadPngResource(L"button_next"),_T("Next"));
+	toolBar->AddTool(TOOL_EXPORT_CSV,"CSV",LoadPngResource(L"button_exportcsv"),_T("Export as CSV"));
 	toolRange = new wxStaticTextTransparent(toolBar,-1);
 	toolBar->AddControl(toolRange);
 
@@ -136,6 +138,8 @@ bool SortCalls(const Database::CallStack*a,const Database::CallStack*b)
 
 void CallstackView::showCallStack(const Database::Symbol *symbol)
 {
+	updateTools();
+
 	if(currSymbol == symbol || symbol == NULL)
 		return;
 
@@ -162,23 +166,30 @@ void CallstackView::showCallStack(const Database::Symbol *symbol)
 	updateList();
 }
 
-void CallstackView::updateList()
+void CallstackView::updateTools()
 {
 	toolBar->EnableTool(TOOL_PREV,callstackActive != 0);
 	toolBar->EnableTool(TOOL_NEXT,int(callstackActive) < int(callstacks.size()-1));
+	toolBar->EnableTool(TOOL_EXPORT_CSV,!callstacks.empty());
+	toolRange->SetLabel(callstackStats);
+	toolBar->Realize();
+	toolBar->Refresh();
+}
 
+void CallstackView::updateList()
+{
 	const Database::CallStack *now = NULL;
 	if(callstackActive < callstacks.size())
 		now = callstacks[callstackActive];
 	if(now) {
 		double totalcount = database->getMainList().totalcount;
-		toolRange->SetLabel(wxString::Format("Call stack %d of %d | Accounted for %0.2fs (%0.2f%%)",
-			(int)(callstackActive+1),(int)callstacks.size(),now->samplecount,now->samplecount*100/totalcount));
+		callstackStats = wxString::Format("Call stack %d of %d | Accounted for %0.2fs (%0.2f%%)",
+			(int)(callstackActive+1),(int)callstacks.size(),now->samplecount,now->samplecount*100/totalcount);
 	} else {
-		toolRange->SetLabel("");
+		callstackStats = wxString("");
 	}
-	toolBar->Realize();
-	toolBar->Refresh();
+
+	updateTools();
 
 	if(!now)
 		return;
@@ -230,6 +241,28 @@ void CallstackView::updateList()
 		listCtrl->DeleteItem(listCtrl->GetItemCount()-1);
 }
 
+void CallstackView::exportCSV(wxFileOutputStream &file)
+{
+	wxTextOutputStream txt(file);
+
+	int columnCount = listCtrl->GetColumnCount();
+	int rowCount = listCtrl->GetItemCount();
+
+	for(int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+	{
+		wxListItem column;
+		column.SetMask(wxLIST_MASK_TEXT);
+		listCtrl->GetColumn(columnIndex, column);
+		txt << column.GetText() << ((columnIndex == (columnCount - 1)) ? "\n" : ",");
+	}
+
+	for(int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+	{
+		for(int columnIndex = 0; columnIndex < columnCount; columnIndex++ )
+			txt << listCtrl->GetItemText(rowIndex,columnIndex) << ((columnIndex == (columnCount - 1)) ? "\n" : ",");
+	}
+}
+
 void CallstackView::OnTool(wxCommandEvent &event)
 {
 	if(event.GetId() == TOOL_PREV) {
@@ -239,6 +272,16 @@ void CallstackView::OnTool(wxCommandEvent &event)
 	if(event.GetId() == TOOL_NEXT) {
 		callstackActive++;
 		updateList();
+	}
+	if(event.GetId() == TOOL_EXPORT_CSV) {
+		wxFileDialog dlg(this, "Export Callstack As", "", "callstack.csv", "CSV Files (*.csv)|*.csv", wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+		if (dlg.ShowModal() != wxID_CANCEL)
+		{
+			wxFileOutputStream file(dlg.GetPath());
+			if(!file.IsOk())
+				wxLogSysError("Could not export profile data.\n");
+			exportCSV(file);
+		}
 	}
 }
 
