@@ -71,6 +71,7 @@ AboutDlg::AboutDlg()
 	AddText(_T(APPNAME) L":");
 	AddDev("Vladimir Panteleev", "http://thecybershadow.net/", "maintainer");
 	AddDev("Richard Munn", "https://github.com/benjymous", "time limit, filters, highlights");
+	AddDev("Michael Vance", "", "callstack CSV export");
 
 	AddText("Very Sleepy:");
 	AddDev("Richard Mitton", "http://www.codersnotes.com/", "maintainer");

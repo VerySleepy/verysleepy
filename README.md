@@ -18,6 +18,9 @@ You can download an installer on [files.thecybershadow.net](http://files.thecybe
 * Use wxWidgets 2.9.5
 * Fix problems caused by dbghelp.dll hijacking
 * More user interface improvements
+* Contributed by Michael Vance:
+    * Add CSV export for the callstack view
+    * UI fixes and code cleanup
 
 ##### Version 0.83 (2013-08-22):
 
