@@ -25,6 +25,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "contextmenu.h"
 #include "mainwin.h"
 #include <wx/menu.h>
+#include <wx/clipbrd.h>
+#include <sstream>
 
 enum {
 	ID_COLLAPSE_FUNC=2001,
@@ -35,6 +37,7 @@ enum {
 	ID_FILTER_SOURCE,
 	ID_HIGHLIGHT,
 	ID_UNHIGHLIGHT,
+	ID_COPY,
 };
 
 class FunctionMenuWindow: public wxWindow
@@ -59,6 +62,7 @@ EVT_MENU(ID_FILTER_MODULE, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_FILTER_SOURCE, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_HIGHLIGHT, FunctionMenuWindow::OnMenu)
 EVT_MENU(ID_UNHIGHLIGHT, FunctionMenuWindow::OnMenu)
+EVT_MENU(ID_COPY, FunctionMenuWindow::OnMenu)
 END_EVENT_TABLE()
 
 void FunctionMenu(wxListCtrl *list, Database *database)
@@ -97,6 +101,9 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	wxString sourcefilename = database->getFileName  (sym->sourcefile);
 	wxString modulename     = database->getModuleName(sym->module    );
 
+	menu->Append(ID_COPY, "&Copy");
+	menu->AppendSeparator();
+
 	if (selection.size() == 1)
 	{
 		wxString modUpper = modulename;
@@ -122,6 +129,30 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	funcWindow.PopupMenu(menu);
 	switch(funcWindow.option)
 	{
+	case ID_COPY:
+	{
+		std::wstringstream buf;
+		for (long item = -1;;)
+		{
+			item = list->GetNextItem(item,
+				wxLIST_NEXT_ALL,
+				wxLIST_STATE_SELECTED);
+			if (item == -1)
+				break;
+
+			for (int col = 0; col < list->GetColumnCount(); col++)
+			{
+				if (col)
+					buf << '\t';
+				buf << list->GetItemText(item, col);
+			}
+			buf << '\n';
+		}
+		wxTheClipboard->SetData(new wxTextDataObject(buf.str()));
+
+		break;
+	}
+
 	case ID_COLLAPSE_FUNC:
 		if (IsOsFunction(procname))
 			RemoveOsFunction(procname);
