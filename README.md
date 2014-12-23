@@ -17,6 +17,7 @@ You can download an installer on [files.thecybershadow.net](http://files.thecybe
 * Several fixes to the crash reporter
 * Use wxWidgets 2.9.5
 * Fix problems caused by dbghelp.dll hijacking
+* Fix handling of symbols containing whitespace characters
 * More user interface improvements
 * Contributed by Michael Vance:
     * Add CSV export for the callstack view
