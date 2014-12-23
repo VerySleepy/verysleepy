@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
 #include "stringutils.h"
+#include "except.h"
 #include <algorithm>
 #include <shlwapi.h>
 
@@ -266,63 +267,44 @@ const std::wstring toString(unsigned int x)
 
 
 
-
-void readQuote(std::wistream& stream, std::wstring& str_out)//reads string from between double quotes.
+// Reads string from between double quotes.
+void readQuote(std::wistream& stream, std::wstring& str_out)
 {
 	wchar_t c;
 	str_out = L"";
 
-	//------------------------------------------------------------------------
-	//parse to first "
-	//------------------------------------------------------------------------
-	while(1)
+	// Parse to first "
+	while (1)
 	{
 		stream.get(c);
-		if(!stream.good() || c == '"')
+		enforce(stream.good(), "Expected quoted string, got end of stream");
+		if (c == '"')
 			break;
+		enforce(isspace(c), std::wstring(L"Expected quoted string, got ") + c);
 	}
 
-	//------------------------------------------------------------------------
-	//parse quoted text, to next "
-	//------------------------------------------------------------------------	
-	while(1)
+	// Parse quoted text
+	bool escaping = false;
+	while (1)
 	{
 		stream.get(c);
-		if(!stream.good() || c == '"')
-			break;
-		else
+		enforce(stream.good(), "Unexpected end of stream while reading quoted string");
+		if (escaping)
+		{
 			::concatWithChar(str_out, c);
+			escaping = false;
+		}
+		else
+		{
+			if (c == '\\')
+				escaping = true;
+			else
+				if (c == '"')
+					break;
+			else
+				::concatWithChar(str_out, c);
+		}
 	}
-		
-
-
-
-
-	/*stream >> str_out;
-	if(str_out.empty() || str_out[0] != '\"')
-		return;
-
-	str_out = getTailSubString(str_out, 1);//lop off quote
-
-	if(::hasSuffix(str_out, "\""))
-	{
-		str_out = str_out.substr(0, str_out.size() - 1);
-		return;
-	}
-
-	//------------------------------------------------------------------------
-	//read thru char by char until hit next quote
-	//------------------------------------------------------------------------
-	while(stream.good())
-	{
-		char c;
-		stream.get(c);
-
-		if(c == '\"')
-			break;
-
-		::concatWithChar(str_out, c);
-	}*/
 }
 
 

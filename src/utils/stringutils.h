@@ -114,6 +114,19 @@ inline void concatWithChar(std::wstring& s, wchar_t c)
 
 void readQuote(std::wistream& stream, std::wstring& str_out);//reads string from between double quotes.
 
+template<typename T>
+void writeQuote(T& stream, const std::wstring& s)
+{
+	stream << '"';
+	for (size_t i = 0; i < s.length(); i++)
+	{
+		wchar_t c = s[i];
+		if (c == '\\' || c == '"')
+			stream << '\\';
+		stream << c;
+	}
+	stream << '"';
+}
 
 struct StringSet
 {

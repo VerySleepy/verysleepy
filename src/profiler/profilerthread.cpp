@@ -236,8 +236,16 @@ void ProfilerThread::saveData()
 		PROFILER_ADDR addr = i->first;
 
 		const std::wstring proc_name = sym_info->getProcForAddr(addr, procfile, proclinenum);
-		txt << ::toHexString(addr) << " \"" << sym_info->getModuleNameForAddr(addr) << "\" " <<
-			proc_name << " \"" << procfile << "\" " << ::toString(proclinenum) << '\n';
+		txt << ::toHexString(addr);
+		txt << " ";
+		writeQuote(txt, sym_info->getModuleNameForAddr(addr));
+		txt << " ";
+		txt << proc_name;
+		txt << " ";
+		writeQuote(txt, procfile);
+		txt << " ";
+		txt << ::toString(proclinenum);
+		txt << '\n';
 
 		if (updateProgress())
 			return;
