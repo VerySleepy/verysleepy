@@ -323,7 +323,7 @@ const std::wstring SymbolInfo::getProcForAddr(PROFILER_ADDR addr,
 	//------------------------------------------------------------------------
 	//lookup proc file and line num
 	//------------------------------------------------------------------------
-	getLineForAddr((PROFILER_ADDR)symbol_info->Address, procfilepath_out, proclinenum_out);
+	getLineForAddr(addr, procfilepath_out, proclinenum_out);
 
 	return symbol_info->Name;
 }
