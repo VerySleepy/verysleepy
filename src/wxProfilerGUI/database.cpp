@@ -173,6 +173,7 @@ void Database::loadSymbols(wxInputStream &file)
 		kMaxProgress, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
+	bool warnedDupAddress = false;
 	while (!file.Eof())
 	{
 		wxString line = str.ReadLine();
@@ -189,11 +190,17 @@ void Database::loadSymbols(wxInputStream &file)
 
 		bool inserted;
 		AddrInfo &info = map_emplace(addrinfo, addr, &inserted);
-		enforce(inserted, "Duplicate address in symbol list");
 		::readQuote(stream, modulename);
 		stream >> procname;
 		::readQuote(stream, sourcefilename);
 		stream >> info.sourceline;
+		if (!inserted)
+		{
+			if (!warnedDupAddress)
+				wxLogWarning("Duplicate address in symbol list:\nAddress: " + addrstr + "\nSymbol: " + procname);
+			warnedDupAddress = true;
+			continue;
+		}
 
 		// Late symbol lookup
 		late_sym_info->filterSymbol(addr, modulename, procname, sourcefilename, info.sourceline);
