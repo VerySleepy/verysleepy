@@ -106,12 +106,6 @@ __forceinline bool isCToken(char c)
 	return isAlpha(c) || c == '_' || c == '#';
 }
 
-inline void concatWithChar(std::wstring& s, wchar_t c)
-{
-	s.resize(s.size() + 1);
-	s[s.size() - 1] = c;
-}
-
 void readQuote(std::wistream& stream, std::wstring& str_out);//reads string from between double quotes.
 
 template<typename T>

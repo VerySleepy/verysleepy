@@ -160,9 +160,9 @@ const std::wstring toHexString(unsigned long long i)
 	{
 		nibble = i & 0x000000000000000F;//get last 4 bits
 		if(nibble <= 9)
-			concatWithChar(reverse_s, '0' + (char)nibble - 0);
+			reverse_s.push_back('0' + (char)nibble - 0);
 		else
-			concatWithChar(reverse_s, 'a' + (char)nibble - 10);
+			reverse_s.push_back('a' + (char)nibble - 10);
 	
 		i >>= 4;//shift right 4 bits
 	}
@@ -291,7 +291,7 @@ void readQuote(std::wistream& stream, std::wstring& str_out)
 		enforce(stream.good(), "Unexpected end of stream while reading quoted string");
 		if (escaping)
 		{
-			::concatWithChar(str_out, c);
+			str_out.push_back(c);
 			escaping = false;
 		}
 		else
@@ -302,7 +302,7 @@ void readQuote(std::wistream& stream, std::wstring& str_out)
 				if (c == '"')
 					break;
 			else
-				::concatWithChar(str_out, c);
+				str_out.push_back(c);
 		}
 	}
 }
