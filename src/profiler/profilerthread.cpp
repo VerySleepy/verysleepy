@@ -240,7 +240,7 @@ void ProfilerThread::saveData()
 		txt << " ";
 		writeQuote(txt, sym_info->getModuleNameForAddr(addr));
 		txt << " ";
-		txt << proc_name;
+		writeQuote(txt, proc_name);
 		txt << " ";
 		writeQuote(txt, procfile);
 		txt << " ";

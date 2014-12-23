@@ -191,7 +191,7 @@ void Database::loadSymbols(wxInputStream &file)
 		bool inserted;
 		AddrInfo &info = map_emplace(addrinfo, addr, &inserted);
 		::readQuote(stream, modulename);
-		stream >> procname;
+		::readQuote(stream, procname);
 		::readQuote(stream, sourcefilename);
 		stream >> info.sourceline;
 		if (!inserted)
