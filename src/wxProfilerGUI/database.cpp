@@ -201,6 +201,7 @@ void Database::loadSymbols(wxInputStream &file)
 			warnedDupAddress = true;
 			continue;
 		}
+		enforce(stream.eof(), "Trailing data in line: " + line);
 
 		// Late symbol lookup
 		late_sym_info->filterSymbol(addr, modulename, procname, sourcefilename, info.sourceline);
