@@ -9,7 +9,7 @@ You can download an installer on [files.thecybershadow.net](http://files.thecybe
 
 ### History
 
-##### Version 0.90 (work in progress):
+##### Version 0.90 (2014-12-23):
 
 * Redesign parts of the file format and internal database representation, to allow more exact late symbol loading, as well as a disassembler view in the future
 * Add an "Address" column to all function lists
