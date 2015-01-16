@@ -1,13 +1,17 @@
-Very Sleepy CS
---------------
+Very Sleepy
+-----------
 
-This project is a fork of [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI. It is based on Very Sleepy version 0.82, and adds several improvements.
+This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI.
 
 ### Download
 
-You can download an installer on [files.thecybershadow.net](http://files.thecybershadow.net/verysleepy).
+You can download an installer on [the project's website](http://www.codersnotes.com/programs/sleepy), or from [the GitHub releases page](https://github.com/CyberShadow/verysleepy/releases).
 
 ### History
+
+##### Version 0.91 (under development):
+
+* Rename project back to Very Sleepy (this fork repository is now the official repository)
 
 ##### Version 0.90 (2014-12-23):
 
@@ -25,6 +29,7 @@ You can download an installer on [files.thecybershadow.net](http://files.thecybe
 
 ##### Version 0.83 (2013-08-22):
 
+* Rename fork to "Very Sleepy CS"
 * Numerous user interface performance, responsiveness and usability improvements
 * Allow specifying additional symbol search paths
 * Add Back and Forward menu items and hotkeys for function list navigation
