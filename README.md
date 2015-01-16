@@ -40,22 +40,16 @@ You can download an installer on [the project's website](http://www.codersnotes.
     * Added a time limit option to the interface
     * Added function highlighting and filtering
 
-##### [First release](http://blog.thecybershadow.net/2013/01/11/very-sleepy-fork/) (2013-01-11):
+##### [First fork release](http://blog.thecybershadow.net/2013/01/11/very-sleepy-fork/) (2013-01-11):
 
+* GitHub repository created
 * Fix several issues with the `/r` command-line option
 * Various UI improvements
 * Don't completely abort due to one failed `GetThreadContext` call (fixes "`Error: ProfilerExcep: GetThreadContext failed.`" errors by ignoring the occasional seemingly-harmless error condition)
 
-### Motivation
+##### Older changes
 
-This project exists because all of my recent attempts to contact Richard Mitton, Very Sleepy's maintainer, have failed.
-The patches I have sent him in March 2012 have not been published,
-and my requests to upload the project's source code on a source forge (e.g. GitHub) have similarly fallen on deaf ears.
-
-Several others have started their own forks of the project as well.
-Although I hope that I will be able to reach Richard eventually,
-for now I'd like for there to be one place for further project development,
-so that orphaned forks (which often remain unnoticed and succumb to bitrot) could be avoided.
+Changes before this repository's creation can be found on [the project's website](http://www.codersnotes.com/programs/sleepy).
 
 ### Building
 
