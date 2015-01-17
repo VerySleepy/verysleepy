@@ -68,13 +68,14 @@ AboutDlg::AboutDlg()
 	m_sizerText->Add(sizerIconAndTitle, 1, wxEXPAND);
 	m_sizerText->AddSpacer(10);
 
-	AddText(_T(APPNAME) L":");
-	AddDev("Vladimir Panteleev", "http://thecybershadow.net/", "maintainer");
-	AddDev("Richard Munn", "https://github.com/benjymous", "time limit, filters, highlights");
-	AddDev("Michael Vance", "", "callstack CSV export");
+//	AddText(_T(APPNAME) L":");
+//	AddDev("Your Name Here", "http://example.com/", "maintainer");
 
 	AddText("Very Sleepy:");
 	AddDev("Richard Mitton", "http://www.codersnotes.com/", "maintainer");
+	AddDev("Vladimir Panteleev", "http://thecybershadow.net/", "maintainer");
+	AddDev("Richard Munn", "https://github.com/benjymous", "time limit, filters, highlights");
+	AddDev("Michael Vance", "", "callstack CSV export");
 	AddDev("Dan Engelbrecht", "", "threading");
 	AddDev(L"Johan K" L"\x00F6" L"hler", "", "64-bit");
 	AddDev("... and many other kind people contributing patches.", "", "");
