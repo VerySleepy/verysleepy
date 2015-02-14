@@ -145,7 +145,7 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	{
 		wxString name = entry->GetInternalName();
 
-				if (name == "Symbols.txt")		loadSymbols(zip);
+		     if (name == "Symbols.txt")		loadSymbols(zip);
 		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
 		else if (name == "IPCounts.txt")	loadIpCounts(zip);
 		else if (name == "Stats.txt")		loadStats(zip);
@@ -166,12 +166,12 @@ void Database::loadSymbols(wxInputStream &file)
 {
 	wxTextInputStream str(file, wxT(" \t"), wxConvAuto(wxFONTENCODING_UTF8));
 
-	std::unordered_map<std::wstring, const Symbol*> locsymbols;
-
 	size_t filesize = file.GetSize();
 	wxProgressDialog progressdlg(APPNAME, "Loading symbols...",
-		kMaxProgress, theMainWin,
+		kMaxProgress+1, theMainWin,
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
+
+	std::unordered_map<std::wstring, const Symbol*> locsymbols;
 
 	bool warnedDupAddress = false;
 	while (!file.Eof())
@@ -237,6 +237,9 @@ void Database::loadSymbols(wxInputStream &file)
 		if (offset != wxInvalidOffset && offset != filesize)
 			progressdlg.Update(kMaxProgress * offset / filesize);
 	}
+
+	// The unordered_map destructor takes a very long time to run.
+	progressdlg.Update(kMaxProgress, "Tidying things up...");
 }
 
 // read callstacks
