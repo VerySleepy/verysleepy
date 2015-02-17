@@ -12,6 +12,7 @@ You can download an installer on [the project's website](http://www.codersnotes.
 ##### Version 0.91 (under development):
 
 * Rename project back to Very Sleepy (this fork repository is now the official repository)
+* Update Wine DbgHelp for Windows
 
 ##### Version 0.90 (2014-12-23):
 

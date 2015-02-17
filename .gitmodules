@@ -1,0 +1,4 @@
+[submodule "src/dbghelpw/wine"]
+	path = src/dbghelpw/wine
+	url = https://github.com/VerySleepy/wine
+	branch = sleepy
