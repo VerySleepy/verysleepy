@@ -5,7 +5,7 @@ This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU 
 
 ### Download
 
-You can download an installer on [the project's website](http://www.codersnotes.com/programs/sleepy), or from [the GitHub releases page](https://github.com/CyberShadow/verysleepy/releases).
+You can download an installer on [the project's website](http://www.codersnotes.com/sleepy), or from [the GitHub releases page](https://github.com/CyberShadow/verysleepy/releases).
 
 ### History
 
