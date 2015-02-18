@@ -37,9 +37,9 @@ http://www.gnu.org/copyleft/gpl.html..
 SymLogFn *g_symLog = NULL;
 
 BOOL CALLBACK EnumModules(
-    PCWSTR   ModuleName, 
-    DWORD64 BaseOfDll,  
-    PVOID   UserContext )
+	PCWSTR   ModuleName,
+	DWORD64 BaseOfDll,
+	PVOID   UserContext )
 {
 	SymbolInfo* syminfo = static_cast<SymbolInfo*>(UserContext);
 
@@ -49,7 +49,7 @@ BOOL CALLBACK EnumModules(
 	Module mod((PROFILER_ADDR)BaseOfDll, ModuleName, &dbgHelpMs);
 	syminfo->addModule(mod);
 
-    return TRUE;
+	return TRUE;
 }
 
 
@@ -103,11 +103,11 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 
 	is64BitProcess = Is64BitProcess(process_handle);
 
-	DWORD options = dbgHelpMs.SymGetOptions(); 
+	DWORD options = dbgHelpMs.SymGetOptions();
 
 #ifdef _WIN64
 	if(!is64BitProcess) {
-		options |= SYMOPT_INCLUDE_32BIT_MODULES; 
+		options |= SYMOPT_INCLUDE_32BIT_MODULES;
 	}
 #endif
 
@@ -212,12 +212,12 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		info.SizeOfStruct = sizeof(info);
 		if (!dbgHelpMs.SymGetModuleInfoW64(process_handle, mod.base_addr, &info))
 			continue;
-		
+
 		// If we have a module with no symbol information from the MS dbghelp,
 		// let the gcc one handle it instead.
 		if (info.SymType == SymNone)
 		{
-			gcc->SymLoadModuleExW(process_handle, NULL, 
+			gcc->SymLoadModuleExW(process_handle, NULL,
 				info.ImageName, info.ModuleName, info.BaseOfImage, info.ImageSize,
 				NULL, 0);
 			mod.dbghelp = gcc;
@@ -297,7 +297,7 @@ void SymbolInfo::sortModules()
 	std::sort(modules.begin(), modules.end(), Sorter());
 }
 
-const std::wstring SymbolInfo::getProcForAddr(PROFILER_ADDR addr, 
+const std::wstring SymbolInfo::getProcForAddr(PROFILER_ADDR addr,
 											  std::wstring& procfilepath_out, int& proclinenum_out)
 {
 	procfilepath_out = L"";
@@ -323,7 +323,7 @@ const std::wstring SymbolInfo::getProcForAddr(PROFILER_ADDR addr,
 #if defined(_WIN64)
 		if(is64BitProcess)
 			swprintf(buf, 256, L"[%016llX]", addr);
-		else 
+		else
 			swprintf(buf, 256, L"[%08X]", unsigned __int32(addr));
 #else
 		swprintf(buf, 256, L"[%08X]", addr);

@@ -104,7 +104,7 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 			this->commit_suicide = true;
 		}
 	}
-				
+
 	numThreadsRunning = numSuccessful;
 }
 

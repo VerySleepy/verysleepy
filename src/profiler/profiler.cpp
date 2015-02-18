@@ -81,7 +81,7 @@ Profiler& Profiler::operator=(const Profiler& iOther)
 
 Profiler::~Profiler()
 {
-	
+
 }
 
 // There are a couple of things than can cause StackWalk64 to not produce a correct callstack,
@@ -142,7 +142,7 @@ void applyHacks(HANDLE process_handle, CONTEXT32 &context)
 			{
 				context.Eip = (tmp[3] << 24) | (tmp[2] << 16) | (tmp[1] << 8) | (tmp[0] << 0);
 			}
-		}	
+		}
 	}
 }
 
@@ -250,7 +250,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 		DbgHelp *dbgHelp = mod ? mod->dbghelp : &dbgHelpMs;
 
 		// Use whichever dbghelp stack walker is best for this module type.
-		// If we're switching between types, restart the stack walk from 
+		// If we're switching between types, restart the stack walk from
 		// the current place.
 		if (dbgHelp != prevDbgHelp)
 		{

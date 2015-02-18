@@ -45,10 +45,10 @@ public:
 	/*=====================================================================
 	ProfilerThread
 	--------------
-	HANDLE target_thread: 
+	HANDLE target_thread:
 		handle to thread to profile.
 
-	int num_samples: 
+	int num_samples:
 		number of samples to take.  Takes ~1000 samples per sec.
 		The greater the number of samples, the more accurate the profile.
 		Use at least 40000 or so.

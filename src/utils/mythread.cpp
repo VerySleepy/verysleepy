@@ -36,7 +36,7 @@ MyThread::MyThread()
 
 MyThread::~MyThread()
 {
-	
+
 }
 
 
@@ -94,7 +94,7 @@ void MyThread::decrNumAliveThreads()
 	//Lock lock(alivecount_mutex);
 
 	num_alive_threads--;
-	
+
 	assert(num_alive_threads >= 0);
 }
 

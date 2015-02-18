@@ -53,13 +53,13 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 	PROCESSENTRY32 processinfo;
 	processinfo.dwSize = sizeof(PROCESSENTRY32);
 
-	if (Process32First(snapshot, &processinfo)) 
+	if (Process32First(snapshot, &processinfo))
 	{
 		do
 		{
 			std::wstring processname = processinfo.szExeFile;
 
-			
+
 			const DWORD process_id = processinfo.th32ProcessID;
 
 			// Don't allow profiling our own process. Bad things happen.
@@ -69,8 +69,8 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 			//------------------------------------------------------------------------
 			//Get the actual handle of the process
 			//------------------------------------------------------------------------
-			HANDLE process_handle = OpenProcess (PROCESS_ALL_ACCESS, FALSE, process_id); 
-  
+			HANDLE process_handle = OpenProcess (PROCESS_ALL_ACCESS, FALSE, process_id);
+
 			// Skip processes we don't have permission to.
 			if(process_handle == NULL) {
 				continue;
@@ -91,7 +91,7 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 #endif
 
 			processes_out.push_back(ProcessInfo(process_id, processname, process_handle));
-			
+
 			processinfo.dwSize = sizeof(PROCESSENTRY32);
 		}
 		while(Process32Next(snapshot, &processinfo));
@@ -105,7 +105,7 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 
 	if(Thread32First(snapshot, &threadinfo))
 	{
-		do 
+		do
 		{
 			const DWORD owner_process_id = threadinfo.th32OwnerProcessID;
 

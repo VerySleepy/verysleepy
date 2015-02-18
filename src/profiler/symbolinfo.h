@@ -39,8 +39,8 @@ class Module
 public:
 	Module(PROFILER_ADDR base_addr_, const std::wstring& name_, DbgHelp *dbghelp_)
 	{
-		base_addr = base_addr_; 
-		name = name_; 
+		base_addr = base_addr_;
+		name = name_;
 		dbghelp = dbghelp_;
 	}
 	PROFILER_ADDR base_addr;

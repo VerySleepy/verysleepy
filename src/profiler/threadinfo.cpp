@@ -33,7 +33,7 @@ ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
 	prevKernelTime.dwHighDateTime = prevKernelTime.dwLowDateTime = 0;
 	prevUserTime.dwHighDateTime = prevUserTime.dwLowDateTime = 0;
   cpuUsage = -1;
-	
+
 }
 
 

@@ -123,7 +123,7 @@ unsigned long long hexStringTo64UInt(const std::wstring& s)
 			concatWithChar(reverse_s, '0' + nibble - 0);
 		else
 			concatWithChar(reverse_s, 'a' + nibble - 10);
-	
+
 		i >>= 4;//shift right 4 bits
 	}
 
@@ -163,7 +163,7 @@ const std::wstring toHexString(unsigned long long i)
 			reverse_s.push_back('0' + (char)nibble - 0);
 		else
 			reverse_s.push_back('a' + (char)nibble - 10);
-	
+
 		i >>= 4;//shift right 4 bits
 	}
 
@@ -240,7 +240,7 @@ const std::wstring floatToString(float f, int num_decimal_places)
 
 	if(num_decimal_places >= 10)
 		num_decimal_places = 9;
-	
+
 	const std::wstring dec_string = intToString(num_decimal_places);
 	assert(dec_string.size() == 1);
 
@@ -316,7 +316,7 @@ StringSet::StringSet(const wchar_t *file, bool caseCheck)
 
 	this->caseCheck = caseCheck;
 	fp = _wfopen(path, L"r");
-	
+
 	if (!fp) {
 		GetModuleFileName(NULL, path, MAX_PATH);
 		PathRemoveFileSpec(path);

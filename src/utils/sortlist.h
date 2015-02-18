@@ -44,7 +44,7 @@ public:
     }
 
 	enum SortType { SORT_NONE, SORT_UP, SORT_DOWN };
-	
+
 	void InitSort();
 	void SetSortImage(int col, SortType type);
 };

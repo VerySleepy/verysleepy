@@ -69,7 +69,7 @@ void EnableDebugPrivilege()
 
 	AdjustTokenPrivileges( hToken, false, &tkp, sizeof( tkp ), NULL, NULL );
 
-	CloseHandle( hToken ); 
+	CloseHandle( hToken );
 }
 
 bool Is64BitProcess(HANDLE hProcess)

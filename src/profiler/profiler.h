@@ -53,7 +53,7 @@ public:
 	size_t depth;
 	PROFILER_ADDR addr[MAX_CALLSTACK_LEVELS];
 
-	bool operator < (const CallStack &other) const 
+	bool operator < (const CallStack &other) const
 	{
 		if (depth != other.depth)
 			return (depth < other.depth);
@@ -74,7 +74,7 @@ class ProfilerExcep
 {
 public:
 	ProfilerExcep(const std::wstring& s_) : s(s_) {}
-	~ProfilerExcep(){}	
+	~ProfilerExcep(){}
 
 	const std::wstring& what() const { return s; }
 private:
@@ -92,10 +92,10 @@ public:
 	/*=====================================================================
 	Profiler
 	--------
-	
+
 	=====================================================================*/
 	// DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
-	Profiler(HANDLE target_process, HANDLE target_thread, 
+	Profiler(HANDLE target_process, HANDLE target_thread,
 		std::map<CallStack, SAMPLE_TYPE>& callstacks, std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts);
 
 	// DE: 20090325: Need copy constructor since it is put in a std::vector
@@ -104,7 +104,7 @@ public:
 	Profiler& operator=(const Profiler& iOther);
 
 	~Profiler();
-	
+
 	// DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
 	std::map<CallStack, SAMPLE_TYPE>& callstacks;
 	std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts;
