@@ -75,11 +75,22 @@ BOOL CALLBACK symCallback(HANDLE hProcess, ULONG ActionCode, ULONG64 CallbackDat
 
 void symWineCallback(const char *msg)
 {
+#ifdef _DEBUG
+	OutputDebugStringA(msg);
+#endif
+
+	if (!msg || !*msg)
+		return;
+
+	static bool newline = true;
 	if (g_symLog)
 	{
+		if (newline)
+			g_symLog(L"WINE: ");
+		newline = msg[strlen(msg) - 1] == '\n';
+
 		wchar_t tmp[2048];
 		MultiByteToWideChar(CP_ACP, 0, msg, -1, tmp, sizeof(tmp));
-		g_symLog(L"WINE: ");
 		g_symLog(tmp);
 	}
 }
@@ -187,11 +198,11 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		gcc = &dbgHelpGccWow64;
 #endif
 
+	gcc->SymSetDbgPrint(&symWineCallback);
+
 	// Now that we've loaded all the modules and debug info for the regular stuff,
 	// we initialize the GCC dbghelp and let it have a go at the ones we couldn't do.
 	wenforce(gcc->SymInitializeW(process_handle, NULL, FALSE), "SymInitialize");
-
-	gcc->SymSetDbgPrint(&symWineCallback);
 
 	for (size_t n=0;n<modules.size();n++)
 	{
