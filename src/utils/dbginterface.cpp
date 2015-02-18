@@ -24,8 +24,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/log.h>
 
 DbgHelp dbgHelpMs;
-DbgHelp dbgHelpGcc;
-DbgHelp dbgHelpGccWow64;
+DbgHelp dbgHelpWine;
+DbgHelp dbgHelpWineWow64;
 
 #define IMPORT(name) *(void **)&dest->name = GetProcAddress(hMod, #name)
 
@@ -70,7 +70,7 @@ bool dbgHelpInit()
 		return false;
 	}
 
-	dest = &dbgHelpGcc;
+	dest = &dbgHelpWine;
 	IMPORT(StackWalk64);
 	IMPORT(SymFunctionTableAccess64);
 	IMPORT(SymGetModuleBase64);
@@ -99,7 +99,7 @@ bool dbgHelpInit()
 		return false;
 	}
 
-	dest = &dbgHelpGccWow64;
+	dest = &dbgHelpWineWow64;
 	IMPORT(StackWalk64);
 	IMPORT(SymFunctionTableAccess64);
 	IMPORT(SymGetModuleBase64);

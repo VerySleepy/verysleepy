@@ -113,10 +113,10 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 
 	options |= SYMOPT_LOAD_LINES | SYMOPT_DEBUG;
 
-	dbgHelpMs.SymSetOptions(options); 
-	dbgHelpGcc.SymSetOptions(options); 
+	dbgHelpMs.SymSetOptions(options);
+	dbgHelpWine.SymSetOptions(options);
 #ifdef _WIN64
-	dbgHelpGccWow64.SymSetOptions(options);
+	dbgHelpWineWow64.SymSetOptions(options);
 #endif
 
 	std::wstring sympath;
@@ -188,14 +188,14 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		dbgHelpMs.SymCleanup(process_handle);
 	}
 
-	DbgHelp *gcc = &dbgHelpGcc;
+	DbgHelp *gcc = &dbgHelpWine;
 #ifdef _WIN64
 	// We can't use the regular dbghelpw to profile 32-bit applications,
 	// as it's got compiled-in things that assume 64-bit. So we instead have
 	// a special Wow64 build, which is compiled as 64-bit code but using 32-bit
 	// definitions. We load that instead.
 	if (!is64BitProcess)
-		gcc = &dbgHelpGccWow64;
+		gcc = &dbgHelpWineWow64;
 #endif
 
 	gcc->SymSetDbgPrint(&symWineCallback);
@@ -236,10 +236,10 @@ SymbolInfo::~SymbolInfo()
 	//------------------------------------------------------------------------
 	if ( process_handle )
 	{
-		DbgHelp *gcc = &dbgHelpGcc;
+		DbgHelp *gcc = &dbgHelpWine;
 #ifdef _WIN64
 		if (is64BitProcess)
-			gcc = &dbgHelpGccWow64;
+			gcc = &dbgHelpWineWow64;
 #endif
 
 		if (!gcc->SymCleanup(process_handle))

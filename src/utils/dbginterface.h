@@ -157,8 +157,8 @@ struct DbgHelp
 };
 
 extern DbgHelp dbgHelpMs;
-extern DbgHelp dbgHelpGcc;
-extern DbgHelp dbgHelpGccWow64;
+extern DbgHelp dbgHelpWine;
+extern DbgHelp dbgHelpWineWow64;
 
 bool dbgHelpInit();
 
