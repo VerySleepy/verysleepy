@@ -126,7 +126,7 @@ void ProfilerGUI::ShowAboutBox()
 
 wxString ProfilerGUI::PromptOpen(wxWindow *parent)
 {
-	wxFileDialog dlg(parent, "Open File", "", "", _T(APPNAME) L" Profiles (*.sleepy)|*.sleepy", 
+	wxFileDialog dlg(parent, "Open File", "", "", _T(APPNAME) L" Profiles (*.sleepy)|*.sleepy",
 		wxFD_OPEN);
 	if (dlg.ShowModal() != wxID_CANCEL)
 		return dlg.GetPath();
@@ -155,7 +155,7 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 	//create the profiler thread
 	//------------------------------------------------------------------------
 	// DE: 20090325 attaches to a specific list of threads
-	ProfilerThread* profilerthread = new ProfilerThread( 
+	ProfilerThread* profilerthread = new ProfilerThread(
 		info->process_handle,
 		info->thread_handles,
 		info->sym_info
@@ -285,7 +285,7 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 
 	// Load up the debug info for it.
 	// This can fail initially, because it turns out that you can't query information
-	// about a process until that process has registered itself fully with CSRSS. 
+	// about a process until that process has registered itself fully with CSRSS.
 	// So we wait a little and try again. I'm not sure what the correct solution is,
 	// I think possibly monitoring for debug events might be the way to go.
 	int retry = 100;
@@ -369,30 +369,42 @@ bool ProfilerGUI::OnInit()
 	cbStartup();
 #endif
 	wxInitAllImageHandlers();
-	EnableDebugPrivilege();
-	if (!dbgHelpInit())
-		return false;
+	try
+	{
+		EnableDebugPrivilege();
+		if (!dbgHelpInit())
+			return false;
 
-	sleepy_icon = wxICON(sleepy);
+		sleepy_icon = wxICON(sleepy);
 
-	if (!wxApp::OnInit())
-		return false;
+		if (!wxApp::OnInit())
+			return false;
 
-	// Make a default cache in their user directory.
-	wxString symCache = wxStandardPaths::Get().GetUserLocalDataDir();
+		// Make a default cache in their user directory.
+		wxString symCache = wxStandardPaths::Get().GetUserLocalDataDir();
 
-	prefs.symSearchPath = config.Read("SymbolSearchPath", "");
-	prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
-	prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
-	prefs.symCacheDir = config.Read("SymbolCache", symCache);
-	prefs.saveMinidump = config.Read("SaveMinidump", -1);
-	prefs.throttle = config.Read("SpeedThrottle", 100);
-	if (prefs.throttle < 1)
-		prefs.throttle = 1;
-	if (prefs.throttle > 100)
-		prefs.throttle = 100;
+		prefs.symSearchPath = config.Read("SymbolSearchPath", "");
+		prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
+		prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
+		prefs.symCacheDir = config.Read("SymbolCache", symCache);
+		prefs.saveMinidump = config.Read("SaveMinidump", -1);
+		prefs.throttle = config.Read("SpeedThrottle", 100);
+		if (prefs.throttle < 1)
+			prefs.throttle = 1;
+		if (prefs.throttle > 100)
+			prefs.throttle = 100;
 
-	return true;
+		return true;
+	}
+	catch (SleepyException &e)
+	{
+		wxLogError("%ls\n", e.wwhat());
+	}
+	catch (std::exception &e)
+	{
+		wxLogError("%s\n", e.what());
+	}
+	return false;
 }
 
 bool ProfilerGUI::ProcessIdle()

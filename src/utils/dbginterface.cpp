@@ -22,6 +22,7 @@ http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
 #include "dbginterface.h"
 #include <wx/log.h>
+#include "except.h"
 
 DbgHelp dbgHelpMs;
 DbgHelp dbgHelpWine;
@@ -29,95 +30,39 @@ DbgHelp dbgHelpWineWow64;
 
 #define IMPORT(name) *(void **)&dest->name = GetProcAddress(hMod, #name)
 
+static void dbgHelpLoad(LPCWSTR name, DbgHelp* dest)
+{
+	HMODULE hMod = wenforce(LoadLibrary(name), L"Could not load " + std::wstring(name));
+	IMPORT(StackWalk64);
+	IMPORT(SymFunctionTableAccess64);
+	IMPORT(SymGetModuleBase64);
+	IMPORT(SymCleanup);
+	IMPORT(SymEnumerateModulesW64);
+	IMPORT(SymSetSearchPathW);
+	IMPORT(SymInitializeW);
+	IMPORT(SymSetOptions);
+	IMPORT(SymGetOptions);
+	IMPORT(SymGetModuleInfoW64);
+	IMPORT(SymFromAddrW);
+	IMPORT(SymGetLineFromAddrW64);
+	IMPORT(SymRegisterCallbackW64);
+	IMPORT(SymRefreshModuleList);
+	IMPORT(SymLoadModuleExW);
+	IMPORT(SymSetDbgPrint); // Custom Wine extension
+	IMPORT(MiniDumpWriteDump);
+}
+
 bool dbgHelpInit()
 {
-	HMODULE hMod;
-	DbgHelp *dest;
-
 	// Import the Microsoft dbghelp.dll
-	hMod = LoadLibrary(L"dbghelpms.dll");
-	if (!hMod)
-	{
-		::MessageBox(NULL, L"Error: Could not load dbghelpms.dll.", L"Error", MB_OK);
-		return false;
-	}
-
-	dest = &dbgHelpMs;
-	IMPORT(StackWalk64);
-	IMPORT(SymFunctionTableAccess64);
-	IMPORT(SymGetModuleBase64);
-	IMPORT(SymCleanup);
-	IMPORT(SymEnumerateModulesW64);
-	IMPORT(SymSetSearchPathW);
-	IMPORT(SymInitializeW);
-	IMPORT(SymSetOptions);
-	IMPORT(SymGetOptions);
-	IMPORT(SymGetModuleInfoW64);
-	IMPORT(SymFromAddrW);
-	IMPORT(SymGetLineFromAddrW64);
-	IMPORT(SymRegisterCallbackW64);
-	IMPORT(SymRefreshModuleList);
-	IMPORT(SymEnumerateModulesW64);
-	IMPORT(SymLoadModuleExW);
-	dest->SymSetDbgPrint = NULL;
-	IMPORT(MiniDumpWriteDump);
+	dbgHelpLoad(L"dbghelpms.dll", &dbgHelpMs);
 
 	// Import the Wine dbghelp.dll
-	hMod = LoadLibrary(L"dbghelpw.dll");
-	if (!hMod)
-	{
-		::MessageBox(NULL, L"Error: Could not load dbghelpw.dll.", L"Error", MB_OK);
-		return false;
-	}
-
-	dest = &dbgHelpWine;
-	IMPORT(StackWalk64);
-	IMPORT(SymFunctionTableAccess64);
-	IMPORT(SymGetModuleBase64);
-	IMPORT(SymCleanup);
-	IMPORT(SymEnumerateModulesW64);
-	IMPORT(SymSetSearchPathW);
-	IMPORT(SymInitializeW);
-	IMPORT(SymSetOptions);
-	IMPORT(SymGetOptions);
-	IMPORT(SymGetModuleInfoW64);
-	IMPORT(SymFromAddrW);
-	IMPORT(SymGetLineFromAddrW64);
-	IMPORT(SymRegisterCallbackW64);
-	IMPORT(SymRefreshModuleList);
-	IMPORT(SymEnumerateModulesW64);
-	IMPORT(SymLoadModuleExW);
-	IMPORT(SymSetDbgPrint);
-	IMPORT(MiniDumpWriteDump);
+	dbgHelpLoad(L"dbghelpw.dll", &dbgHelpWine);
 
 #ifdef _WIN64
 	// Import the Wine Wow64 dbghelp.dll
-	hMod = LoadLibrary(L"dbghelpw_wow64.dll");
-	if (!hMod)
-	{
-		::MessageBox(NULL, L"Error: Could not load dbghelpw_wow64.dll.", L"Error", MB_OK);
-		return false;
-	}
-
-	dest = &dbgHelpWineWow64;
-	IMPORT(StackWalk64);
-	IMPORT(SymFunctionTableAccess64);
-	IMPORT(SymGetModuleBase64);
-	IMPORT(SymCleanup);
-	IMPORT(SymEnumerateModulesW64);
-	IMPORT(SymSetSearchPathW);
-	IMPORT(SymInitializeW);
-	IMPORT(SymSetOptions);
-	IMPORT(SymGetOptions);
-	IMPORT(SymGetModuleInfoW64);
-	IMPORT(SymFromAddrW);
-	IMPORT(SymGetLineFromAddrW64);
-	IMPORT(SymRegisterCallbackW64);
-	IMPORT(SymRefreshModuleList);
-	IMPORT(SymEnumerateModulesW64);
-	IMPORT(SymLoadModuleExW);
-	IMPORT(SymSetDbgPrint);
-	IMPORT(MiniDumpWriteDump);
+	dbgHelpLoad(L"dbghelpw_wow64.dll", &dbgHelpWineWow64);
 #endif
 
 	return true;

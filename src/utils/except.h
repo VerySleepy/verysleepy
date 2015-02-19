@@ -51,8 +51,7 @@ T wenforce(T cond, const S& where)
 	DWORD code = GetLastError();
 
 	std::wostringstream message;
-	if (where)
-		message << where;
+	message << where;
 
 	if (code)
 	{
