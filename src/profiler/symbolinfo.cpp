@@ -198,7 +198,10 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		gcc = &dbgHelpWineWow64;
 #endif
 
-	gcc->SymSetDbgPrint(&symWineCallback);
+	gcc = &dbgHelpDrMingw;
+
+	if (gcc->SymSetDbgPrint)
+		gcc->SymSetDbgPrint(&symWineCallback);
 
 	// Now that we've loaded all the modules and debug info for the regular stuff,
 	// we initialize the GCC dbghelp and let it have a go at the ones we couldn't do.
