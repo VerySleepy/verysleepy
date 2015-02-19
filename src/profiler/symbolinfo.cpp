@@ -217,10 +217,11 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		// let the gcc one handle it instead.
 		if (info.SymType == SymNone)
 		{
-			gcc->SymLoadModuleExW(process_handle, NULL,
+			DWORD64 ret = gcc->SymLoadModuleExW(process_handle, NULL,
 				info.ImageName, info.ModuleName, info.BaseOfImage, info.ImageSize,
 				NULL, 0);
-			mod.dbghelp = gcc;
+			if (ret)
+				mod.dbghelp = gcc;
 		}
 	}
 

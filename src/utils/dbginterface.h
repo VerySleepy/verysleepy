@@ -157,6 +157,7 @@ struct DbgHelp
 };
 
 extern DbgHelp dbgHelpMs;
+extern DbgHelp dbgHelpDrMingw;
 extern DbgHelp dbgHelpWine;
 extern DbgHelp dbgHelpWineWow64;
 
