@@ -25,22 +25,16 @@ http://www.gnu.org/copyleft/gpl.html.
 
 #define countof(_x) (sizeof(_x)/sizeof(_x[0]))
 
-#include <fstream>
 #include "../utils/stringutils.h"
 #include "mainwin.h"
-//#undef min
-//#undef max
-#include <algorithm>
-#include <wx/mstream.h>
-#include <richedit.h>
 
-BEGIN_EVENT_TABLE(SourceView, wxTextCtrl)
+BEGIN_EVENT_TABLE(SourceView, wxStyledTextCtrl)
 	EVT_PAINT(SourceView::OnPaint)
 	EVT_UPDATE_UI(SOURCE_VIEW, SourceView::OnUpdateUI)
 END_EVENT_TABLE()
 
 
-StringSet keywords(L"keywords.txt", true);
+StringList keywords(L"keywords.txt");
 
 
 class MSDevPaths: public std::vector<std::wstring>
@@ -65,31 +59,90 @@ public:
 
 MSDevPaths msDevPaths;
 
+static const int MARGIN_TEXT_STYLE = wxSTC_STYLE_LASTPREDEFINED+1;
+
 SourceView::SourceView(wxWindow *parent, MainWin* mainwin_)
-:	wxTextCtrl(parent, SOURCE_VIEW, wxEmptyString,
-               wxDefaultPosition, wxDefaultSize,
-               wxTE_MULTILINE | wxSUNKEN_BORDER | wxTE_READONLY | wxTE_DONTWRAP | wxTE_RICH2  ),
+:	wxStyledTextCtrl(parent, SOURCE_VIEW,
+					 wxDefaultPosition, wxDefaultSize,
+					 wxSUNKEN_BORDER, wxEmptyString ),
 	mainwin(mainwin_)
 {
-	AppendText("Select a procedure from the list above.");
-}
+	SetUseTabs (false);
+	SetTabWidth(8);
 
+	setPlainMode();
+	updateText ("Select a procedure from the list above.");
+}
 
 SourceView::~SourceView()
 {
-	
+}
+
+void SourceView::updateText(const wxString& text)
+{
+	SetEditable(true);
+	SetText(text);
+	SetEditable(false);
+}
+
+void SourceView::setPlainMode()
+{	
+	SetLexer (wxSTC_LEX_NULL);
+
+	SetMarginWidth (0, 0);
+	SetMarginWidth (1, 0);
+}
+
+void SourceView::setCppMode()
+{
+	SetLexer	(wxSTC_LEX_CPP);	   
+	SetKeyWords	(0, keywords.Get());
+
+	StyleClearAll	();
+
+	SetMarginType	(0, wxSTC_MARGIN_NUMBER);
+	SetMarginWidth	(0, 40);
+	StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour( 32, 32, 32));
+	StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour(192,192,192));
+
+	SetMarginType	(1, wxSTC_MARGIN_RTEXT);
+	SetMarginWidth	(1, 50);
+	StyleSetForeground (MARGIN_TEXT_STYLE, wxColour(255,  0,  0));
+	StyleSetBackground (MARGIN_TEXT_STYLE, wxColour(192,192,192));
+
+	StyleSetForeground (wxSTC_C_DEFAULT,			wxColour(0,0,0)	);
+	StyleSetForeground (wxSTC_C_STRING,				wxColour(163,21,21));
+	StyleSetForeground (wxSTC_C_PREPROCESSOR,		wxColour(0,0,255));
+
+	StyleSetForeground (wxSTC_C_IDENTIFIER,			wxColour(0,0,0));
+
+	StyleSetForeground (wxSTC_C_WORD,				wxColour(0,0,255));
+	StyleSetForeground (wxSTC_C_WORD2,				wxColour(0,0,255));	  
+	StyleSetForeground (wxSTC_C_NUMBER,				wxColour(0,0,0));
+	StyleSetForeground (wxSTC_C_CHARACTER,			wxColour(0,0,0));
+
+	StyleSetForeground (wxSTC_C_COMMENT,				wxColour(0,128,0));
+	StyleSetForeground (wxSTC_C_COMMENTLINE,			wxColour(0,128,0));
+	StyleSetForeground (wxSTC_C_COMMENTDOC,				wxColour(0,128,0));
+	StyleSetForeground (wxSTC_C_COMMENTDOCKEYWORD,		wxColour(0,128,0));
+	StyleSetForeground (wxSTC_C_COMMENTDOCKEYWORDERROR, wxColour(0,128,0));
+	StyleSetBold(wxSTC_C_WORD, true);
+	StyleSetBold(wxSTC_C_WORD2, true);
+	StyleSetBold(wxSTC_C_COMMENTDOCKEYWORD, true);
+
+	for (int i = wxSTC_C_DEFAULT; i<=wxSTC_C_PREPROCESSORCOMMENT; ++i)
+		StyleSetFont(i, wxFont( wxFontInfo(10).FaceName("Consolas") ) );
 }
 
 void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<double> &linecounts)
 {
 	currentfile = path;
 
-	SetValue("");//clear text
-	SetDefaultStyle(wxTextAttr(*wxBLACK));
-
+	// Don't show error messages with CPP highlighting
+	setPlainMode();
 	if (path == "[hint KiFastSystemCallRet]")
 	{
-		AppendText(
+		updateText(
 			" Hint: KiFastSystemCallRet often means the thread was waiting for something else to finish.\n"
 			" \n"
 			" Possible causes might be disk I/O, waiting for an event, or maybe just calling Sleep().\n"
@@ -99,8 +152,7 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 
 	if (path == "" || path == "[unknown]")
 	{
-		SetValue("[ No source file available for this location. ]");
-
+		updateText("[ No source file available for this location. ]");
 		return;
 	}
 
@@ -124,134 +176,38 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 
 	if(!file)
 	{
-		AppendText(std::wstring("[ Could not open file '" + path + "'. ]").c_str());
+		updateText(std::wstring("[ Could not open file '" + path + "'. ]").c_str());
 		return;
 	}
-
-	Show(false);
-	std::wstring displaytext = L"{\\rtf1\\ansi\\fdeff0{\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;\\red0\\green128\\blue0;\\red0\\green0\\blue255;}\\cf1";
-	unsigned linenum = 1;//1-based counting
-	//int showpos = 0;//index of character to make visible in order to scroll to line where proc is defined.
-	const int MARGIN_WIDTH = 7;
-	wchar_t line[1024*10];
-	bool block=false;
-	wchar_t blockType;
+	
+	std::wstring displaytext;
+	wchar_t line[1024];
 	while(fgetws(line,countof(line),file))
 	{
-		wchar_t outLine[1024*20];
-
-		if (linecounts.size() > linenum && linecounts[linenum])
-			swprintf(outLine, countof(outLine), L"{\\b\\cf2 %0.2fs\t}",linecounts[linenum]);
-		else
-			wcscpy(outLine, L"\t");
-
-		wchar_t *out = outLine+wcslen(outLine);
-		wchar_t *in = line;
-		while(*in) {
-			if(!block)
-			{
-				if(in[0] == '/' && in[1] == '/') {
-					block = true;
-					blockType = '/';
-					wcscpy(out, L"{\\cf3 ");
-					out += wcslen(out);
-				} else 	if(in[0] == '/' && in[1] == '*') {
-					block = true;
-					blockType = '*';
-					wcscpy(out, L"{\\cf3 ");
-					out += wcslen(out);
-				} else if(in[0] == '"' && ( in[-1] != '\\' || in[-2] == '\\' )) {
-					block = true;
-					blockType = '"';
-					wcscpy(out, L"{\\cf3 ");
-					out += wcslen(out);
-				} if(!isCToken(in[-1]) && isCToken(in[0])) {
-					wchar_t token[1024*10];
-					wchar_t *tokOut = token;
-					while(isCToken(*in)) {
-						*(tokOut++) = *(in++);
-					}
-					*tokOut=0;
-					if(keywords.Contains(token)) {
-						wcscpy(out,L"{\\cf4 ");
-						out += wcslen(out);
-						wcscpy(out,token);
-						out += wcslen(out);
-						wcscpy(out,L"}");
-						out += wcslen(out);
-					} else {
-						wcscpy(out,token);
-						out += wcslen(token);
-					}
-					continue;
-				}
-			} else {
-				if(blockType == '*' && in[-2] == '*' && in[-1] == '/') {
-					block = false;
-					wcscpy(out, L"}");
-					out += wcslen(out);
-				} else if(blockType == '"' && in[0] == '"' && ( in[-1] != '\\' || in[-2] == '\\' )) {
-					*(out++) = '"';
-					block = false;
-					wcscpy(out, L"}");
-					out += wcslen(out);
-					in++;
-					continue;
-				}
-			}
-
-			switch(in[0]) {
-			case '\n':
-			case '\r':
-				if(block && blockType == '/') {
-					block = false;
-					wcscpy(out, L"}");
-					out += wcslen(out);
-				}
-				break;
-			case '{':
-			case '}':
-			case '\\':
-				*(out++) = '\\';
-				*(out++) = in[0];
-				break;
-			default:
-				*(out++) = in[0];
-				break;
-			}
-			in++;
-		}
-		*out = 0;
-		
-		wcscat(outLine, L"\\line\n");
-
-		displaytext += outLine ;//form line to display
-	
-		linenum++;
+		displaytext += line;
 	}
-	displaytext += L"}";
+
 	fclose(file);
+	
+	setCppMode();
 
-	// Convert to UTF8, which the richedit control seems to want (despite the documentation).
-	size_t utflen = displaytext.length() * 4;
-	void *utf = malloc(utflen);
-	utflen = WideCharToMultiByte(CP_UTF8, 0, displaytext.c_str(), -1, (LPSTR)utf, utflen, NULL, NULL);
+	updateText(displaytext);
+	
+	// Show line counts in margin
+	for (int line=1,lineCount=linecounts.size(); line<lineCount; ++line)
+	{
+		if (linecounts[line])
+		{
+			wchar_t currCount[32];
+			swprintf(currCount, countof(currCount), L"%0.2fs ", linecounts[line]);
+			MarginSetText (line-1, currCount);
+			MarginSetStyle(line-1, MARGIN_TEXT_STYLE);
+		}
+	}
 
-	SETTEXTEX settextex = {
-		ST_DEFAULT,
-		CP_UTF8,
-	};
-	SendMessage((HWND)GetHWND(),EM_EXLIMITTEXT,0,utflen);
-	SendMessage((HWND)GetHWND(),EM_SETTEXTEX,(WPARAM)&settextex,(LPARAM)utf);
-
-	free(utf);
-
-	wxFont font(8, wxMODERN , wxNORMAL, wxNORMAL);
-	const bool res = SetStyle(0, (long)displaytext.size(), wxTextAttr(wxNullColour, wxNullColour, 
-						font));
-	const int showpos = std::max((int)XYToPosition(0, std::max(proclinenum -7 , 0)), 0);
-	ShowPosition(showpos);
-	Show(true);
+	SetYCaretPolicy(wxSTC_CARET_STRICT|wxSTC_CARET_EVEN, 0);
+	GotoLine(proclinenum);
+	SetYCaretPolicy(wxSTC_CARET_EVEN, 0);
 }
 
 void SourceView::OnPaint(wxPaintEvent& event)
@@ -264,10 +220,8 @@ void SourceView::OnPaint(wxPaintEvent& event)
 	//dc.DrawLine(100, 0, 100, 300);
 	//dc.EndDrawing();
 	}
-	event.Skip();
 
-	//SetDefaultStyle(wxTextAttr(*wxBLACK, *wxWHITE));
-	
+	event.Skip();
 }
 
 void SourceView::OnUpdateUI(wxUpdateUIEvent& event)
@@ -283,4 +237,3 @@ void SourceView::OnUpdateUI(wxUpdateUIEvent& event)
 
 	event.Skip();
 }
-

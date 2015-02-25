@@ -134,5 +134,13 @@ public:
 };
 
 
+struct StringList
+{
+	std::wstring string;
+public:
+	StringList(const wchar_t *file);
+	void Add(const wchar_t *str);
+	const std::wstring& Get() const { return string; }
+};
 
 #endif //__STRINGUTILS_H__

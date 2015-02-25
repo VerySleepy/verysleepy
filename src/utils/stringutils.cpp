@@ -307,14 +307,13 @@ void readQuote(std::wistream& stream, std::wstring& str_out)
 	}
 }
 
-
-StringSet::StringSet(const wchar_t *file, bool caseCheck)
+template<typename T>
+static void Parse(const wchar_t *file, T* dst)
 {
 	FILE *fp;
 	wchar_t path[MAX_PATH];
 	wcscpy(path, file);
 
-	this->caseCheck = caseCheck;
 	fp = _wfopen(path, L"r");
 
 	if (!fp) {
@@ -346,9 +345,15 @@ StringSet::StringSet(const wchar_t *file, bool caseCheck)
 		while(end != start && isspace(*end))
 			*end-- = 0;
 
-		Add(start);
+		dst->Add(start);
 	}
 	fclose(fp);
+}
+
+StringSet::StringSet(const wchar_t *file, bool caseCheck)
+{
+	this->caseCheck = caseCheck;
+	Parse(file, this);
 }
 
 void StringSet::Add(const wchar_t *string)
@@ -404,4 +409,15 @@ bool StringSet::Contains(const wchar_t *str) const
 	}
 
 	return false;
+}
+
+StringList::StringList(const wchar_t *file)
+{
+	Parse(file, this);
+}
+
+void StringList::Add(const wchar_t *str)
+{
+	string.append(str);
+	string.append(L" ");
 }
