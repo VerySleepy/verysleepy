@@ -26,6 +26,8 @@ http://www.gnu.org/copyleft/gpl.html.
 
 #include "profilergui.h"
 
+#include <wx/stc/stc.h>
+
 class MainWin;
 
 /*=====================================================================
@@ -33,7 +35,7 @@ SourceView
 ----------
 
 =====================================================================*/
-class SourceView : public wxTextCtrl
+class SourceView : public wxStyledTextCtrl
 {
 public:
 	/*=====================================================================
@@ -52,6 +54,10 @@ public:
 
 	const std::wstring& getCurrentFile() const { return currentfile; }
 private:
+	void setPlainMode();
+	void setCppMode();
+	void updateText(const wxString& text);
+
 	std::wstring currentfile;
 	MainWin* mainwin;
 
@@ -61,7 +67,7 @@ private:
 
 enum
 {
-    SOURCE_VIEW                   = 1005
+	SOURCE_VIEW					  = 1005
 };
 
 
