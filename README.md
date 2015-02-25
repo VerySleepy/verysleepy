@@ -88,6 +88,12 @@ Options:
 Finally, create an environment variable called `WXWIN`, and set it to the full path towards the wxWidgets directory (incl. trailing backslash).
 This variable in referenced in Sleepy's project files - Visual Studio must have in in its environment to be able to find wxWidgets.
 
+#### Wine DbgHelp
+
+To build the Wine version of DbgHelp, you need to have the Wine submodule (located in `src/dbghelpw/wine`).
+To do that, clone this repository with the `--recursive` flag, or, after cloning, run `git submodule init` and `git submodule update`.
+Once cloned, build the DbgHelp solution located in `src/dbghelpw/wine/dlls/dbghelp/vs`.
+
 ### Contributing
 
 If you'd like to contribute a patch, please [open a pull request](https://github.com/CyberShadow/verysleepy/pulls). I'll try to review and merge it as soon as my time will allow.
