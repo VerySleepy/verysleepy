@@ -76,6 +76,7 @@ AboutDlg::AboutDlg()
 	AddDev("Vladimir Panteleev", "http://thecybershadow.net/", "maintainer");
 	AddDev("Richard Munn", "https://github.com/benjymous", "time limit, filters, highlights");
 	AddDev("Michael Vance", "", "callstack CSV export");
+	AddDev(L"Bernat Mu\x00F1oz Garcia", "https://github.com/shashClp", "Scintilla syntax highlighting");
 	AddDev("Dan Engelbrecht", "", "threading");
 	AddDev(L"Johan K" L"\x00F6" L"hler", "", "64-bit");
 	AddDev("... and many other kind people contributing patches.", "", "");

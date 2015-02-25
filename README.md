@@ -1,4 +1,4 @@
-Very Sleepy
+﻿Very Sleepy
 -----------
 
 This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI.
@@ -13,6 +13,8 @@ You can download an installer on [the project's website](http://www.codersnotes.
 
 * Rename project back to Very Sleepy (this fork repository is now the official repository)
 * Update Wine DbgHelp for Windows
+* Contributed by [Bernat Muñoz Garcia](https://github.com/shashClp):
+    * Use Scintilla for syntax highlighting
 
 ##### Version 0.90 (2014-12-23):
 
