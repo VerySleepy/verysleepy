@@ -12,6 +12,7 @@ You can download an installer on [the project's website](http://www.codersnotes.
 ##### Version 0.91 (under development):
 
 * Rename project back to Very Sleepy (this fork repository is now the official repository)
+* Use [Dr. MinGW](https://github.com/jrfonseca/drmingw) to resolve MinGW symbols by default
 * Update Wine DbgHelp for Windows
 * Contributed by [Bernat Muñoz Garcia](https://github.com/shashClp):
     * Use Scintilla for syntax highlighting
