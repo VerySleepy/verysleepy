@@ -66,7 +66,7 @@ ProfilerThread::~ProfilerThread()
 }
 
 
-void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
+void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	// RJM- We traverse them in random order. The act of profiling causes the Windows scheduler
@@ -74,7 +74,7 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 	//      This starves the other N-1 threads. For lack of a better option, using a shuffle
 	//      at least re-schedules them evenly.
 
-	size_t count = profilers.size();
+	const size_t count = profilers.size();
 	if ( count == 0)
 		return;
 
@@ -89,16 +89,17 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 	}
 
 	int numSuccessful = 0;
-	for (size_t n=0;n<count;n++)
+	for (size_t n = 0;n < count; ++n)
 	{
 		Profiler& profiler = profilers[order[n]];
 		try {
 			if (profiler.sampleTarget(timeSpent, sym_info))
 			{
-				numsamplessofar++;
-				numSuccessful++;
+				++numsamplessofar;
+				++numSuccessful;
 			}
-		} catch( ProfilerExcep &e )
+		}
+        catch (const ProfilerExcep& e)
 		{
 			error(_T("ProfilerExcep: ") + e.what());
 			this->commit_suicide = true;

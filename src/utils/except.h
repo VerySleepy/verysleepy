@@ -28,7 +28,7 @@ public:
 	SleepyException(const wchar_t *what)
 		: std::runtime_error(helper(what)), _what(what) {}
 
-	const std::wstring &wwhat() { return _what; }
+	const std::wstring &wwhat() const { return _what; }
 };
 
 template<typename T, typename S>

@@ -51,9 +51,9 @@ Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_,
 :	target_process(target_process_),
 	target_thread(target_thread_),
 	callstacks(callstacks_),
-	flatcounts(flatcounts_)
+	flatcounts(flatcounts_),
+    is64BitProcess(Is64BitProcess(target_process))
 {
-	is64BitProcess = Is64BitProcess(target_process);
 }
 
 // DE: 20090325: Need copy constructor since it is put in a std::vector

@@ -74,7 +74,7 @@ public:
 	void setPaused(bool paused_) { paused = paused_; }
 	void cancel() { cancelled = true; }
 
-	void sample(SAMPLE_TYPE timeSpent);//for internal use.
+	void sample(const SAMPLE_TYPE timeSpent);//for internal use.
 private:
 	//std::wstring demangleProcName(const std::wstring& mangled_name);
 	void error(const std::wstring& what);
