@@ -40,6 +40,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 #include "../appinfo.h"
 
@@ -132,8 +133,11 @@ private:
 	void DestroyProgressWindow();
 
 	std::wstring LaunchProfiler(const AttachInfo *info);
-	AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
-	void LoadProfileData(const std::wstring &filename);
+    std::unique_ptr<AttachInfo> CreateProfileeProcess(const std::wstring &run_cmd, const std::wstring &run_cwd, DWORD flags);
+    AttachInfo *RunProcessWithDebugger(const std::wstring &run_cmd, const std::wstring &run_cwd);
+    AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
+
+    void LoadProfileData(const std::wstring &filename);
 	std::wstring ObtainProfileData();
 
 	class CaptureWin *captureWin;
