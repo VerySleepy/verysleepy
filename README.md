@@ -90,9 +90,14 @@ This variable in referenced in Sleepy's project files - Visual Studio must have 
 
 #### Wine DbgHelp
 
-To build the Wine version of DbgHelp, you need to have the Wine submodule (located in `src/dbghelpw/wine`).
+To build the Wine version of DbgHelp (`dbghelpw.dll` and `dbghelpw_wow64.dll`), you need to have the Wine submodule (located in `src/dbghelpw/wine`).
 To do that, clone this repository with the `--recursive` flag, or, after cloning, run `git submodule init` and `git submodule update`.
 Once cloned, build the DbgHelp solution located in `src/dbghelpw/wine/dlls/dbghelp/vs`.
+
+#### Dr. MinGW DbgHelp
+
+The `dbghelpdr.dll` file is part of the [Dr. MinGW](https://github.com/jrfonseca/drmingw) project.
+See that project's [BUILD.md](https://github.com/jrfonseca/drmingw/blob/master/BUILD.md) for build instructions.
 
 ### Contributing
 
