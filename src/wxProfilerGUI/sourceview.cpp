@@ -86,7 +86,7 @@ void SourceView::updateText(const wxString& text)
 }
 
 void SourceView::setPlainMode()
-{	
+{
 	SetLexer (wxSTC_LEX_NULL);
 
 	SetMarginWidth (0, 0);
@@ -95,7 +95,7 @@ void SourceView::setPlainMode()
 
 void SourceView::setCppMode()
 {
-	SetLexer	(wxSTC_LEX_CPP);	   
+	SetLexer	(wxSTC_LEX_CPP);
 	SetKeyWords	(0, keywords.Get());
 
 	StyleClearAll	();
@@ -117,7 +117,7 @@ void SourceView::setCppMode()
 	StyleSetForeground (wxSTC_C_IDENTIFIER,			wxColour(0,0,0));
 
 	StyleSetForeground (wxSTC_C_WORD,				wxColour(0,0,255));
-	StyleSetForeground (wxSTC_C_WORD2,				wxColour(0,0,255));	  
+	StyleSetForeground (wxSTC_C_WORD2,				wxColour(0,0,255));
 	StyleSetForeground (wxSTC_C_NUMBER,				wxColour(0,0,0));
 	StyleSetForeground (wxSTC_C_CHARACTER,			wxColour(0,0,0));
 
@@ -179,7 +179,7 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 		updateText(std::wstring("[ Could not open file '" + path + "'. ]").c_str());
 		return;
 	}
-	
+
 	std::wstring displaytext;
 	wchar_t line[1024];
 	while(fgetws(line,countof(line),file))
@@ -188,11 +188,11 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 	}
 
 	fclose(file);
-	
+
 	setCppMode();
 
 	updateText(displaytext);
-	
+
 	// Show line counts in margin
 	for (int line=1,lineCount=linecounts.size(); line<lineCount; ++line)
 	{
