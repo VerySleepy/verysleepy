@@ -25,6 +25,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "except.h"
 
 DbgHelp dbgHelpMs;
+DbgHelp dbgHelpDrMingw;
 DbgHelp dbgHelpWine;
 DbgHelp dbgHelpWineWow64;
 
@@ -56,6 +57,9 @@ bool dbgHelpInit()
 {
 	// Import the Microsoft dbghelp.dll
 	dbgHelpLoad(L"dbghelpms.dll", &dbgHelpMs);
+
+	// Import the DrMingw dbghelp.dll
+	dbgHelpLoad(L"dbghelpdr.dll", &dbgHelpDrMingw);
 
 	// Import the Wine dbghelp.dll
 	dbgHelpLoad(L"dbghelpw.dll", &dbgHelpWine);
