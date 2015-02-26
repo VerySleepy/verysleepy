@@ -42,15 +42,15 @@ public:
 		SetMinSize(size);
 		SetBackgroundColour(*wxGREEN);
 	}
-	
+
 	void OnPaint(wxPaintEvent &event)
 	{
 		wxPaintDC dc(this);
 		dc.SetBackgroundMode(wxTRANSPARENT);
 		dc.SetFont(GetFont());
-		dc.DrawText(label, 0,0); 
+		dc.DrawText(label, 0,0);
 	}
-	
+
 	void SetLabel(const wxString& label)
 	{
 		this->label = label;
@@ -248,7 +248,7 @@ void CallstackView::exportCSV(wxFileOutputStream &file)
 	int columnCount = listCtrl->GetColumnCount();
 	int rowCount = listCtrl->GetItemCount();
 
-	for(int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+	for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
 	{
 		wxListItem column;
 		column.SetMask(wxLIST_MASK_TEXT);

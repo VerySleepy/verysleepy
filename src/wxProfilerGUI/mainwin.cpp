@@ -59,7 +59,7 @@ enum
 	MainWin_About = wxID_ABOUT
 };
 
-MainWin::MainWin(const wxString& title, 
+MainWin::MainWin(const wxString& title,
 				 const std::wstring& profilepath,
 				 Database *database)
 				 :	wxFrame()
@@ -81,7 +81,7 @@ MainWin::MainWin(const wxString& title,
 	size.y = config.Read("MainWinH", (long)size.y);
 
 	Create(NULL, -1, title, pos, size, style);
-				
+
 	panel = NULL;
 	proclist = NULL;
 	sourceview = NULL;
@@ -109,7 +109,7 @@ MainWin::MainWin(const wxString& title,
 	menuView->Append(MainWin_View_Forward,_T("Forward\tAlt-Right"), _T("Go forward in history (undo \"Back\")"));
 	menuView->AppendSeparator();
 	menuView->Append(MainWin_View_Stats,_T("Show Profiling Statistics"), _T("Shows any extra information logged while profiling"));
-	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls")); 
+	collapseOSCalls = menuView->AppendCheckItem(MainWin_View_Collapse_OS,_T("&Hide Collapsed Functions"), _T("Hide functions nested inside system calls"));
 	collapseOSCalls->Check(config.Read("MainWinCollapseOS",1)!=0);
 	menuView->Append(MainWin_ResetToRoot , _T("Reset Profile &Root"), _T("Resets the root so that the entire profile is shown"));
 	menuView->Append(MainWin_ResetFilters, _T("Reset Filters"), _T("Resets all the view filters"));
@@ -324,7 +324,7 @@ EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::OnResetToRootUpdate)
 EVT_MENU(MainWin_ResetFilters, MainWin::OnResetFilters)
 EVT_MENU(MainWin_View_Collapse_OS,  MainWin::OnCollapseOS)
 EVT_MENU(MainWin_View_Stats,  MainWin::OnStats)
-EVT_MENU(MainWin_About, MainWin::OnAbout)	
+EVT_MENU(MainWin_About, MainWin::OnAbout)
 EVT_PG_CHANGED(MainWin_Filters, MainWin::OnFiltersChanged)
 END_EVENT_TABLE()
 
@@ -376,7 +376,7 @@ void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
 
 void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 {
-	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", _T(APPNAME) L" Profiles (*.sleepy)|*.sleepy", 
+	wxFileDialog dlg(this, "Save File As", "", "capture.sleepy", _T(APPNAME) L" Profiles (*.sleepy)|*.sleepy",
 		wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 	if (dlg.ShowModal() != wxID_CANCEL)
 	{
@@ -393,7 +393,7 @@ void MainWin::OnSaveAs(wxCommandEvent& WXUNUSED(event))
 
 void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 {
-	wxFileDialog dlg(this, "Export File As", "", "capture.csv", "CSV Files (*.csv)|*.csv", 
+	wxFileDialog dlg(this, "Export File As", "", "capture.csv", "CSV Files (*.csv)|*.csv",
 		wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 	if (dlg.ShowModal() != wxID_CANCEL)
 	{
@@ -493,7 +493,7 @@ void MainWin::OnStats(wxCommandEvent& event)
 		string += "\n";
 	}
 
-	wxTextCtrl *text = new wxTextCtrl(&dlg, wxID_ANY, string, wxDefaultPosition, wxDefaultSize, 
+	wxTextCtrl *text = new wxTextCtrl(&dlg, wxID_ANY, string, wxDefaultPosition, wxDefaultSize,
 		wxBORDER_NONE|wxTE_READONLY|wxTE_MULTILINE|wxTE_NO_VSCROLL);
 	text->SetBackgroundColour(dlg.GetBackgroundColour());
 	sizer->Add(text, wxSizerFlags().Expand().Proportion(1).Border(wxALL, 10));
