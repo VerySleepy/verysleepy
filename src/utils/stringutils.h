@@ -109,14 +109,14 @@ __forceinline bool isCToken(char c)
 void readQuote(std::wistream& stream, std::wstring& str_out);//reads string from between double quotes.
 
 template<typename T>
-void writeQuote(T& stream, const std::wstring& s)
+void writeQuote(T& stream, const std::wstring& s, wchar_t escape = '\\')
 {
 	stream << '"';
 	for (size_t i = 0; i < s.length(); i++)
 	{
 		wchar_t c = s[i];
-		if (c == '\\' || c == '"')
-			stream << '\\';
+		if (c == escape || c == '"')
+			stream << escape;
 		stream << c;
 	}
 	stream << '"';

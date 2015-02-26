@@ -403,13 +403,13 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 		wxTextOutputStream txt(file);
 		for each (const Database::Item &item in database->getMainList().items)
 		{
-			txt << item.symbol->procname << ",";
+			writeQuote(txt, item.symbol->procname, '"'); txt << ",";
 			txt << item.exclusive << ",";
 			txt << item.inclusive << ",";
 			txt << (item.exclusive*100.0f/database->getMainList().totalcount) << ",";
 			txt << (item.inclusive*100.0f/database->getMainList().totalcount) << ",";
-			txt << database->getModuleName(item.symbol->module) << ",";
-			txt << database->getFileName(item.symbol->sourcefile) << ",";
+			writeQuote(txt, database->getModuleName(item.symbol->module), '"'); txt << ",";
+			writeQuote(txt, database->getFileName(item.symbol->sourcefile), '"'); txt << ",";
 			txt << database->getAddrInfo(item.symbol->address)->sourceline << "\n";
 		}
 	}

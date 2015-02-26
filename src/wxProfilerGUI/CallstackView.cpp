@@ -253,13 +253,17 @@ void CallstackView::exportCSV(wxFileOutputStream &file)
 		wxListItem column;
 		column.SetMask(wxLIST_MASK_TEXT);
 		listCtrl->GetColumn(columnIndex, column);
-		txt << column.GetText() << ((columnIndex == (columnCount - 1)) ? "\n" : ",");
+		writeQuote(txt, std::wstring(column.GetText()), '"');
+		txt << ((columnIndex == (columnCount - 1)) ? "\n" : ",");
 	}
 
 	for(int rowIndex = 0; rowIndex < rowCount; rowIndex++)
 	{
 		for(int columnIndex = 0; columnIndex < columnCount; columnIndex++ )
-			txt << listCtrl->GetItemText(rowIndex,columnIndex) << ((columnIndex == (columnCount - 1)) ? "\n" : ",");
+		{
+			writeQuote(txt, std::wstring(listCtrl->GetItemText(rowIndex, columnIndex)), '"');
+			txt << ((columnIndex == (columnCount - 1)) ? "\n" : ",");
+		}
 	}
 }
 
