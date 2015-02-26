@@ -95,9 +95,9 @@ MainWin::MainWin(const wxString& title,
 #if wxUSE_MENUS
 	// create a menu bar
 	wxMenu *menuFile = new wxMenu;
-	menuFile->Append(MainWin_New, _T("&New"), _T("Starts a new profile"));
-	menuFile->Append(MainWin_Open, _T("&Open..."), _T("Opens an existing profile"));
-	menuFile->Append(MainWin_SaveAs, _T("Save &As..."), _T("Saves the profile data to a file"));
+	menuFile->Append(MainWin_New, _T("&New\tCtrl-N"), _T("Starts a new profile"));
+	menuFile->Append(MainWin_Open, _T("&Open...\tCtrl-O"), _T("Opens an existing profile"));
+	menuFile->Append(MainWin_SaveAs, _T("Save &As...\tCtrl-S"), _T("Saves the profile data to a file"));
 	menuFile->Append(MainWin_ExportAsCsv, _T("&Export as CSV..."), _T("Export the profile data to a CSV file"));
 	menuFile->AppendSeparator();
 	menuFile->Append(MainWin_LoadMinidumpSymbols,_T("Load symbols from &minidump"), _T("Loads symbols for modules recorded in the minidump included with this capture."))
