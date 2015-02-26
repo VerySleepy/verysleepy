@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "profilergui.h"
 #include <wx/checkbox.h>
 #include <wx/listbox.h>
+#include <wx/radiobut.h>
 
 class wxDirPickerCtrl;
 
@@ -54,6 +55,8 @@ private:
 	wxTextCtrl *symServer;
 	wxCheckBox *saveMinidump;
 	wxTextCtrl *saveMinidumpTime;
+	wxRadioButton *mingwWine;
+	wxRadioButton *mingwDrMingw;
 	int saveMinidumpTimeValue;
 	wxSlider *throttle;
 

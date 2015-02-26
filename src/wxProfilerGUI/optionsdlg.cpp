@@ -79,7 +79,7 @@ EVT_CHECKBOX(Options_SaveMinidump, OptionsDlg::OnSaveMinidump)
 END_EVENT_TABLE()
 
 OptionsDlg::OptionsDlg()
-:	wxDialog(NULL, -1, wxString(_T("Options")), 
+:	wxDialog(NULL, -1, wxString(_T("Options")),
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_DIALOG_STYLE)
 {
@@ -124,6 +124,19 @@ OptionsDlg::OptionsDlg()
 		wxDefaultPosition, wxDefaultSize, wxDIRP_USE_TEXTCTRL);
 	symServer = new wxTextCtrl(this, -1, prefs.symServer);
 
+	wxBoxSizer *minGwDbgHelpSizer = new wxBoxSizer(wxHORIZONTAL);
+	minGwDbgHelpSizer->Add(new wxStaticText(this, -1, "MinGW DbgHelp engine:   "));
+
+	mingwWine = new wxRadioButton(this, -1, "Wine  ");
+	mingwWine->SetToolTip("Use Wine's DbgHelp implementation for MinGW symbols (dbghelpw.dll).");
+	minGwDbgHelpSizer->Add(mingwWine);
+
+	mingwDrMingw = new wxRadioButton(this, -1, "Dr. MinGW");
+	mingwDrMingw->SetToolTip("Use Dr. MinGW's DbgHelp implementation for MinGW symbols (dbghelpdr.dll).");
+	minGwDbgHelpSizer->Add(mingwDrMingw);
+
+	(prefs.useWine ? mingwWine : mingwDrMingw)->SetValue(true);
+
 	wxBoxSizer *saveMinidumpSizer = new wxBoxSizer(wxHORIZONTAL);
 
 	saveMinidump = new wxCheckBox(this, Options_SaveMinidump, "Save minidump after ");
@@ -165,13 +178,14 @@ OptionsDlg::OptionsDlg()
 
 	symsizer->Add(symdirsizer, 0, wxALL|wxEXPAND, 5);
 	symsizer->Add(symsrvsizer, 0, wxALL|wxEXPAND, 5);
+	symsizer->Add(minGwDbgHelpSizer, 0, wxALL, 5);
 	symsizer->Add(saveMinidumpSizer, 0, wxALL, 5);
 
 	wxStaticBoxSizer *throttlesizer = new wxStaticBoxSizer(wxVERTICAL, this, "Sample rate control");
 	throttle = new wxPercentSlider(this, Options_Throttle, prefs.throttle, 1, 100, wxDefaultPosition, wxDefaultSize,
 		wxSL_HORIZONTAL|wxSL_TICKS|wxSL_TOP|wxSL_LABELS);
 	throttle->SetTickFreq(10);
-	throttlesizer->Add(new wxStaticText(this, -1, 
+	throttlesizer->Add(new wxStaticText(this, -1,
 		"Adjusts the sample rate speed. Useful for doing longer captures\n"
 		"where you wish to reduce the profiler overhead.\n"
 		"Higher values increase accuracy; lower values result in better\n"
@@ -203,6 +217,7 @@ void OptionsDlg::OnOk(wxCommandEvent& event)
 		prefs.useSymServer = useSymServer->GetValue();
 		prefs.symCacheDir = symCacheDir->GetPath();
 		prefs.symServer = symServer->GetValue();
+		prefs.useWine = mingwWine->GetValue();
 		prefs.saveMinidump = saveMinidump->GetValue() ? saveMinidumpTimeValue : -1;
 		prefs.throttle = throttle->GetValue();
 		EndModal(wxID_OK);

@@ -188,17 +188,21 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		dbgHelpMs.SymCleanup(process_handle);
 	}
 
-	DbgHelp *gcc = &dbgHelpWine;
+	DbgHelp *gcc;
+	if (prefs.useWine)
+	{
+		gcc = &dbgHelpWine;
 #ifdef _WIN64
-	// We can't use the regular dbghelpw to profile 32-bit applications,
-	// as it's got compiled-in things that assume 64-bit. So we instead have
-	// a special Wow64 build, which is compiled as 64-bit code but using 32-bit
-	// definitions. We load that instead.
-	if (!is64BitProcess)
-		gcc = &dbgHelpWineWow64;
+		// We can't use the regular dbghelpw to profile 32-bit applications,
+		// as it's got compiled-in things that assume 64-bit. So we instead have
+		// a special Wow64 build, which is compiled as 64-bit code but using 32-bit
+		// definitions. We load that instead.
+		if (!is64BitProcess)
+			gcc = &dbgHelpWineWow64;
 #endif
-
-	gcc = &dbgHelpDrMingw;
+	}
+	else
+		gcc = &dbgHelpDrMingw;
 
 	if (gcc->SymSetDbgPrint)
 		gcc->SymSetDbgPrint(&symWineCallback);
