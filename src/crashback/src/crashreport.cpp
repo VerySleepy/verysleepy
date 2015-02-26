@@ -7,6 +7,7 @@
 #include "crashreport.h"
 #include "resource.h"
 #include "dbghelp.h"
+#include "..\..\appinfo.h"
 
 #define HOSTNAME	"thecybershadow.net"
 #define PORT		80
@@ -290,6 +291,7 @@ bool SaveInfo()
 		fn( &sysInfo );
 
 	fprintf( file, "Crash type: %s\n", types[cbReportData->type] );
+	fprintf( file, "Version: %s\n", VERSION );
 	fprintf( file, "Command line: %s\n", cbReportData->cmdLine );
 	fprintf( file, "Date/time: %s\n", timeStamp );
 	fprintf( file, "Operating system: %i.%i / %s\n", osInfo.dwMajorVersion, osInfo.dwMinorVersion, GetOSDesc() );
