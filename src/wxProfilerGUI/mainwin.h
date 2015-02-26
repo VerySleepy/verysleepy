@@ -60,6 +60,7 @@ public:
 	// event handlers (these functions should _not_ be virtual)
 	void OnClose(wxCloseEvent& event);
 	void OnQuit(wxCommandEvent& event);
+	void OnNew(wxCommandEvent& event);
 	void OnOpen(wxCommandEvent& event);
 
 	void OnSaveAs(wxCommandEvent& event);

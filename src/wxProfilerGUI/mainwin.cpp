@@ -41,6 +41,7 @@ enum
 {
 	// menu items
 	MainWin_Quit = 1,
+	MainWin_New,
 	MainWin_Open,
 	MainWin_SaveAs,
 	MainWin_ExportAsCsv,
@@ -94,6 +95,7 @@ MainWin::MainWin(const wxString& title,
 #if wxUSE_MENUS
 	// create a menu bar
 	wxMenu *menuFile = new wxMenu;
+	menuFile->Append(MainWin_New, _T("&New"), _T("Starts a new profile"));
 	menuFile->Append(MainWin_Open, _T("&Open..."), _T("Opens an existing profile"));
 	menuFile->Append(MainWin_SaveAs, _T("Save &As..."), _T("Saves the profile data to a file"));
 	menuFile->Append(MainWin_ExportAsCsv, _T("&Export as CSV..."), _T("Export the profile data to a CSV file"));
@@ -311,6 +313,7 @@ MainWin::~MainWin()
 BEGIN_EVENT_TABLE(MainWin, wxFrame)
 EVT_CLOSE(MainWin::OnClose)
 EVT_MENU(MainWin_Quit,  MainWin::OnQuit)
+EVT_MENU(MainWin_New,  MainWin::OnNew)
 EVT_MENU(MainWin_Open,  MainWin::OnOpen)
 EVT_MENU(MainWin_SaveAs,  MainWin::OnSaveAs)
 EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
@@ -351,6 +354,15 @@ void MainWin::OnClose(wxCloseEvent& WXUNUSED(event))
 void MainWin::OnQuit(wxCommandEvent& WXUNUSED(event))
 {
 	wxExit();
+}
+
+void MainWin::OnNew(wxCommandEvent& WXUNUSED(event))
+{
+	// Simply spawn a new instance of the executable.
+	// We could alternatively create a new frame, but this is much simpler.
+	TCHAR FileName[MAX_PATH];
+	GetModuleFileName(NULL, FileName, MAX_PATH);
+	ShellExecute(NULL, _T("open"), FileName, NULL, NULL, SW_SHOW);
 }
 
 void MainWin::OnOpen(wxCommandEvent& WXUNUSED(event))
