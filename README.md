@@ -95,10 +95,24 @@ To build the Wine version of DbgHelp (`dbghelpw.dll` and `dbghelpw_wow64.dll`), 
 To do that, clone this repository with the `--recursive` flag, or, after cloning, run `git submodule init` and `git submodule update`.
 Once cloned, build the DbgHelp solution located in `src/dbghelpw/wine/dlls/dbghelp/vs`.
 
+If you do not want to build Wine DbgHelp from source,
+you can place `dbghelpw.dll` and `dbghelpw_wow64.dll` from a recent binary release of Very Sleepy
+into the `dbghelp_x86` and `dbghelp_x64` directories appropriately.
+
 #### Dr. MinGW DbgHelp
 
 The `dbghelpdr.dll` file is part of the [Dr. MinGW](https://github.com/jrfonseca/drmingw) project.
-See that project's [BUILD.md](https://github.com/jrfonseca/drmingw/blob/master/BUILD.md) for build instructions.
+See that project's [BUILD.md](https://github.com/jrfonseca/drmingw/blob/master/BUILD.md) for an overview of the build instructions.
+For Very Sleepy, you will need both a 32-bit and a 64-bit version, which you can build with e.g. these
+[32-bit][mingw32] and [64-bit][mingw64] MinGW releases and [this][build-bat] batch file.
+
+If you do not want to build Dr. MinGW's DbgHelp from source,
+you can place `dbghelpdr.dll` from a recent binary release of Very Sleepy (or Dr. MinGW, where it will be called `mgwhelp.dll`)
+into the `dbghelp_x86` and `dbghelp_x64` directories appropriately.
+
+  [mingw32]: http://sourceforge.net/projects/mingwbuilds/files/host-windows/releases/4.8.1/32-bit/threads-win32/dwarf/x32-4.8.1-release-win32-dwarf-rev5.7z/download
+  [mingw64]: http://sourceforge.net/projects/mingwbuilds/files/host-windows/releases/4.8.1/64-bit/threads-win32/seh/x64-4.8.1-release-win32-seh-rev5.7z/download
+  [build-bat]: https://gist.github.com/CyberShadow/839e458153787a298b6b
 
 ### Contributing
 
