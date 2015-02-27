@@ -36,32 +36,32 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "obj\Win32\Release\sleepy.exe"                   ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "src\crashback\bin\Win32\Release\crashreport.exe"; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "dbghelp_x86\dbghelpms.dll"                      ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "dbghelp_x86\dbghelpdr.dll"                      ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "dbghelp_x86\symsrv.dll"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "dbghelp_x86\srcsrv.dll"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "dbghelp_x86\symsrv.yes"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "{#DBGHELPW}\Win32\Release\dbghelpw.dll"         ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "obj\Win32\Release\dbghelpdr.dll"                ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 
 ; 64-bit version
 Source: "obj\x64\Release\sleepy.exe"                     ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "src\crashback\bin\x64\Release\crashreport.exe"  ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x64\dbghelpms.dll"                      ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
-Source: "dbghelp_x64\dbghelpdr.dll"                      ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x64\symsrv.dll"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x64\srcsrv.dll"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x64\symsrv.yes"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "{#DBGHELPW}\x64\Release\dbghelpw.dll"           ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "{#DBGHELPW}\x64\Release - Wow64\dbghelpw.dll"   ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode; DestName: "dbghelpw_wow64.dll"
+Source: "obj\x64\Release\dbghelpdr.dll"                  ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 
 ; 32-bit version for 64-bit systems
 Source: "obj\Win32\Release\sleepy.exe"                   ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "src\crashback\bin\Win32\Release\crashreport.exe"; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\dbghelpms.dll"                      ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
-Source: "dbghelp_x86\dbghelpdr.dll"                      ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\symsrv.dll"                         ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\srcsrv.dll"                         ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "dbghelp_x86\symsrv.yes"                         ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "{#DBGHELPW}\Win32\Release\dbghelpw.dll"         ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
+Source: "obj\Win32\Release\dbghelpdr.dll"                ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 
 
 ; Other bits
