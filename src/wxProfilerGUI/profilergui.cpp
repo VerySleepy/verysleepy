@@ -75,6 +75,7 @@ ProfilerGUI::ProfilerGUI()
 {
 	initialized = false;
 	captureWin = NULL;
+    InitSysInfo();
 }
 
 
@@ -277,6 +278,13 @@ std::unique_ptr<AttachInfo> ProfilerGUI::CreateProfileeProcess(const std::wstrin
     std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
     wenforce(CreateProcess(NULL, &run_cmd_dup[0], NULL, NULL, FALSE, flags, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi), "CreateProcess");
 
+    if (!CanProfileProcess(pi.hProcess))
+    {
+        CloseHandle(pi.hThread);
+        CloseHandle(pi.hProcess);
+        throw SleepyException(L"Unsupported process. Cannot profile.");
+    }
+
     std::unique_ptr<AttachInfo> output(new AttachInfo);
     output->process_handle = pi.hProcess;
     output->thread_handles.push_back(pi.hThread);
@@ -312,6 +320,7 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 
 	return output.release();
 }
+
 AttachInfo *ProfilerGUI::RunProcessWithDebugger(const std::wstring &run_cmd, const std::wstring &run_cwd)
 {
     std::unique_ptr<AttachInfo> output = CreateProfileeProcess(run_cmd, run_cwd, DEBUG_ONLY_THIS_PROCESS);
@@ -496,6 +505,7 @@ std::wstring ProfilerGUI::ObtainProfileData()
                 {
                     DestroyProgressWindow();
                     wxLogError("%ls\n", e.wwhat());
+                    MessageBox(threadpicker->GetHWND(), std::wstring(L"Error: " + e.wwhat()).c_str(), L"Profiler Error", MB_OK);
                     continue;
                 }
 			}

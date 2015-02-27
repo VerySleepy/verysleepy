@@ -34,12 +34,11 @@ ProcessInfo::ProcessInfo(DWORD id_, const std::wstring& name_, HANDLE process_ha
 {
 	prevKernelTime.dwHighDateTime = prevKernelTime.dwLowDateTime = 0;
 	prevUserTime.dwHighDateTime = prevUserTime.dwLowDateTime = 0;
-  cpuUsage = -1;
+    cpuUsage = -1;
 #ifdef _WIN64
 	is64Bits = Is64BitProcess(process_handle);
 #endif
 }
-
 
 ProcessInfo::~ProcessInfo()
 {
@@ -49,48 +48,40 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 {
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD, 0);
 
-
-	PROCESSENTRY32 processinfo;
+    PROCESSENTRY32 processinfo = {0};
 	processinfo.dwSize = sizeof(PROCESSENTRY32);
 
 	if (Process32First(snapshot, &processinfo))
 	{
 		do
 		{
-			std::wstring processname = processinfo.szExeFile;
-
-
 			const DWORD process_id = processinfo.th32ProcessID;
 
 			// Don't allow profiling our own process. Bad things happen.
-			if ( process_id == GetCurrentProcessId() )
-				continue;
+            if (process_id == GetCurrentProcessId())
+            {
+                continue;
+            }
 
 			//------------------------------------------------------------------------
 			//Get the actual handle of the process
 			//------------------------------------------------------------------------
-			HANDLE process_handle = OpenProcess (PROCESS_ALL_ACCESS, FALSE, process_id);
+            const HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
 
 			// Skip processes we don't have permission to.
-			if(process_handle == NULL) {
+			if (process_handle == NULL)
+            {
 				continue;
 			}
 
-#ifndef _WIN64
-			// If the process is 64 bit, skip it.
-			if(Is64BitProcess(process_handle)) {
-				CloseHandle(process_handle);
-				continue;
-			}
-#else
-			// Skip 32 bit processes on system that does not have the needed functions (Windows XP 64).
-			if((fn_Wow64SuspendThread == NULL || fn_Wow64GetThreadContext == NULL) && !Is64BitProcess(process_handle)) {
-				CloseHandle(process_handle);
-				continue;
-			}
-#endif
+            if (!CanProfileProcess(process_handle))
+            {
+                CloseHandle(process_handle);
+                continue;
+            }
 
-			processes_out.push_back(ProcessInfo(process_id, processname, process_handle));
+            const std::wstring processname = processinfo.szExeFile;
+            processes_out.push_back(ProcessInfo(process_id, processname, process_handle));
 
 			processinfo.dwSize = sizeof(PROCESSENTRY32);
 		}
@@ -128,9 +119,3 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 
 	CloseHandle(snapshot);
 }
-
-
-
-
-
-

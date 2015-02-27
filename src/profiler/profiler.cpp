@@ -32,6 +32,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <assert.h>
 #include <winnt.h>
 #include "../utils/dbginterface.h"
+#include "../utils/WoW64.h"
 
 #ifdef _WIN64
 #define CONTEXT64_FLAGS		(CONTEXT_AMD64 | CONTEXT_FULL)
@@ -52,7 +53,7 @@ Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_,
 	target_thread(target_thread_),
 	callstacks(callstacks_),
 	flatcounts(flatcounts_),
-    is64BitProcess(Is64BitProcess(target_process))
+    is64BitProcess(Is64BitProcess(target_process_))
 {
 }
 
