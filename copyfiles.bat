@@ -1,13 +1,15 @@
 @echo off
 setlocal
-set PLATFORM=%1
-set DEST=%2
 
-copy /y dbghelp_%PLATFORM%\*.* %DEST%
+set CONFIGURATION=%1
+set PLATFORM=%2
 
-if %PLATFORM%==x86 set PLATFORM=Win32
+set DEST=obj\%PLATFORM%\%CONFIGURATION%\
 
-copy /y "src\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\Debug\dbghelpw.dll" %DEST%
-copy /y "src\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\Debug - Wow64\dbghelpw.dll" %DEST%\dbghelpw_wow64.dll
+if %PLATFORM%==Win32 copy /y dbghelp_x86\*.* %DEST%
+if %PLATFORM%==x64   copy /y dbghelp_x64\*.* %DEST%
+
+copy /y "src\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION%\dbghelpw.dll" %DEST%
+copy /y "src\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION% - Wow64\dbghelpw.dll" %DEST%\dbghelpw_wow64.dll
 
 copy /y src\crashback\bin\%PLATFORM%\Release\crashreport.exe %DEST%
