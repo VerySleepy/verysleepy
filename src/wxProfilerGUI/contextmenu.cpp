@@ -104,19 +104,36 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 	menu->Append(ID_COPY, "&Copy");
 	menu->AppendSeparator();
 
+	// Note: help texts specified here are not actually visible due to Windows/wxWidgets limitations.
+
 	if (selection.size() == 1)
 	{
 		wxString modUpper = modulename;
 		modUpper.UpperCase();
 
-		menu->AppendCheckItem(ID_COLLAPSE_FUNC, "Collapse child calls")->Check(IsOsFunction(procname));
-		menu->AppendCheckItem(ID_COLLAPSE_MOD , wxString::Format("Collapse all %s calls", modUpper))->Check(IsOsModule(modUpper));
-		menu->AppendCheckItem(ID_SET_ROOT     , wxString::Format("Set root to %s", procname));
+		menu->AppendCheckItem(ID_COLLAPSE_FUNC,
+			"Collapse child calls",
+			"Present all CPU time in functions called by this function as if inside this function")
+			->Check(IsOsFunction(procname));
+		menu->AppendCheckItem(ID_COLLAPSE_MOD,
+			wxString::Format("Collapse all %s calls", modUpper),
+			"Present all CPU time in functions called by functions in this module as if inside functions in this module")
+			->Check(IsOsModule(modUpper));
+		menu->AppendCheckItem(ID_SET_ROOT,
+			wxString::Format("Set root to %s", procname),
+			"Ignore all CPU samples except for functions called by this function");
+
 		menu->AppendSeparator();
 
-		menu->AppendCheckItem(ID_FILTER_FUNC  , wxString::Format("Filter functions to %s", procname      ));
-		menu->AppendCheckItem(ID_FILTER_MODULE, wxString::Format("Filter Module to %s"   , modulename    ));
-		menu->AppendCheckItem(ID_FILTER_SOURCE, wxString::Format("Filter Source to %s"   , sourcefilename));
+		menu->AppendCheckItem(ID_FILTER_FUNC,
+			wxString::Format("Filter functions to %s", procname),
+			"Ignore all CPU samples except inside this function");
+		menu->AppendCheckItem(ID_FILTER_MODULE,
+			wxString::Format("Filter modules to %s", modulename),
+			"Ignore all CPU samples except inside this module");
+		menu->AppendCheckItem(ID_FILTER_SOURCE,
+			wxString::Format("Filter source files to %s", sourcefilename),
+			"Ignore all CPU samples except inside this source file");
 		menu->AppendSeparator();
 	}
 
