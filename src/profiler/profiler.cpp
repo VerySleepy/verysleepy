@@ -4,6 +4,7 @@ profiler.cpp
 File created by ClassTemplate on Thu Feb 24 19:00:30 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
+
 #include "profiler.h"
 
 
@@ -51,9 +53,9 @@ Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_,
 :	target_process(target_process_),
 	target_thread(target_thread_),
 	callstacks(callstacks_),
-	flatcounts(flatcounts_)
+	flatcounts(flatcounts_),
+	is64BitProcess(Is64BitProcess(target_process))
 {
-	is64BitProcess = Is64BitProcess(target_process);
 }
 
 // DE: 20090325: Need copy constructor since it is put in a std::vector

@@ -4,6 +4,7 @@ profiler.h
 File created by ClassTemplate on Thu Feb 24 19:00:30 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
+
+#pragma once
 #ifndef __PROFILER_H_666_
 #define __PROFILER_H_666_
 
@@ -108,7 +111,7 @@ public:
 	// DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
 	std::map<CallStack, SAMPLE_TYPE>& callstacks;
 	std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts;
-	bool is64BitProcess;
+	const bool is64BitProcess;
 
 	bool sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo);//throws ProfilerExcep
 	bool targetExited() const;
