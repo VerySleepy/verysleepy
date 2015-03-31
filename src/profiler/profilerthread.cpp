@@ -66,7 +66,7 @@ ProfilerThread::~ProfilerThread()
 }
 
 
-void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
+void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	// RJM- We traverse them in random order. The act of profiling causes the Windows scheduler
@@ -74,7 +74,7 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 	//      This starves the other N-1 threads. For lack of a better option, using a shuffle
 	//      at least re-schedules them evenly.
 
-	size_t count = profilers.size();
+	const size_t count = profilers.size();
 	if ( count == 0)
 		return;
 
@@ -89,16 +89,17 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 	}
 
 	int numSuccessful = 0;
-	for (size_t n=0;n<count;n++)
+	for (size_t n = 0;n < count; ++n)
 	{
 		Profiler& profiler = profilers[order[n]];
 		try {
 			if (profiler.sampleTarget(timeSpent, sym_info))
 			{
-				numsamplessofar++;
-				numSuccessful++;
+				++numsamplessofar;
+				++numSuccessful;
 			}
-		} catch( ProfilerExcep &e )
+		}
+		catch (const ProfilerExcep& e)
 		{
 			error(_T("ProfilerExcep: ") + e.what());
 			this->commit_suicide = true;
@@ -121,6 +122,9 @@ void ProfilerThread::sampleLoop()
 {
 	timeBeginPeriod(1);
 
+	const int ms = 100 / prefs.throttle;
+	const double secs = ms / 1000.0;
+
 	LARGE_INTEGER prev, now, start, freq;
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
@@ -136,27 +140,36 @@ void ProfilerThread::sampleLoop()
 			continue;
 		}
 
-		QueryPerformanceCounter(&now);
-
-		__int64 diff = now.QuadPart - prev.QuadPart;
-		double t = (double)diff / (double)freq.QuadPart;
-
-		__int64 elapsed = now.QuadPart - start.QuadPart;
-		if (!minidump_saved && prefs.saveMinidump>=0 && elapsed >= prefs.saveMinidump * freq.QuadPart)
+		if (ms > 5)
 		{
-			minidump_saved = true;
-			status = L"Saving minidump";
-			minidump = sym_info->saveMinidump();
-			status = NULL;
-			continue;
+			Sleep(ms);
+		}
+
+		double t = ms;
+		do
+		{
+			QueryPerformanceCounter(&now);
+			const __int64 diff = now.QuadPart - prev.QuadPart;
+			t = (double)diff / (double)freq.QuadPart;
+		}
+		while (secs > t);
+
+		if (!minidump_saved && prefs.saveMinidump >= 0)
+		{
+			const __int64 elapsed = now.QuadPart - start.QuadPart;
+			if (elapsed >= prefs.saveMinidump * freq.QuadPart)
+			{
+				minidump_saved = true;
+				status = L"Saving minidump";
+				minidump = sym_info->saveMinidump();
+				status = NULL;
+				continue;
+			}
 		}
 
 		sample(t);
+		QueryPerformanceCounter(&prev);
 
-		int ms = 100 / prefs.throttle;
-		Sleep(ms);
-
-		prev = now;
 	}
 
 	timeEndPeriod(1);

@@ -108,7 +108,7 @@ public:
 	// DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
 	std::map<CallStack, SAMPLE_TYPE>& callstacks;
 	std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts;
-	bool is64BitProcess;
+	const bool is64BitProcess;
 
 	bool sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo);//throws ProfilerExcep
 	bool targetExited() const;

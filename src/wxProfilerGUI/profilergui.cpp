@@ -4,6 +4,7 @@ profilergui.cpp
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,7 +26,6 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/mstream.h>
 #include <wx/apptrait.h>
 #include <wx/msw/apptrait.h>
-#include <memory>
 
 #include "threadpicker.h"
 #include "capturewin.h"
@@ -76,6 +76,7 @@ ProfilerGUI::ProfilerGUI()
 {
 	initialized = false;
 	captureWin = NULL;
+	InitSysInfo();
 }
 
 
@@ -269,19 +270,33 @@ AttachInfo::~AttachInfo()
 		delete sym_info;
 }
 
-AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd)
+std::unique_ptr<AttachInfo> ProfilerGUI::CreateProfileeProcess(const std::wstring &run_cmd, const std::wstring &run_cwd, DWORD flags)
 {
-	STARTUPINFO si = {sizeof(si)};
+	STARTUPINFO si = { sizeof(si) };
 	PROCESS_INFORMATION pi = {};
 
 	std::vector<wchar_t> run_cmd_dup(run_cmd.size() + 1); // CreateProcess lpCommandLine must be mutable
 	std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
-	wenforce(CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ), "CreateProcess");
+	wenforce(CreateProcess(NULL, &run_cmd_dup[0], NULL, NULL, FALSE, flags, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi), "CreateProcess");
+
+	if (!CanProfileProcess(pi.hProcess))
+	{
+		CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+		throw SleepyException(L"Unsupported process. Cannot profile.");
+	}
 
 	std::unique_ptr<AttachInfo> output(new AttachInfo);
 	output->process_handle = pi.hProcess;
 	output->thread_handles.push_back(pi.hThread);
 	output->sym_info = new SymbolInfo;
+
+	return output;
+}
+
+AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd)
+{
+	std::unique_ptr<AttachInfo> output = CreateProfileeProcess(run_cmd, run_cwd, 0);
 
 	// Load up the debug info for it.
 	// This can fail initially, because it turns out that you can't query information
@@ -302,6 +317,136 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 			if (retry == 0)
 				throw;
 		}
+	}
+
+	return output.release();
+}
+
+AttachInfo *ProfilerGUI::RunProcessWithDebugger(const std::wstring &run_cmd, const std::wstring &run_cwd)
+{
+	std::unique_ptr<AttachInfo> output = CreateProfileeProcess(run_cmd, run_cwd, DEBUG_ONLY_THIS_PROCESS);
+
+	for (;;)
+	{
+		DEBUG_EVENT debugEvent;
+		WaitForDebugEvent(&debugEvent, INFINITE);
+		DWORD dwContinueStatus = DBG_CONTINUE;
+		switch (debugEvent.dwDebugEventCode)
+		{
+		case EXCEPTION_DEBUG_EVENT:
+			// Process the exception code. When handling
+			// exceptions, remember to set the continuation
+			// status parameter (dwContinueStatus). This value
+			// is used by the ContinueDebugEvent function.
+
+			switch (debugEvent.u.Exception.ExceptionRecord.ExceptionCode)
+			{
+			case EXCEPTION_ACCESS_VIOLATION:
+				// First chance: Pass this on to the system.
+				// Last chance: Display an appropriate error.
+				break;
+
+			case EXCEPTION_BREAKPOINT:
+				// First chance: Display the current
+				// instruction and register values.
+
+				// Once the debugee is fully loaded, we'll get
+				// a first-chance breakpoint exception.
+				// Perfect position to load symbols.
+				output->sym_info->loadSymbols(output->process_handle, false);
+				ContinueDebugEvent(debugEvent.dwProcessId,
+								   debugEvent.dwThreadId,
+								   dwContinueStatus);
+				//TODO: Must wait for further debug events or detatch.
+				return output.release();
+
+			case EXCEPTION_DATATYPE_MISALIGNMENT:
+				// First chance: Pass this on to the system.
+				// Last chance: Display an appropriate error.
+				break;
+
+			case EXCEPTION_SINGLE_STEP:
+				// First chance: Update the display of the
+				// current instruction and register values.
+				break;
+
+			case DBG_CONTROL_C:
+				// First chance: Pass this on to the system.
+				// Last chance: Display an appropriate error.
+				break;
+
+			default:
+				// Handle other exceptions.
+				break;
+			}
+
+			break;
+
+		case CREATE_THREAD_DEBUG_EVENT:
+			// As needed, examine or change the thread's registers
+			// with the GetThreadContext and SetThreadContext functions;
+			// and suspend and resume thread execution with the
+			// SuspendThread and ResumeThread functions.
+
+			//dwContinueStatus = OnCreateThreadDebugEvent(DebugEv);
+			break;
+
+		case CREATE_PROCESS_DEBUG_EVENT:
+			// As needed, examine or change the registers of the
+			// process's initial thread with the GetThreadContext and
+			// SetThreadContext functions; read from and write to the
+			// process's virtual memory with the ReadProcessMemory and
+			// WriteProcessMemory functions; and suspend and resume
+			// thread execution with the SuspendThread and ResumeThread
+			// functions. Be sure to close the handle to the process image
+			// file with CloseHandle.
+			//dwContinueStatus = OnCreateProcessDebugEvent(DebugEv);
+			CloseHandle(debugEvent.u.CreateProcessInfo.hFile);
+			break;
+
+		case EXIT_THREAD_DEBUG_EVENT:
+			// Display the thread's exit code.
+
+			//dwContinueStatus = OnExitThreadDebugEvent(DebugEv);
+			break;
+
+		case EXIT_PROCESS_DEBUG_EVENT:
+			// Display the process's exit code.
+
+			//dwContinueStatus = OnExitProcessDebugEvent(DebugEv);
+			break;
+
+		case LOAD_DLL_DEBUG_EVENT:
+			// Read the debugging information included in the newly
+			// loaded DLL. Be sure to close the handle to the loaded DLL
+			// with CloseHandle.
+
+			//dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
+			CloseHandle(debugEvent.u.CreateProcessInfo.hFile);
+			break;
+
+		case UNLOAD_DLL_DEBUG_EVENT:
+			// Display a message that the DLL has been unloaded.
+
+			//dwContinueStatus = OnUnloadDllDebugEvent(DebugEv);
+			break;
+
+		case OUTPUT_DEBUG_STRING_EVENT:
+			// Display the output debugging string.
+
+			//dwContinueStatus = OnOutputDebugStringEvent(DebugEv);
+			break;
+
+		case RIP_EVENT:
+			//dwContinueStatus = OnRipEvent(DebugEv);
+			break;
+		}
+
+		// Resume executing the thread that reported the debugging event.
+
+		ContinueDebugEvent(debugEvent.dwProcessId,
+			debugEvent.dwThreadId,
+			dwContinueStatus);
 	}
 
 	return output.release();
@@ -348,13 +493,22 @@ std::wstring ProfilerGUI::ObtainProfileData()
 			std::unique_ptr<AttachInfo> info;
 			try
 			{
-				info.reset(RunProcess(threadpicker->run_filename, threadpicker->run_cwd));
+				info.reset(RunProcessWithDebugger(threadpicker->run_filename, threadpicker->run_cwd));
 			}
-			catch (SleepyException &e)
+			catch (const SleepyException &e)
 			{
-				DestroyProgressWindow();
-				wxLogError("%ls\n", e.wwhat());
-				continue;
+				wxLogError("%ls\nWill retry using an alternative method.", e.wwhat());
+				try
+				{
+					info.reset(RunProcess(threadpicker->run_filename, threadpicker->run_cwd));
+				}
+				catch (const SleepyException &e)
+				{
+					DestroyProgressWindow();
+					wxLogError("%ls\n", e.wwhat());
+					MessageBox(threadpicker->GetHWND(), std::wstring(L"Error: " + e.wwhat()).c_str(), L"Profiler Error", MB_OK);
+					continue;
+				}
 			}
 
 			wxScopeGuard sgTerm = wxMakeGuard(TerminateProcess, info->process_handle, 0);

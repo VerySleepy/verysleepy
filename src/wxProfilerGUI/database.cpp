@@ -4,6 +4,7 @@ Database.cpp
 
 Copyright (C) Nicholas Chapman
 Copyright (C) Richard Mitton
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -145,7 +146,7 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	{
 		wxString name = entry->GetInternalName();
 
-		     if (name == "Symbols.txt")		loadSymbols(zip);
+			 if (name == "Symbols.txt")		loadSymbols(zip);
 		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
 		else if (name == "IPCounts.txt")	loadIpCounts(zip);
 		else if (name == "Stats.txt")		loadStats(zip);
@@ -279,14 +280,15 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 
 		if (collapseKernelCalls)
 		{
-			if (callstack.addresses.size() && addrinfo.at(callstack.addresses[0]).symbol->isCollapseModule)
+			if (callstack.addresses.size() >= 2 && addrinfo.at(callstack.addresses[0]).symbol->isCollapseModule)
 			{
-				while (callstack.addresses.size() >= 2)
+				do
 				{
 					if (!addrinfo.at(callstack.addresses[1]).symbol->isCollapseModule)
 						break;
 					callstack.addresses.erase(callstack.addresses.begin());
 				}
+				while (callstack.addresses.size() >= 2);
 			}
 		}
 
@@ -294,7 +296,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 		for (size_t i=0; i<callstack.addresses.size(); i++)
 			callstack.symbols[i] = addrinfo.at(callstack.addresses[i]).symbol;
 
-		callstacks.push_back(std::move(callstack));
+		callstacks.emplace_back(std::move(callstack));
 
 		wxFileOffset offset = file.TellI();
 		if (offset != wxInvalidOffset && offset != filesize)
@@ -320,16 +322,17 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 		progressdlg.Update(0, "Filtering...");
 
 		std::vector<CallStack> filtered;
-		for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
+		const auto total = callstacks.size();
+		for (auto i = 0; i < total; ++i)
 		{
-			int n = i - callstacks.begin();
-			if (n % 256 == 0)
-				progressdlg.Update(kMaxProgress * n / callstacks.size());
+			if (i % 256 == 0)
+				progressdlg.Update(kMaxProgress * i / total);
 
-			if (!filtered.empty() && filtered.back().addresses == i->addresses)
-				filtered.back().samplecount += i->samplecount;
+			auto& item = callstacks[i];
+			if (!filtered.empty() && filtered.back().addresses == item.addresses)
+				filtered.back().samplecount += item.samplecount;
 			else
-				filtered.push_back(*i);
+				filtered.emplace_back(std::move(item));
 		}
 
 		std::swap(filtered, callstacks);
@@ -406,37 +409,39 @@ void Database::scanMainList()
 		wxPD_APP_MODAL|wxPD_AUTO_HIDE);
 
 	mainList.items.clear();
+	mainList.items.reserve(symbols.size());
 	mainList.totalcount = 0;
 
 	Symbol::ID currentRootID = currentRoot ? currentRoot->id : -1;
 
 	int progress = 0;
-	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
-	{  
+	for (auto& it = callstacks.begin(); it != callstacks.end(); ++it)
+	{
+		const auto& i = *it;
 		// Only use call stacks that include the current root
-		if (!includeCallstack(*i)) continue;
+		if (!includeCallstack(i)) continue;
 
-		exclusive[i->symbols[0]->id] += i->samplecount;
+		exclusive[i.symbols[0]->id] += i.samplecount;
 		std::vector<bool> seen(symbols.size());
-		for (size_t n=0;n<i->symbols.size();n++)
+		for (size_t n = 0; n < i.symbols.size(); ++n)
 		{
-			Symbol::ID id = i->symbols[n]->id;
+			Symbol::ID id = i.symbols[n]->id;
 
-			// we filter out duplicates, to avoid getting funny numbers when 
+			// we filter out duplicates, to avoid getting funny numbers when
 			// using recursive functions.
 			if (!seen[id])
 			{
-				inclusive[id] += i->samplecount;
+				inclusive[id] += i.samplecount;
 				seen[id] = true;
-			} 
+			}
 			if (id == currentRootID) break;       // Stop handling the call stack if we encounter the root
 		}
-		mainList.totalcount += i->samplecount;
+		mainList.totalcount += i.samplecount;
 
 		progressdlg.Update(progress++);
 	}
 
-	for (Symbol::ID id=0; id < symbols.size(); id++)
+	for (Symbol::ID id = 0; id < symbols.size(); ++id)
 	{
 		Item item;
 		item.symbol = symbols[id];
@@ -450,17 +455,18 @@ void Database::scanMainList()
 std::vector<const Database::CallStack*> Database::getCallstacksContaining(const Database::Symbol *symbol) const
 {
 	std::vector<const CallStack *> ret;
-	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
-	{ 
+	for (auto& it = callstacks.begin(); it != callstacks.end(); ++it)
+	{
+		const auto& i = *it;
 		// Only use call stacks that include the current root
-		if (!includeCallstack(*i)) continue;
+		if (!includeCallstack(i)) continue;
 
 		// Only include callstacks that have our symbol in.
-		for (size_t n=0;n<i->symbols.size();n++)
+		for (size_t n=0;n<i.symbols.size();n++)
 		{
-			if (i->symbols[n] == symbol)
+			if (i.symbols[n] == symbol)
 			{
-				ret.push_back(&*i);
+				ret.push_back(&i);
 				break;
 			}
 		}
@@ -472,22 +478,23 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 {
 	List list;
 	std::map<Address, double> counts;
-	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
-	{ 
+	for (auto& it = callstacks.begin(); it != callstacks.end(); ++it)
+	{
+		const auto& i = *it;
 		// Only use call stacks that include the current root
-		if (!includeCallstack(*i)) continue;
+		if (!includeCallstack(i)) continue;
 
 		// Only include callstacks that have our symbol in.
-		for (size_t n=0;n<i->symbols.size()-1;n++)
+		for (size_t n=0;n<i.symbols.size()-1;n++)
 		{
-			const Symbol *s = i->symbols[n];
+			const Symbol *s = i.symbols[n];
 			if (s == currentRoot) break;       // Stop handling the call stack if we encounter the root
 			if (s == symbol)
 			{
-				Address caller = i->addresses[n+1];
+				Address caller = i.addresses[n+1];
 
-				counts[caller] += i->samplecount;
-				list.totalcount += i->samplecount;
+				counts[caller] += i.samplecount;
+				list.totalcount += i.samplecount;
 			}
 		}
 	}
@@ -502,7 +509,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 		list.items.push_back(item);
 	}
 
-	return list;
+	return std::move(list);
 }
 
 Database::List Database::getCallees(const Database::Symbol *symbol) const
@@ -510,7 +517,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 	List list;
 	std::map<const Symbol *, double> counts;
 	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
-	{ 
+	{
 		// Only use call stacks that include the current root
 		if (!includeCallstack(*i)) continue;
 
