@@ -34,13 +34,13 @@ static IsWow64Process_t *IsWow64ProcessPtr = NULL;
 
 void InitSysInfo()
 {
-    SYSTEM_INFO systemInfo = { 0 };
-    GetNativeSystemInfo(&systemInfo);
-    totalCpuCount = systemInfo.dwNumberOfProcessors;
-    is64BitOS = (systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
+	SYSTEM_INFO systemInfo = { 0 };
+	GetNativeSystemInfo(&systemInfo);
+	totalCpuCount = systemInfo.dwNumberOfProcessors;
+	is64BitOS = (systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64);
 
-    is64BitProfiler = (sizeof(void*) > 4);
-    IsWow64ProcessPtr = (IsWow64Process_t *)GetProcAddress(GetModuleHandle(L"kernel32"), "IsWow64Process");
+	is64BitProfiler = (sizeof(void*) > 4);
+	IsWow64ProcessPtr = (IsWow64Process_t *)GetProcAddress(GetModuleHandle(L"kernel32"), "IsWow64Process");
 }
 
 int GetCPUCores()
@@ -105,35 +105,35 @@ Profiler | Profilee | OS
 
 bool CanProfileProcess(HANDLE hProcess)
 {
-    if (Is64BitProcess(hProcess))
-    {
-        // 64-bit with a 64-bit profiler only.
-        return is64BitProfiler;
-    }
+	if (Is64BitProcess(hProcess))
+	{
+		// 64-bit with a 64-bit profiler only.
+		return is64BitProfiler;
+	}
 
-    //TODO: Check security permissions?
+	//TODO: Check security permissions?
 
 #ifdef _WIN64
-    if (fn_Wow64SuspendThread == NULL || fn_Wow64GetThreadContext == NULL)
-    {
-        // Skip 32 bit processes on system that does not have the needed functions (Windows XP 64).
-        return false;
-    }
+	if (fn_Wow64SuspendThread == NULL || fn_Wow64GetThreadContext == NULL)
+	{
+		// Skip 32 bit processes on system that does not have the needed functions (Windows XP 64).
+		return false;
+	}
 #endif
 
-    // Any 32-bit profilee is supported.
-    return true;
+	// Any 32-bit profilee is supported.
+	return true;
 }
 
 bool Is64BitProcess(HANDLE hProcess)
 {
-    // If the process is running under 32-bit Windows, the value is set to FALSE.
-    // If the process is a 64-bit application running under 64-bit Windows, the value is also set to FALSE.
-    // Meaning, this is TRUE if, and only if, the process is 32-bits running under 64-bit Windows.
-    BOOL isWow64Process;
+	// If the process is running under 32-bit Windows, the value is set to FALSE.
+	// If the process is a 64-bit application running under 64-bit Windows, the value is also set to FALSE.
+	// Meaning, this is TRUE if, and only if, the process is 32-bits running under 64-bit Windows.
+	BOOL isWow64Process;
 
-    return (is64BitOS &&
-            IsWow64ProcessPtr &&
-            IsWow64ProcessPtr(hProcess, &isWow64Process) &&
-            !isWow64Process);
+	return (is64BitOS &&
+			IsWow64ProcessPtr &&
+			IsWow64ProcessPtr(hProcess, &isWow64Process) &&
+			!isWow64Process);
 }

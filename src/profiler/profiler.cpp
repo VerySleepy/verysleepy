@@ -4,6 +4,7 @@ profiler.cpp
 File created by ClassTemplate on Thu Feb 24 19:00:30 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -53,7 +54,7 @@ Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_,
 	target_thread(target_thread_),
 	callstacks(callstacks_),
 	flatcounts(flatcounts_),
-    is64BitProcess(Is64BitProcess(target_process_))
+	is64BitProcess(Is64BitProcess(target_process_))
 {
 }
 

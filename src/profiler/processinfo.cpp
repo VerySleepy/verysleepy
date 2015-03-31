@@ -4,6 +4,7 @@ processinfo.cpp
 File created by ClassTemplate on Sun Mar 20 03:22:27 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,7 +35,7 @@ ProcessInfo::ProcessInfo(DWORD id_, const std::wstring& name_, HANDLE process_ha
 {
 	prevKernelTime.dwHighDateTime = prevKernelTime.dwLowDateTime = 0;
 	prevUserTime.dwHighDateTime = prevUserTime.dwLowDateTime = 0;
-    cpuUsage = -1;
+	cpuUsage = -1;
 #ifdef _WIN64
 	is64Bits = Is64BitProcess(process_handle);
 #endif
@@ -48,7 +49,7 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 {
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD, 0);
 
-    PROCESSENTRY32 processinfo = {0};
+	PROCESSENTRY32 processinfo = {0};
 	processinfo.dwSize = sizeof(PROCESSENTRY32);
 
 	if (Process32First(snapshot, &processinfo))
@@ -58,30 +59,30 @@ void ProcessInfo::enumProcesses(std::vector<ProcessInfo>& processes_out)
 			const DWORD process_id = processinfo.th32ProcessID;
 
 			// Don't allow profiling our own process. Bad things happen.
-            if (process_id == GetCurrentProcessId())
-            {
-                continue;
-            }
+			if (process_id == GetCurrentProcessId())
+			{
+				continue;
+			}
 
 			//------------------------------------------------------------------------
 			//Get the actual handle of the process
 			//------------------------------------------------------------------------
-            const HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
+			const HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
 
 			// Skip processes we don't have permission to.
 			if (process_handle == NULL)
-            {
+			{
 				continue;
 			}
 
-            if (!CanProfileProcess(process_handle))
-            {
-                CloseHandle(process_handle);
-                continue;
-            }
+			if (!CanProfileProcess(process_handle))
+			{
+				CloseHandle(process_handle);
+				continue;
+			}
 
-            const std::wstring processname = processinfo.szExeFile;
-            processes_out.push_back(ProcessInfo(process_id, processname, process_handle));
+			const std::wstring processname = processinfo.szExeFile;
+			processes_out.push_back(ProcessInfo(process_id, processname, process_handle));
 
 			processinfo.dwSize = sizeof(PROCESSENTRY32);
 		}

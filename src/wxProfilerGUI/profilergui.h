@@ -4,6 +4,7 @@ profilergui.h
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -133,11 +134,11 @@ private:
 	void DestroyProgressWindow();
 
 	std::wstring LaunchProfiler(const AttachInfo *info);
-    std::unique_ptr<AttachInfo> CreateProfileeProcess(const std::wstring &run_cmd, const std::wstring &run_cwd, DWORD flags);
-    AttachInfo *RunProcessWithDebugger(const std::wstring &run_cmd, const std::wstring &run_cwd);
-    AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
+	std::unique_ptr<AttachInfo> CreateProfileeProcess(const std::wstring &run_cmd, const std::wstring &run_cwd, DWORD flags);
+	AttachInfo *RunProcessWithDebugger(const std::wstring &run_cmd, const std::wstring &run_cwd);
+	AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
 
-    void LoadProfileData(const std::wstring &filename);
+	void LoadProfileData(const std::wstring &filename);
 	std::wstring ObtainProfileData();
 
 	class CaptureWin *captureWin;
