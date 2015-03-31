@@ -4,6 +4,7 @@ profilerthread.cpp
 File created by ClassTemplate on Thu Feb 24 19:29:41 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
+
 #include "../wxprofilergui/profilergui.h"
 #include "profilerthread.h"
 #include <wx/wfstream.h>
@@ -66,7 +68,7 @@ ProfilerThread::~ProfilerThread()
 }
 
 
-void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
+void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	// RJM- We traverse them in random order. The act of profiling causes the Windows scheduler
@@ -74,7 +76,7 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 	//      This starves the other N-1 threads. For lack of a better option, using a shuffle
 	//      at least re-schedules them evenly.
 
-	size_t count = profilers.size();
+	const size_t count = profilers.size();
 	if ( count == 0)
 		return;
 
@@ -89,16 +91,17 @@ void ProfilerThread::sample(SAMPLE_TYPE timeSpent)
 	}
 
 	int numSuccessful = 0;
-	for (size_t n=0;n<count;n++)
+	for (size_t n = 0;n < count; ++n)
 	{
 		Profiler& profiler = profilers[order[n]];
 		try {
 			if (profiler.sampleTarget(timeSpent, sym_info))
 			{
-				numsamplessofar++;
-				numSuccessful++;
+				++numsamplessofar;
+				++numSuccessful;
 			}
-		} catch( ProfilerExcep &e )
+		}
+		catch (const ProfilerExcep& e)
 		{
 			error(_T("ProfilerExcep: ") + e.what());
 			this->commit_suicide = true;

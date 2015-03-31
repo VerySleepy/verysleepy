@@ -4,6 +4,7 @@ profilergui.cpp
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -76,6 +77,7 @@ ProfilerGUI::ProfilerGUI()
 {
 	initialized = false;
 	captureWin = NULL;
+	InitSysInfo();
 }
 
 
@@ -278,6 +280,13 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 	std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
 	wenforce(CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ), "CreateProcess");
 
+	if (!CanProfileProcess(pi.hProcess))
+	{
+		CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+		throw SleepyException(L"Unsupported process. Cannot profile.");
+	}
+
 	std::unique_ptr<AttachInfo> output(new AttachInfo);
 	output->process_handle = pi.hProcess;
 	output->thread_handles.push_back(pi.hThread);
@@ -354,6 +363,7 @@ std::wstring ProfilerGUI::ObtainProfileData()
 			{
 				DestroyProgressWindow();
 				wxLogError("%ls\n", e.wwhat());
+				MessageBox(threadpicker->GetHWND(), std::wstring(L"Error: " + e.wwhat()).c_str(), L"Profiler Error", MB_OK);
 				continue;
 			}
 

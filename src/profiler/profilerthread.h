@@ -4,6 +4,7 @@ profilerthread.h
 File created by ClassTemplate on Thu Feb 24 19:29:41 2005
 
 Copyright (C) Nicholas Chapman
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
+
+#pragma once
 #ifndef __PROFILERTHREAD_H_666_
 #define __PROFILERTHREAD_H_666_
 
@@ -74,7 +77,7 @@ public:
 	void setPaused(bool paused_) { paused = paused_; }
 	void cancel() { cancelled = true; }
 
-	void sample(SAMPLE_TYPE timeSpent);//for internal use.
+	void sample(const SAMPLE_TYPE timeSpent);//for internal use.
 private:
 	//std::wstring demangleProcName(const std::wstring& mangled_name);
 	void error(const std::wstring& what);
