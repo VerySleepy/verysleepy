@@ -3,6 +3,7 @@ osutils.h
 ----------
 
 Copyright (C) Dan Engelbrecht
+Copyright (C) 2015 Ashod Nakashian
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,15 +21,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
-#ifndef __OSUTILS_H_666_
-#define __OSUTILS_H_666_
+
+#pragma once
+#ifndef __OSUTILS_H__
+#define __OSUTILS_H__
 
 #include <windows.h>
-#include "wow64.h"
 
+void InitSysInfo();
 int GetCPUCores();
 int GetCoresForProcess(HANDLE process);
 void EnableDebugPrivilege();
 bool Is64BitProcess(HANDLE hProcess);
 
-#endif // __OSUTILS_H_666_
+bool CanProfileProcess(HANDLE hProcess);
+
+#endif // __OSUTILS_H__
