@@ -17,6 +17,6 @@ if %PLATFORM%==x64 if not exist %DBGHELPERS%\dbghelpw_wow64.dll copy /y "src\dbg
 if %PLATFORM%==Win32 set PLATFORM_BITS=32
 if %PLATFORM%==x64   set PLATFORM_BITS=64
 
-if not exist %DBGHELPERS%\dbghelpdr.dll copy %DRMINGW%\build\%PLATFORM_BITS%\bin\mgwhelp.dll %DEST%
+if not exist %DBGHELPERS%\dbghelpdr.dll copy %DRMINGW%\build\%PLATFORM_BITS%\bin\mgwhelp.dll %DEST%\dbghelpdr.dll
 
 copy /y src\crashback\bin\%PLATFORM%\%CONFIGURATION%\crashreport.exe %DEST%
