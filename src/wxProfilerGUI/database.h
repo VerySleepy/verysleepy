@@ -77,6 +77,7 @@ public:
 		// Symbol info
 		const Symbol *symbol;
 		unsigned      sourceline;
+		unsigned	  procsourceline;
 
 		// IP counts
 		double count;

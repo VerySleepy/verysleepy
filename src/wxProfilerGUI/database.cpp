@@ -195,6 +195,7 @@ void Database::loadSymbols(wxInputStream &file)
 		::readQuote(stream, procname);
 		::readQuote(stream, sourcefilename);
 		stream >> info.sourceline;
+		stream >> info.procsourceline; // Line for the function
 		if (!inserted)
 		{
 			if (!warnedDupAddress)

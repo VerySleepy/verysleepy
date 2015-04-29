@@ -59,7 +59,7 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 	numThreadsRunning = (int)target_threads.size();
 	status = L"Initializing";
 
-	filename = wxFileName::CreateTempFileName(wxEmptyString);
+	filename = wxFileName::CreateTempFileName(wxT("sleepy_"));
 }
 
 
@@ -235,10 +235,12 @@ void ProfilerThread::saveData()
 	for (auto i = used_addresses.begin(); i != used_addresses.end(); ++i)
 	{
 		int proclinenum;
+		int line;
 		std::wstring procfile;
 		PROFILER_ADDR addr = i->first;
 
 		const std::wstring proc_name = sym_info->getProcForAddr(addr, procfile, proclinenum);
+		sym_info->getLineForAddr(addr, procfile, line); // Get the real line number
 		txt << ::toHexString(addr);
 		txt << " ";
 		writeQuote(txt, sym_info->getModuleNameForAddr(addr));
@@ -246,6 +248,8 @@ void ProfilerThread::saveData()
 		writeQuote(txt, proc_name);
 		txt << " ";
 		writeQuote(txt, procfile);
+		txt << " ";
+		txt << ::toString(line);
 		txt << " ";
 		txt << ::toString(proclinenum);
 		txt << '\n';
