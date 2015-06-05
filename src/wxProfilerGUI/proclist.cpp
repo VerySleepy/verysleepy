@@ -142,17 +142,17 @@ struct AddressPred    { bool operator () (const Database::Item &a, const Databas
 void ProcList::sortList()
 {
 	switch(sort_column) {
-	case COL_NAME:         std::sort(list.items.begin(), list.items.end(), NamePred      ()); break;
+	case COL_NAME:         std::stable_sort(list.items.begin(), list.items.end(), NamePred      ()); break;
 	case COL_EXCLUSIVE:
 	case COL_EXCLUSIVEPCT:
 	case COL_SAMPLES:
-	case COL_CALLSPCT:     std::sort(list.items.begin(), list.items.end(), ExclusivePred ()); break;
+	case COL_CALLSPCT:     std::stable_sort(list.items.begin(), list.items.end(), ExclusivePred ()); break;
 	case COL_INCLUSIVE:
-	case COL_INCLUSIVEPCT: std::sort(list.items.begin(), list.items.end(), InclusivePred ()); break;
-	case COL_MODULE:       std::sort(list.items.begin(), list.items.end(), ModulePred    ()); break;
-	case COL_SOURCEFILE:   std::sort(list.items.begin(), list.items.end(), SourceFilePred()); break;
+	case COL_INCLUSIVEPCT: std::stable_sort(list.items.begin(), list.items.end(), InclusivePred ()); break;
+	case COL_MODULE:       std::stable_sort(list.items.begin(), list.items.end(), ModulePred    ()); break;
+	case COL_SOURCEFILE:   std::stable_sort(list.items.begin(), list.items.end(), SourceFilePred()); break;
 	case COL_SOURCELINE:
-	case COL_ADDRESS:      std::sort(list.items.begin(), list.items.end(), AddressPred   ()); break;
+	case COL_ADDRESS:      std::stable_sort(list.items.begin(), list.items.end(), AddressPred   ()); break;
 	}
 
 	if (sort_dir == SORT_DOWN)

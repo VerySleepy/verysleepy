@@ -218,34 +218,34 @@ struct TypeDescPred { bool operator () (const ProcessInfo &a, const ProcessInfo 
 void ProcessList::sortByName()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(processes.begin(), processes.end(), NameAscPred());
+		std::stable_sort(processes.begin(), processes.end(), NameAscPred());
 	else
-		std::sort(processes.begin(), processes.end(), NameDescPred());
+		std::stable_sort(processes.begin(), processes.end(), NameDescPred());
 }
 
 void ProcessList::sortByCpuUsage()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(processes.begin(), processes.end(), CpuUsageAscPred());
+		std::stable_sort(processes.begin(), processes.end(), CpuUsageAscPred());
 	else
-		std::sort(processes.begin(), processes.end(), CpuUsageDescPred());
+		std::stable_sort(processes.begin(), processes.end(), CpuUsageDescPred());
 }
 
 void ProcessList::sortByPID()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(processes.begin(), processes.end(), PIDAscPred());
+		std::stable_sort(processes.begin(), processes.end(), PIDAscPred());
 	else
-		std::sort(processes.begin(), processes.end(), PIDDescPred());
+		std::stable_sort(processes.begin(), processes.end(), PIDDescPred());
 }
 
 #ifdef _WIN64
 void ProcessList::sortByType()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(processes.begin(), processes.end(), TypeAscPred());
+		std::stable_sort(processes.begin(), processes.end(), TypeAscPred());
 	else
-		std::sort(processes.begin(), processes.end(), TypeDescPred());
+		std::stable_sort(processes.begin(), processes.end(), TypeDescPred());
 }
 #endif
 void ProcessList::OnSort(wxListEvent& event)

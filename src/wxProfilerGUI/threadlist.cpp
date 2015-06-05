@@ -152,25 +152,25 @@ struct CpuUsageDescPred { bool operator () (const ThreadInfo &a, const ThreadInf
 void ThreadList::sortByID()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(threads.begin(), threads.end(), IdAscPred());
+		std::stable_sort(threads.begin(), threads.end(), IdAscPred());
 	else
-		std::sort(threads.begin(), threads.end(), IdDescPred());
+		std::stable_sort(threads.begin(), threads.end(), IdDescPred());
 }
 
 void ThreadList::sortByLocation()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(threads.begin(), threads.end(), LocationAscPred());
+		std::stable_sort(threads.begin(), threads.end(), LocationAscPred());
 	else
-		std::sort(threads.begin(), threads.end(), LocationDescPred());
+		std::stable_sort(threads.begin(), threads.end(), LocationDescPred());
 }
 
 void ThreadList::sortByCpuUsage()
 {
 	if (sort_dir == SORT_UP)
-		std::sort(threads.begin(), threads.end(), CpuUsageAscPred());
+		std::stable_sort(threads.begin(), threads.end(), CpuUsageAscPred());
 	else
-		std::sort(threads.begin(), threads.end(), CpuUsageDescPred());
+		std::stable_sort(threads.begin(), threads.end(), CpuUsageDescPred());
 }
 
 void ThreadList::OnSort(wxListEvent& event)

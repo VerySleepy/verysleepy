@@ -317,7 +317,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 		progressdlg.Update(0, "Sorting...");
 		progressdlg.Pulse();
 
-		std::sort(callstacks.begin(), callstacks.end(), Pred());
+		std::stable_sort(callstacks.begin(), callstacks.end(), Pred());
 
 		progressdlg.Update(0, "Filtering...");
 
