@@ -57,6 +57,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 {
 	{ wxCMD_LINE_SWITCH, "h", "", "Displays help on the command line parameters.",			wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 	{ wxCMD_LINE_OPTION, "r", "", "Runs an executable and profiles it.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "a", "", "Attach to process(by pid) and profiles it.",				wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "i", "", "Loads an existing profile from a file.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "t", "", "Stops capturing automatically after N seconds time.",	wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
@@ -67,7 +68,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 };
 
 wxIcon sleepy_icon;
-std::wstring cmdline_load, cmdline_save, cmdline_run;
+std::wstring cmdline_load, cmdline_save, cmdline_run, cmdline_attach;
 long cmdline_timeout = -1;  // -1 means profile until cancelled
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
@@ -291,10 +292,39 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 	output->process_handle = pi.hProcess;
 	output->thread_handles.push_back(pi.hThread);
 	output->sym_info = new SymbolInfo;
+	TryLoadSymbols(output.get());
+	return output.release();
+}
 
+AttachInfo * ProfilerGUI::AttachToProcess(const std::wstring& processId)
+{
+	DWORD processId_dw;
+	try
+	{
+		processId_dw = std::stoi(processId);
+	}
+	catch (const std::exception&)
+	{
+		throw SleepyException("Not valid process id: "+ processId);
+	}
+	ProcessInfo process_info = ProcessInfo::FindProcessById(processId_dw);
+	AttachInfo* attach_info =new AttachInfo();
+	attach_info->process_handle = process_info.getProcessHandle();
+	for(auto thread_info = process_info.threads.begin(); thread_info!= process_info.threads.end(); ++thread_info)
+	{
+		attach_info->thread_handles.push_back(thread_info->getThreadHandle());
+	}
+	attach_info->sym_info = new SymbolInfo();
+
+	TryLoadSymbols(attach_info);
+	return attach_info;
+}
+
+void ProfilerGUI::TryLoadSymbols(AttachInfo* output)
+{
 	// Load up the debug info for it.
 	// This can fail initially, because it turns out that you can't query information
-	// about a process until that process has registered itself fully with CSRSS.
+	// about a process until that process has registered itself fully with CSRSS. 
 	// So we wait a little and try again. I'm not sure what the correct solution is,
 	// I think possibly monitoring for debug events might be the way to go.
 	int retry = 100;
@@ -312,8 +342,6 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 				throw;
 		}
 	}
-
-	return output.release();
 }
 
 void ProfilerGUI::LoadProfileData(const std::wstring &filename)
@@ -466,8 +494,12 @@ bool ProfilerGUI::Run()
 		wxScopeGuard sgTerm = wxMakeGuard(TerminateProcess, info->process_handle, 0);
 		filename = LaunchProfiler(info.get());
 	}
-	else
-	if (!cmdline_load.empty())
+	else if (!cmdline_attach.empty())
+	{
+		std::unique_ptr<AttachInfo> info(AttachToProcess(cmdline_attach));
+		filename = LaunchProfiler(info.get());
+	}
+	else if (!cmdline_load.empty())
 		filename = cmdline_load;
 	else
 	{
@@ -529,6 +561,8 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		cmdline_timeout = -1;
 	if (parser.Found("r", &param))
 		cmdline_run = param.c_str();
+	if (parser.Found("a", &param))
+		cmdline_attach = param.c_str();
 
 	return true;
 }
