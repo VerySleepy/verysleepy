@@ -16,6 +16,7 @@ You can download an installer on [the project's website](http://www.codersnotes.
 * Update Wine DbgHelp for Windows
 * Contributed by [Bernat Muñoz Garcia](https://github.com/shashClp):
     * Use Scintilla for syntax highlighting
+* Added command-line option '/a' to profile an existing process by setting its process id
 
 ##### Version 0.90 (2014-12-23):
 
