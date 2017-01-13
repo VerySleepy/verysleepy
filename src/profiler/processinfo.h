@@ -60,6 +60,7 @@ public:
 #endif
   FILETIME prevKernelTime, prevUserTime;
   int cpuUsage;
+  __int64 totalCpuTimeMs;
 
 private:
 	std::wstring name;

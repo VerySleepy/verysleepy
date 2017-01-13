@@ -48,17 +48,20 @@ ThreadList::ThreadList(wxWindow *parent, const wxPoint& pos,
 
 	wxListItem itemCol;
 	itemCol.m_mask = wxLIST_MASK_TEXT/* | wxLIST_MASK_IMAGE*/;
-	itemCol.m_text = _T("Thread");
 	itemCol.m_image = -1;
-	InsertColumn(COL_ID, itemCol);
 	itemCol.m_text = _T("Location");
 	InsertColumn(COL_LOCATION, itemCol);
-	itemCol.m_text = _T("Thread Usage");
+	itemCol.m_text = _T("CPU");
 	InsertColumn(COL_CPUUSAGE, itemCol);
-
-	SetColumnWidth(COL_ID, 50);
-	SetColumnWidth(COL_LOCATION, 200);
-	SetColumnWidth(COL_CPUUSAGE, 120);
+	itemCol.m_text = _T("Total CPU");
+	InsertColumn(COL_TOTALCPU, itemCol);
+	itemCol.m_text = _T("TID");
+	InsertColumn(COL_ID, itemCol);
+	
+	SetColumnWidth(COL_LOCATION, 220);
+	SetColumnWidth(COL_CPUUSAGE, 80);
+	SetColumnWidth(COL_TOTALCPU, 100);
+	SetColumnWidth(COL_ID, 60);
 
 	sort_column = COL_CPUUSAGE;
 	sort_dir = SORT_DOWN;
@@ -120,18 +123,15 @@ static __int64 getDiff(FILETIME before, FILETIME after)
 	return i1 - i0;
 }
 
+static __int64 getTotal(FILETIME time)
+{
+	return (__int64(time.dwHighDateTime) << 32) + time.dwLowDateTime;
+}
+
 void ThreadList::OnTimer(wxTimerEvent& event)
 {
 	updateTimes();
 }
-
-struct IdAscPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
-	return a.getID() < b.getID();
-} };
-
-struct IdDescPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
-	return a.getID() > b.getID();
-} };
 
 struct LocationAscPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
 	return a.getLocation() < b.getLocation();
@@ -149,13 +149,21 @@ struct CpuUsageDescPred { bool operator () (const ThreadInfo &a, const ThreadInf
 	return a.cpuUsage > b.cpuUsage;
 } };
 
-void ThreadList::sortByID()
-{
-	if (sort_dir == SORT_UP)
-		std::stable_sort(threads.begin(), threads.end(), IdAscPred());
-	else
-		std::stable_sort(threads.begin(), threads.end(), IdDescPred());
-}
+struct TotalCpuTimeAscPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
+	return a.totalCpuTimeMs < b.totalCpuTimeMs;
+} };
+
+struct TotalCpuTimeDescPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
+	return a.totalCpuTimeMs > b.totalCpuTimeMs;
+} };
+
+struct IdAscPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
+	return a.getID() < b.getID();
+} };
+
+struct IdDescPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
+	return a.getID() > b.getID();
+} };
 
 void ThreadList::sortByLocation()
 {
@@ -171,6 +179,22 @@ void ThreadList::sortByCpuUsage()
 		std::stable_sort(threads.begin(), threads.end(), CpuUsageAscPred());
 	else
 		std::stable_sort(threads.begin(), threads.end(), CpuUsageDescPred());
+}
+
+void ThreadList::sortByTotalCpuTime()
+{
+	if (sort_dir == SORT_UP)
+		std::stable_sort(threads.begin(), threads.end(), TotalCpuTimeAscPred());
+	else
+		std::stable_sort(threads.begin(), threads.end(), TotalCpuTimeDescPred());
+}
+
+void ThreadList::sortByID()
+{
+	if (sort_dir == SORT_UP)
+		std::stable_sort(threads.begin(), threads.end(), IdAscPred());
+	else
+		std::stable_sort(threads.begin(), threads.end(), IdDescPred());
 }
 
 void ThreadList::OnSort(wxListEvent& event)
@@ -194,9 +218,10 @@ void ThreadList::OnSort(wxListEvent& event)
 void ThreadList::updateSorting()
 {
 	switch(sort_column) {
-		case COL_ID:		sortByID(); break;
 		case COL_LOCATION:	sortByLocation(); break;
 		case COL_CPUUSAGE:	sortByCpuUsage(); break;
+		case COL_TOTALCPU:	sortByTotalCpuTime(); break;
+		case COL_ID:		sortByID(); break;
 	}
 	fillList();
 }
@@ -206,18 +231,22 @@ void ThreadList::fillList()
 	Freeze();
 	for(int i=0; i<(int)threads.size(); ++i)
 	{
-		char buf[32];
-		sprintf(buf, "%d", threads[i].getID());
-		this->SetItem(i, COL_ID, buf);
-
-		this->SetItem(i, COL_LOCATION, threads[i].getLocation());
-
 		char str[32];
 		if (threads[i].cpuUsage >= 0)
 			sprintf(str, "%i%%", threads[i].cpuUsage);
 		else
 			strcpy(str, "-");
 		this->SetItem(i, COL_CPUUSAGE, str);
+
+		if (threads[i].totalCpuTimeMs >= 0)
+			sprintf(str, "%0.1f s", (double) (threads[i].totalCpuTimeMs) / 1000);
+		else
+			strcpy(str, "-");		
+		this->SetItem(i, COL_TOTALCPU, str);
+
+		sprintf(str, "%d", threads[i].getID());
+		this->SetItem(i, COL_ID, str);
+		this->SetItem(i, COL_LOCATION, threads[i].getLocation());
 	}
 	Thaw();
 }
@@ -260,6 +289,7 @@ void ThreadList::updateTimes()
 	for(int i=0; i<(int)this->threads.size(); ++i)
 	{
 		this->threads[i].cpuUsage = -1;
+		this->threads[i].totalCpuTimeMs = -1;
 		this->threads[i].setLocation(L"-");
 
 		HANDLE thread_handle = this->threads[i].getThreadHandle(); 
@@ -283,8 +313,9 @@ void ThreadList::updateTimes()
 			this->threads[i].prevUserTime = UserTime;
 
 			if (sampleTimeDiff > 0){
-				this->threads[i].cpuUsage = ((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff;
+				this->threads[i].cpuUsage = ((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff;				
 			}
+			this->threads[i].totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
 		}
 
 		try {
@@ -300,19 +331,20 @@ void ThreadList::updateTimes()
 				// Collapse functions down
 				if (syminfo && stack.depth > 0)
 				{
-					for (size_t n=0;n<stack.depth;n++)
+					for (size_t n = 0; n<stack.depth; n++)
 					{
 						PROFILER_ADDR addr = stack.addr[n];
 						std::wstring mod = syminfo->getModuleNameForAddr(addr);
 						if (IsOsModule(mod))
 						{
 							profaddr = addr;
-						} else {
+						}
+						else {
 							break;
 						}
 					}
 
-					for (int n=(int)stack.depth-1;n>=0;n--)
+					for (int n = (int)stack.depth - 1; n >= 0; n--)
 					{
 						std::wstring file;
 						int line;
@@ -327,7 +359,8 @@ void ThreadList::updateTimes()
 					}
 				}
 			}
-		} catch( ProfilerExcep &)
+		}
+		catch (ProfilerExcep &)
 		{
 		}
 
@@ -335,12 +368,14 @@ void ThreadList::updateTimes()
 		{
 			std::wstring file;
 			int line;
-			
+
 			// Grab the name of the current IP location.
 			std::wstring loc = syminfo->getProcForAddr(profaddr, file, line);
-			
+
 			this->threads[i].setLocation(loc);
 		}
+		
+		
 	}
 
 	fillList();

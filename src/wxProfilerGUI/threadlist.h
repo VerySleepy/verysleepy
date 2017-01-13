@@ -58,18 +58,20 @@ public:
 	void updateThreads(const ProcessInfo* processInfo, SymbolInfo *symInfo);
 	void updateTimes();
 	void updateSorting();
-	void sortByID();
 	void sortByLocation();
 	void sortByCpuUsage();
+	void sortByTotalCpuTime();
+	void sortByID();
 
 	std::vector<const ThreadInfo*> getSelectedThreads(bool all=false);
 private:
     DECLARE_EVENT_TABLE()
 
-	enum {
-		COL_ID,
+	enum {		
 		COL_LOCATION,
 		COL_CPUUSAGE,
+		COL_TOTALCPU,
+		COL_ID,
 		NUM_COLUMNS
 	};
 
