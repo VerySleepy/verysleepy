@@ -231,6 +231,8 @@ void ThreadList::fillList()
 	Freeze();
 	for(int i=0; i<(int)threads.size(); ++i)
 	{
+		this->SetItem(i, COL_LOCATION, threads[i].getLocation());
+
 		char str[32];
 		if (threads[i].cpuUsage >= 0)
 			sprintf(str, "%i%%", threads[i].cpuUsage);
@@ -245,8 +247,7 @@ void ThreadList::fillList()
 		this->SetItem(i, COL_TOTALCPU, str);
 
 		sprintf(str, "%d", threads[i].getID());
-		this->SetItem(i, COL_ID, str);
-		this->SetItem(i, COL_LOCATION, threads[i].getLocation());
+		this->SetItem(i, COL_ID, str);		
 	}
 	Thaw();
 }
@@ -313,7 +314,7 @@ void ThreadList::updateTimes()
 			this->threads[i].prevUserTime = UserTime;
 
 			if (sampleTimeDiff > 0){
-				this->threads[i].cpuUsage = ((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff;				
+				this->threads[i].cpuUsage = ((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff;
 			}
 			this->threads[i].totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
 		}
@@ -331,20 +332,19 @@ void ThreadList::updateTimes()
 				// Collapse functions down
 				if (syminfo && stack.depth > 0)
 				{
-					for (size_t n = 0; n<stack.depth; n++)
+					for (size_t n=0;n<stack.depth;n++)
 					{
 						PROFILER_ADDR addr = stack.addr[n];
 						std::wstring mod = syminfo->getModuleNameForAddr(addr);
 						if (IsOsModule(mod))
 						{
 							profaddr = addr;
-						}
-						else {
+						} else {
 							break;
 						}
 					}
 
-					for (int n = (int)stack.depth - 1; n >= 0; n--)
+					for (int n=(int)stack.depth-1;n>=0;n--)
 					{
 						std::wstring file;
 						int line;
@@ -359,8 +359,7 @@ void ThreadList::updateTimes()
 					}
 				}
 			}
-		}
-		catch (ProfilerExcep &)
+		} catch( ProfilerExcep &)
 		{
 		}
 
@@ -368,14 +367,12 @@ void ThreadList::updateTimes()
 		{
 			std::wstring file;
 			int line;
-
+			
 			// Grab the name of the current IP location.
 			std::wstring loc = syminfo->getProcForAddr(profaddr, file, line);
-
+			
 			this->threads[i].setLocation(loc);
 		}
-		
-		
 	}
 
 	fillList();
