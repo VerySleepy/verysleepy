@@ -30,6 +30,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/button.h>
 
 #define UPDATE_DELAY 1000	 // 1 second interval
+#define MAX_NUM_THREAD_LOCATIONS 100 // getting location of thread is very expensive, so only show it for the first X threads in the list
+#define MAX_NUM_DISPLAYED_THREADS 1000 // creating very large tables is expensive, limit number of threads to first X in selected sort order
 
 BEGIN_EVENT_TABLE(ThreadList, wxListCtrl)
 EVT_LIST_ITEM_SELECTED(THREADS_LIST, ThreadList::OnSelected)
@@ -226,10 +228,17 @@ void ThreadList::updateSorting()
 	fillList();
 }
 
+int ThreadList::getNumDisplayedThreads() {
+	int numThreads = (int) threads.size();
+	return numThreads < MAX_NUM_DISPLAYED_THREADS ? numThreads : MAX_NUM_DISPLAYED_THREADS;
+}
+
 void ThreadList::fillList()
 {
 	Freeze();
-	for(int i=0; i<(int)threads.size(); ++i)
+
+	int numDisplayedThreads = getNumDisplayedThreads();
+	for(int i=0; i<numDisplayedThreads; ++i)
 	{
 		this->SetItem(i, COL_LOCATION, threads[i].getLocation());
 
@@ -266,7 +275,10 @@ void ThreadList::updateThreads(const ProcessInfo* processInfo, SymbolInfo *symIn
 		this->syminfo = symInfo;
 
 		this->threads = processInfo->threads;
-		for(int i=0; i<(int)this->threads.size(); ++i)
+		
+		
+		int numDisplayedThreads = getNumDisplayedThreads();
+		for(int i=0; i<numDisplayedThreads; ++i)
 		{
 			long tmp = this->InsertItem(i, "", -1);
 			SetItemData(tmp, i);
@@ -296,8 +308,7 @@ void ThreadList::updateTimes()
 		HANDLE thread_handle = this->threads[i].getThreadHandle(); 
 		if (thread_handle == NULL)
 			continue;
-
-		PROFILER_ADDR profaddr = 0;
+		
 		FILETIME CreationTime, ExitTime, KernelTime, UserTime;
 	
 		if ( GetThreadTimes(
@@ -319,58 +330,8 @@ void ThreadList::updateTimes()
 			this->threads[i].totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
 		}
 
-		try {
-			std::map<CallStack, SAMPLE_TYPE> callstacks;
-			std::map<PROFILER_ADDR, SAMPLE_TYPE> flatcounts;
-			Profiler profiler(process_handle, thread_handle, callstacks, flatcounts);
-			bool ok = profiler.sampleTarget(0, syminfo);
-			if (ok && !profiler.targetExited() && callstacks.size() > 0)
-			{
-				const CallStack &stack = callstacks.begin()->first;
-				profaddr = stack.addr[0];
-
-				// Collapse functions down
-				if (syminfo && stack.depth > 0)
-				{
-					for (size_t n=0;n<stack.depth;n++)
-					{
-						PROFILER_ADDR addr = stack.addr[n];
-						std::wstring mod = syminfo->getModuleNameForAddr(addr);
-						if (IsOsModule(mod))
-						{
-							profaddr = addr;
-						} else {
-							break;
-						}
-					}
-
-					for (int n=(int)stack.depth-1;n>=0;n--)
-					{
-						std::wstring file;
-						int line;
-
-						PROFILER_ADDR addr = stack.addr[n];
-						std::wstring loc = syminfo->getProcForAddr(addr, file, line);
-						if (IsOsFunction(loc))
-						{
-							profaddr = addr;
-							break;
-						}
-					}
-				}
-			}
-		} catch( ProfilerExcep &)
-		{
-		}
-
-		if (profaddr && syminfo)
-		{
-			std::wstring file;
-			int line;
-			
-			// Grab the name of the current IP location.
-			std::wstring loc = syminfo->getProcForAddr(profaddr, file, line);
-			
+		if (i < MAX_NUM_THREAD_LOCATIONS) {
+			std::wstring loc = getLocation(thread_handle);
 			this->threads[i].setLocation(loc);
 		}
 	}
@@ -378,4 +339,60 @@ void ThreadList::updateTimes()
 	fillList();
 }
 
+std::wstring ThreadList::getLocation(HANDLE thread_handle) {
+	PROFILER_ADDR profaddr = 0;
+	try {
+		std::map<CallStack, SAMPLE_TYPE> callstacks;
+		std::map<PROFILER_ADDR, SAMPLE_TYPE> flatcounts;
+		Profiler profiler(process_handle, thread_handle, callstacks, flatcounts);
+		bool ok = profiler.sampleTarget(0, syminfo);
+		if (ok && !profiler.targetExited() && callstacks.size() > 0)
+		{
+			const CallStack &stack = callstacks.begin()->first;
+			profaddr = stack.addr[0];
 
+			// Collapse functions down
+			if (syminfo && stack.depth > 0)
+			{
+				for (size_t n=0;n<stack.depth;n++)
+				{
+					PROFILER_ADDR addr = stack.addr[n];
+					std::wstring mod = syminfo->getModuleNameForAddr(addr);
+					if (IsOsModule(mod))
+					{
+						profaddr = addr;
+					} else {
+						break;
+					}
+				}
+
+				for (int n=(int)stack.depth-1;n>=0;n--)
+				{
+					std::wstring file;
+					int line;
+
+					PROFILER_ADDR addr = stack.addr[n];
+					std::wstring loc = syminfo->getProcForAddr(addr, file, line);
+					if (IsOsFunction(loc))
+					{
+						profaddr = addr;
+						break;
+					}
+				}
+			}
+		}
+	} catch( ProfilerExcep &)
+	{
+	}
+
+	if (profaddr && syminfo)
+	{
+		std::wstring file;
+		int line;
+			
+		// Grab the name of the current IP location.
+		return syminfo->getProcForAddr(profaddr, file, line);
+	}
+
+	return L"-";
+}

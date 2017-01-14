@@ -87,6 +87,8 @@ private:
 	wxButton *all_button;
 
 	void fillList();
+	int getNumDisplayedThreads();
+	std::wstring getLocation(HANDLE thread_handle);
 };
 
 
