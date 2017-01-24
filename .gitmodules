@@ -2,3 +2,6 @@
 	path = thirdparty/dbghelpw/wine
 	url = https://github.com/VerySleepy/wine
 	branch = sleepy
+[submodule "thirdparty/drmingw"]
+	path = thirdparty/drmingw
+	url = https://github.com/jrfonseca/drmingw
