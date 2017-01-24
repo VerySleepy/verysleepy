@@ -4,8 +4,6 @@ rem This batch file copies additional DLLs to the obj\ directory,
 rem so that you can run a functional Very Sleepy right from Visual Studio.
 rem It is automatically called as a PostBuildEvent from sleepy.vcxproj.
 
-if not defined DRMINGW set DRMINGW=..\drmingw
-
 set CONFIGURATION=%1
 set PLATFORM=%2
 
@@ -21,6 +19,6 @@ if %PLATFORM%==x64 if not exist %DBGHELPERS%\dbghelpw_wow64.dll copy /y "thirdpa
 if %PLATFORM%==Win32 set PLATFORM_BITS=32
 if %PLATFORM%==x64   set PLATFORM_BITS=64
 
-if not exist %DBGHELPERS%\dbghelpdr.dll copy %DRMINGW%\build\%PLATFORM_BITS%\bin\mgwhelp.dll %DEST%\dbghelpdr.dll
+if not exist %DBGHELPERS%\dbghelpdr.dll copy thirdparty\drmingw_build_%PLATFORM_BITS%\bin\mgwhelp.dll %DEST%\dbghelpdr.dll
 
 copy /y src\crashback\bin\%PLATFORM%\%CONFIGURATION%\crashreport.exe %DEST%

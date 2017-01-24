@@ -65,6 +65,10 @@ Prerequisites:
 * [wxWidgets 2.9.5](http://sourceforge.net/projects/wxwindows/files/2.9.5/)
   * Versions other than 2.9.5 might work, but may have compatibility issues.
 
+Optional prerequisites:
+
+* [CMake](https://cmake.org/) and [MSys2](https://msys2.github.io/) (or another MinGW distribution), to build Dr. MinGW.
+
 After building wxWidgets (see below), you can build Sleepy using the project files (with the Visual Studio IDE or msbuild).
 
 #### Building wxWidgets
@@ -104,8 +108,14 @@ into the `dbghelp_x86` and `dbghelp_x64` directories appropriately.
 #### Dr. MinGW DbgHelp
 
 The `dbghelpdr.dll` file is part of the [Dr. MinGW](https://github.com/jrfonseca/drmingw) project.
-See that project's [BUILD.md](https://github.com/jrfonseca/drmingw/blob/master/BUILD.md) for an overview of the build instructions.
-For Very Sleepy, you will need both a 32-bit and a 64-bit version, which you can build with e.g. these
+It is included in this repository as a git submodule (located in `thirdparty/drmingw`).
+Dr. MinGW can be built using [CMake](https://cmake.org/) and [MSys2](https://msys2.github.io/) (or another MinGW distribution).
+If using MSys2, run `pacman -S --needed mingw-w64-{i686,x86_64}-{gcc,make}` in the MSys2 shell to install the necessary packages.
+A batch file is located at `thirdparty/drmingw_build.cmd`, which attempts to automate building Dr. MinGW.
+
+If that fails, or if you wish to build it manually, see the project's [BUILD.md](https://github.com/jrfonseca/drmingw/blob/master/BUILD.md) for an overview of the build instructions.
+For Very Sleepy, you will need both a 32-bit and a 64-bit version.
+If you can't or do not want to use MSys2, you can try using these
 [32-bit][mingw32] and [64-bit][mingw64] MinGW releases and [this][build-bat] batch file.
 
 If you do not want to build Dr. MinGW's DbgHelp from source,
