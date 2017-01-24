@@ -1,5 +1,9 @@
 @echo off
 
+rem This batch file copies additional DLLs to the obj\ directory,
+rem so that you can run a functional Very Sleepy right from Visual Studio.
+rem It is automatically called as a PostBuildEvent from sleepy.vcxproj.
+
 if not defined DRMINGW set DRMINGW=..\drmingw
 
 set CONFIGURATION=%1
