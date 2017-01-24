@@ -30,7 +30,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 
-#define DBGHELPW "src\dbghelpw\wine\dlls\dbghelp\vs\bin"
+#define DBGHELPW "thirdparty\dbghelpw\wine\dlls\dbghelp\vs\bin"
 
 ; 32-bit version
 Source: "obj\Win32\Release\sleepy.exe"                   ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
