@@ -5,3 +5,6 @@
 [submodule "thirdparty/drmingw"]
 	path = thirdparty/drmingw
 	url = https://github.com/jrfonseca/drmingw
+[submodule "thirdparty/wxWidgets"]
+	path = thirdparty/wxWidgets
+	url = https://github.com/wxWidgets/wxWidgets
