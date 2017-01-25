@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{941F452F-6510-4BF2-AE25-9EE32FEFD51D}</ProjectGuid>
+    <RootNamespace>wxWidgetsSetup</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemGroup>
+    <CustomBuild Include="..\wxWidgets\include\wx\msw\setup0.h">
+      <Command>copy /Y ..\wxWidgets\include\wx\msw\setup0.h ..\wxWidgets\include\wx\msw\setup.h</Command>
+      <Message>Copying wxWidgets setup file</Message>
+      <Outputs>..\wxWidgets\include\wx\msw\setup.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

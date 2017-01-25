@@ -73,28 +73,28 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(WXWIN)\include;$(WXWIN)\include\msvc;$(IncludePath)</IncludePath>
-    <SourcePath>$(WXWIN)src;$(SourcePath)</SourcePath>
+    <IncludePath>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;$(IncludePath)</IncludePath>
+    <SourcePath>thirdparty\wxWidgetssrc;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(WXWIN)\include;$(WXWIN)\include\msvc;$(IncludePath)</IncludePath>
-    <SourcePath>$(WXWIN)src;$(SourcePath)</SourcePath>
+    <IncludePath>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;$(IncludePath)</IncludePath>
+    <SourcePath>thirdparty\wxWidgetssrc;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(WXWIN)\include;$(WXWIN)\include\msvc;$(IncludePath)</IncludePath>
-    <SourcePath>$(WXWIN)src;$(SourcePath)</SourcePath>
+    <IncludePath>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;$(IncludePath)</IncludePath>
+    <SourcePath>thirdparty\wxWidgetssrc;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(WXWIN)\include;$(WXWIN)\include\msvc;$(IncludePath)</IncludePath>
-    <SourcePath>$(WXWIN)src;$(SourcePath)</SourcePath>
+    <IncludePath>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;$(IncludePath)</IncludePath>
+    <SourcePath>thirdparty\wxWidgetssrc;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(WXWIN)\include;$(WXWIN)\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -104,7 +104,7 @@
     <Link>
       <AdditionalDependencies>comctl32.lib;advapi32.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\wxWidgets\lib\vc_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)sleepy.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -124,10 +124,10 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(WXWIN)\include;$(WXWIN)\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN64;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -138,7 +138,7 @@
     <Link>
       <AdditionalDependencies>comctl32.lib;rpcrt4.lib;dbghelp.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\wxWidgets\lib\vc_x64_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)sleepy.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -154,9 +154,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(WXWIN)\include;$(WXWIN)\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -166,7 +166,7 @@
     <Link>
       <AdditionalDependencies>comctl32.lib;advapi32.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\wxWidgets\lib\vc_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -186,9 +186,9 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(WXWIN)\include;$(WXWIN)\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;src/crashback/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN64;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -198,7 +198,7 @@
     <Link>
       <AdditionalDependencies>comctl32.lib;advapi32.lib;dbghelp.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>thirdparty\wxWidgets\lib\vc_x64_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -282,10 +282,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\sleepy.rc">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(WXWIN)\include;$(WXWIN)\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(WXWIN)\include;$(WXWIN)\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(WXWIN)\include;$(WXWIN)\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(WXWIN)\include;$(WXWIN)\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
