@@ -9,8 +9,10 @@ set PLATFORM=%2
 
 set DEST=obj\%PLATFORM%\%CONFIGURATION%\
 
-if %PLATFORM%==Win32 set DBGHELPERS=dbghelp_x86
-if %PLATFORM%==x64   set DBGHELPERS=dbghelp_x64
+if %PLATFORM%==Win32 set PLATFORM_X=x86
+if %PLATFORM%==x64   set PLATFORM_X=x64
+
+set DBGHELPERS=dbghelp_%PLATFORM_X%
 copy /y %DBGHELPERS%\*.* %DEST%
 
 if not exist %DBGHELPERS%\dbghelpw.dll copy /y "thirdparty\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION%\dbghelpw.dll" %DEST%
@@ -20,5 +22,8 @@ if %PLATFORM%==Win32 set PLATFORM_BITS=32
 if %PLATFORM%==x64   set PLATFORM_BITS=64
 
 if not exist %DBGHELPERS%\dbghelpdr.dll copy thirdparty\drmingw_build_%PLATFORM_BITS%\bin\mgwhelp.dll %DEST%\dbghelpdr.dll
+
+if not defined VCINSTALLDIR if defined VS100COMNTOOLS set VCINSTALLDIR=%VS100COMNTOOLS%\..\..\VC
+for %%D in (msvcr100.dll msvcp100.dll) do copy "%VCINSTALLDIR%\redist\%PLATFORM_X%\Microsoft.VC100.CRT\%%D" %DEST%\%%D
 
 copy /y src\crashback\bin\%PLATFORM%\%CONFIGURATION%\crashreport.exe %DEST%

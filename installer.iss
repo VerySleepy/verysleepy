@@ -39,6 +39,8 @@ Source: "dbghelp_x86\srcsrv.dll"                         ; DestDir: "{app}"   ; 
 Source: "dbghelp_x86\symsrv.yes"                         ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "obj\Win32\Release\dbghelpw.dll"                 ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 Source: "obj\Win32\Release\dbghelpdr.dll"                ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "obj\Win32\Release\msvcr100.dll"                 ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
+Source: "obj\Win32\Release\msvcp100.dll"                 ; DestDir: "{app}"   ; Flags: ignoreversion; Check: not Is64BitInstallMode
 
 ; 64-bit version
 Source: "obj\x64\Release\sleepy.exe"                     ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
@@ -50,6 +52,8 @@ Source: "dbghelp_x64\symsrv.yes"                         ; DestDir: "{app}"   ; 
 Source: "obj\x64\Release\dbghelpw.dll"                   ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "obj\x64\Release\dbghelpw_wow64.dll"             ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "obj\x64\Release\dbghelpdr.dll"                  ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
+Source: "obj\x64\Release\msvcr100.dll"                   ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
+Source: "obj\x64\Release\msvcp100.dll"                   ; DestDir: "{app}"   ; Flags: ignoreversion; Check:     Is64BitInstallMode
 
 ; 32-bit version for 64-bit systems
 Source: "obj\Win32\Release\sleepy.exe"                   ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
@@ -60,6 +64,8 @@ Source: "dbghelp_x86\srcsrv.dll"                         ; DestDir: "{app}\32"; 
 Source: "dbghelp_x86\symsrv.yes"                         ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "obj\Win32\Release\dbghelpw.dll"                 ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 Source: "obj\Win32\Release\dbghelpdr.dll"                ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
+Source: "obj\Win32\Release\msvcr100.dll"                 ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
+Source: "obj\Win32\Release\msvcp100.dll"                 ; DestDir: "{app}\32"; Flags: ignoreversion; Check:     Is64BitInstallMode
 
 
 ; Other bits
