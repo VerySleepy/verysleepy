@@ -1,5 +1,9 @@
 /obj/
+/.vs/
+/setup.exe
 
+*.VC.db
+*.VC.opendb
 *.ipch
 *.opensdf
 *.sdf
