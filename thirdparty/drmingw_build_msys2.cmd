@@ -1,12 +1,17 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem This batch file attempts to build Dr. MinGW in a way 
-rem that's compatible with Very Sleepy's project file.
+rem This batch file attempts to build Dr. MinGW using MSys2
+rem (https://msys2.github.io/) in a way that's compatible with Very
+rem Sleepy's project file.
 
-rem We use MSys2 (https://msys2.github.io/) to perform a
-rem 32-bit and 64-bit build. See README.md in the project's
-rem root directory for more information.
+rem Note that this method is not recommended - currently, MSys2 only
+rem packages MinGW with POSIX threads, whereas Dr. MinGW is
+rem recommended to be built with Win32 threads. Using POSIX threads
+rem will result in lower performance and a dependency to
+rem libwinpthread-1.dll (which can banifest in an error message such
+rem as "Could not load dbghelpdr.dll: %1 is not a valid Win32
+rem application" in Very Sleepy).
 
 rem Find MSys2.
 
@@ -69,7 +74,4 @@ for %%t in (32 64) do (
 )
 if errorlevel 1 exit /b 1
 
-echo drmingw_build: Copying files...
-
-cd "%~dp0"
-copy /Y drmingw_build_32\bin\mgwhelp.dll ..\dbghelp_x86\
+echo drmingw_build: Done!
