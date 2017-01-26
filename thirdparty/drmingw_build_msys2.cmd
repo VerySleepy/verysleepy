@@ -66,7 +66,7 @@ for %%t in (32 64) do (
 	set PATH=!MSYS2!\mingw!TARGET!\bin;!CMAKE!\bin;!WinDir!\System32
 	set MAKE=
 
-	cmake -G "MinGW Makefiles" ..\drmingw
+	if not exist Makefile cmake -G "MinGW Makefiles" ..\drmingw
 	if errorlevel 1 exit /b 1
 
 	cmake --build . --target mgwhelp
