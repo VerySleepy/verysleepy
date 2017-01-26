@@ -15,11 +15,11 @@ echo drmingw_build: Found 7-Zip at !7ZIP!
 
 rem Download MinGW.
 
-set MINGW32_FN=x32-4.8.1-release-win32-dwarf-rev5.7z
-set MINGW64_FN=x64-4.8.1-release-win32-seh-rev5.7z
+set MINGW32_FN=i686-6.3.0-release-win32-dwarf-rt_v5-rev1.7z
+set MINGW64_FN=x86_64-6.3.0-release-win32-seh-rt_v5-rev1.7z
 
-set MINGW32_URL=http://sourceforge.net/projects/mingwbuilds/files/host-windows/releases/4.8.1/32-bit/threads-win32/dwarf/%MINGW32_FN%/download
-set MINGW64_URL=http://sourceforge.net/projects/mingwbuilds/files/host-windows/releases/4.8.1/64-bit/threads-win32/seh/%MINGW64_FN%/download
+set MINGW32_URL=https://sourceforge.net/projects/mingw-w64/files/Toolchains%%20targetting%%20Win32/Personal%%20Builds/mingw-builds/6.3.0/threads-win32/dwarf/%MINGW32_FN%/download
+set MINGW64_URL=https://sourceforge.net/projects/mingw-w64/files/Toolchains%%20targetting%%20Win64/Personal%%20Builds/mingw-builds/6.3.0/threads-win32/seh/%MINGW64_FN%/download
 
 for %%t in (32 64) do (
 	set FN=!MINGW%%t_FN!
