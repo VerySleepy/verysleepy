@@ -37,6 +37,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/osutils.h"
 #include <wx/stdpaths.h>
 #include <wx/filedlg.h>
+#include <wx/scopeguard.h>
 #include "crashback.h"
 #include "aboutdlg.h"
 #include "../utils/except.h"

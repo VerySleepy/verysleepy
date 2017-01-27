@@ -13,8 +13,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ItemGroup>
-    <CustomBuild Include="..\wxWidgets\include\wx\msw\setup0.h">
-      <Command>copy /Y ..\wxWidgets\include\wx\msw\setup0.h ..\wxWidgets\include\wx\msw\setup.h</Command>
+    <CustomBuild Include="setup.h">
+      <Command>copy /Y setup.h ..\wxWidgets\include\wx\msw\setup.h</Command>
       <Message>Copying wxWidgets setup file</Message>
       <Outputs>..\wxWidgets\include\wx\msw\setup.h</Outputs>
     </CustomBuild>
