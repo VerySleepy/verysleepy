@@ -10,6 +10,9 @@
     <Filter Include="wxProfilerGUI">
       <UniqueIdentifier>{a577d76d-8518-47ba-b7af-33421dd274a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{0f437dfe-37d7-4311-9f42-e3307d82156a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\profiler\processinfo.cpp">
@@ -188,9 +191,13 @@
     <None Include="keywords.txt" />
     <None Include="osfunctions.txt" />
     <None Include="osmodules.txt" />
-    <None Include="src\sleepy.ico" />
+    <None Include="src\res\sleepy.ico">
+      <Filter>res</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\sleepy.rc" />
+    <ResourceCompile Include="src\res\sleepy.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

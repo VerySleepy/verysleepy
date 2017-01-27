@@ -278,10 +278,10 @@
     <None Include="keywords.txt" />
     <None Include="osfunctions.txt" />
     <None Include="osmodules.txt" />
-    <None Include="src\sleepy.ico" />
+    <None Include="src\res\sleepy.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\sleepy.rc">
+    <ResourceCompile Include="src\res\sleepy.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

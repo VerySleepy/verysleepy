@@ -17,7 +17,7 @@ button_add PNG "Button-Add.png"
 button_remove PNG "Button-Remove.png"
 button_exportcsv PNG "Button-ExportCSV.png"
 
-#include "appinfo.h"
+#include "../appinfo.h"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION    VERSION_MAJOR,VERSION_MINOR,0,0
