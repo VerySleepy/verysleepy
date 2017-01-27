@@ -65,6 +65,7 @@ for %%t in (32 64) do (
 	rem Clear and rebuild PATH to ensure that nothing may contaminate it.
 	set PATH=!MSYS2!\mingw!TARGET!\bin;!CMAKE!\bin;!WinDir!\System32
 	set MAKE=
+	set CC=
 
 	if not exist Makefile cmake -G "MinGW Makefiles" ..\drmingw
 	if errorlevel 1 exit /b 1
