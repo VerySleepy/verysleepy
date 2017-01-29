@@ -13,6 +13,10 @@ rem libwinpthread-1.dll (which can banifest in an error message such
 rem as "Could not load dbghelpdr.dll: %1 is not a valid Win32
 rem application" in Very Sleepy).
 
+rem You can run:
+rem $ pacman -S --needed mingw-w64-{i686,x86_64}-{gcc,make}
+rem in the MSys2 shell to install the necessary MSys2 packages.
+
 rem Find MSys2.
 
 if not defined MSYS2 for %%a in (mingw32-make.exe) do (
