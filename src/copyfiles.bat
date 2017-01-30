@@ -15,8 +15,8 @@ if %PLATFORM%==x64   set PLATFORM_X=x64
 set DBGHELPERS=dbghelp_%PLATFORM_X%
 copy /y %DBGHELPERS%\*.* %DEST%
 
-if not exist %DBGHELPERS%\dbghelpw.dll copy /y "thirdparty\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION%\dbghelpw.dll" %DEST%
-if %PLATFORM%==x64 if not exist %DBGHELPERS%\dbghelpw_wow64.dll copy /y "thirdparty\dbghelpw\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION% - Wow64\dbghelpw.dll" %DEST%\dbghelpw_wow64.dll
+if not exist %DBGHELPERS%\dbghelpw.dll copy /y "thirdparty\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION%\dbghelpw.dll" %DEST%
+if %PLATFORM%==x64 if not exist %DBGHELPERS%\dbghelpw_wow64.dll copy /y "thirdparty\wine\dlls\dbghelp\vs\bin\%PLATFORM%\%CONFIGURATION% - Wow64\dbghelpw.dll" %DEST%\dbghelpw_wow64.dll
 
 if %PLATFORM%==Win32 set PLATFORM_BITS=32
 if %PLATFORM%==x64   set PLATFORM_BITS=64
