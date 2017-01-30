@@ -20,15 +20,23 @@ rem Build Very Sleepy
 
 if not defined CONFIGURATION set CONFIGURATION=Release
 
-for %%p in (Win32 x64) do (
+rem MSBuild on AppVeyor has some strange problems when building
+rem against the v100 toolset:
+rem http://help.appveyor.com/discussions/problems/6000-link-fatal-error-lnk1158-cannot-run-cvtresexe
+if not defined TOOLSET if defined APPVEYOR set TOOLSET=v110
+
+rem Use the v100 toolset by default, for Windows XP compatibility
+if not defined TOOLSET set TOOLSET=v100
+
+for %%p in (x64 Win32) do (
 	set PLATFORM=%%p
 
 	echo build.cmd: Building !CONFIGURATION! ^| !PLATFORM!
 
-	"%MSBUILD%" /p:Configuration="!CONFIGURATION! - Wow64" /p:Platform=!PLATFORM! sleepy.sln
+	"%MSBUILD%" /p:Configuration="!CONFIGURATION! - Wow64" /p:Platform=!PLATFORM! /p:PlatformToolset=!TOOLSET! sleepy.sln
 	if errorlevel 1 exit /b 1
 
-	"%MSBUILD%" /p:Configuration=!CONFIGURATION! /p:Platform=!PLATFORM! sleepy.sln
+	"%MSBUILD%" /p:Configuration=!CONFIGURATION! /p:Platform=!PLATFORM! /p:PlatformToolset=!TOOLSET! sleepy.sln
 	if errorlevel 1 exit /b 1
 )
 
