@@ -3,6 +3,7 @@ setlocal enabledelayedexpansion
 
 rem Build Dr. MinGW
 
+echo build.cmd: Building Dr. MinGW
 call thirdparty\drmingw_build_mingw.cmd
 if errorlevel 1 exit /b 1
 
@@ -22,9 +23,13 @@ if not defined CONFIGURATION set CONFIGURATION=Release
 for %%p in (Win32 x64) do (
 	set PLATFORM=%%p
 
+	echo build.cmd: Building !CONFIGURATION! ^| !PLATFORM!
+
 	"%MSBUILD%" /p:Configuration="!CONFIGURATION! - Wow64" /p:Platform=!PLATFORM! sleepy.sln
 	if errorlevel 1 exit /b 1
 
 	"%MSBUILD%" /p:Configuration=!CONFIGURATION! /p:Platform=!PLATFORM! sleepy.sln
 	if errorlevel 1 exit /b 1
 )
+
+echo build.cmd: Done!
