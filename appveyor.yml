@@ -1,0 +1,6 @@
+skip_branch_with_pr: true
+
+install:
+  - git submodule update --init # --depth 1
+build_script:
+  - build.cmd
