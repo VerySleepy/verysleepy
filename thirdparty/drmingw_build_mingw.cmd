@@ -6,11 +6,11 @@ rem that's compatible with Very Sleepy's project file.
 
 rem Find 7-Zip.
 
-if not defined 7ZIP for %%a in (7z.exe) do set 7ZIP=%%~dp$PATH:a
-if not defined 7ZIP if exist "!ProgramFiles!\7-Zip" set 7ZIP=!ProgramFiles!\7-Zip
-if not defined 7ZIP if exist "!ProgramFiles(x86)!\7-Zip" set 7ZIP=!ProgramFiles(x86)!\7-Zip
-if not defined 7ZIP if exist "!SystemDrive!\7-Zip" set 7ZIP=!SystemDrive!\7-Zip
-if not defined 7ZIP echo drmingw_build: Can't find 7-Zip installation - please add it to PATH or specify the path to it in the 7ZIP environment variable. & exit /b 1
+if not defined 7ZIP for %%a in (7z.exe) do set 7ZIP="%%~$PATH:a"
+if not defined 7ZIP if exist "!ProgramFiles!\7-Zip\7z.exe" set 7ZIP="!ProgramFiles!\7-Zip\7z.exe"
+if not defined 7ZIP if exist "!ProgramFiles(x86)!\7-Zip\7z.exe" set 7ZIP="!ProgramFiles(x86)!\7-Zip\7z.exe"
+if not defined 7ZIP if exist "!SystemDrive!\7-Zip\7z.exe" set 7ZIP="!SystemDrive!\7-Zip\7z.exe"
+if not defined 7ZIP echo drmingw_build: Can't find 7-Zip installation - please add it to PATH or specify the full path to 7z.exe in the 7ZIP environment variable. & exit /b 1
 echo drmingw_build: Found 7-Zip at !7ZIP!
 
 rem Download MinGW.
@@ -31,7 +31,7 @@ for %%t in (32 64) do (
 		call :download
 		if errorlevel 1 exit /b 1
 	)
-	if not exist "%~dp0\mingw\mingw%%t" "!7ZIP!\7z.exe" x -o"%~dp0\mingw" %~dp0/mingw/!FN!
+	if not exist "%~dp0\mingw\mingw%%t" !7ZIP! x -o"%~dp0\mingw" %~dp0/mingw/!FN!
 )
 
 rem Find CMake.
