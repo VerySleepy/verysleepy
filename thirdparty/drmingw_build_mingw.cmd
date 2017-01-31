@@ -6,7 +6,7 @@ rem that's compatible with Very Sleepy's project file.
 
 rem Find 7-Zip.
 
-if not defined 7ZIP for %%a in (7z.exe) do set 7ZIP="%%~$PATH:a"
+if not defined 7ZIP for %%a in (7z.exe) do if not [%%~$PATH:a] == [] set 7ZIP="%%~$PATH:a"
 if not defined 7ZIP if exist "!ProgramFiles!\7-Zip\7z.exe" set 7ZIP="!ProgramFiles!\7-Zip\7z.exe"
 if not defined 7ZIP if exist "!ProgramFiles(x86)!\7-Zip\7z.exe" set 7ZIP="!ProgramFiles(x86)!\7-Zip\7z.exe"
 if not defined 7ZIP if exist "!SystemDrive!\7-Zip\7z.exe" set 7ZIP="!SystemDrive!\7-Zip\7z.exe"
