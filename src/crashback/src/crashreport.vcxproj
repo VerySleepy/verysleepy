@@ -104,6 +104,12 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Command>..\..\gen_version.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generating version.h</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -127,6 +133,12 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Command>..\..\gen_version.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generating version.h</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -149,6 +161,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Command>..\..\gen_version.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generating version.h</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -174,6 +192,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Command>..\..\gen_version.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generating version.h</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="crashreport.cpp" />
