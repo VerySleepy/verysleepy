@@ -65,6 +65,7 @@ Changes before this repository's creation can be found on [the project's website
 * Visual C++ 2010 or newer
 * [CMake](https://cmake.org/) (for Dr. MinGW)
 * [7-Zip](http://www.7-zip.org/) (for unpacking MinGW)
+* [InnoSetup 5](http://www.jrsoftware.org/isinfo.php) (for building an installer)
 
 #### Instructions
 

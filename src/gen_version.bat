@@ -18,7 +18,7 @@ rem Get git-describe output
 for /f %%a in ('%GIT% describe --tags --dirty') do set VERSION=%%a
 if errorlevel 1 exit /b 1
 if [%VERSION%] == [] exit /b 1
-echo #define VERSION "%VERSION:~1%" > version.h.tmp
+echo #define VERSION "%VERSION:~1%"> version.h.tmp
 
 rem Only update version.h if it changed, to avoid recompiling every time.
 
