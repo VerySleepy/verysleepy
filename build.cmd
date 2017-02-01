@@ -76,6 +76,7 @@ for %%p in (Win32 x64) do (
 	rem Sign, if signing is requested.
 
 	if defined SIGN "!SIGNTOOL!" sign /n "!SIGN!" /a /d "!APPNAME! v!VERSION!"                /du "!APPURL!" /t http://time.certum.pl/ "obj\!PLATFORM!\!CONFIGURATION!\sleepy.exe"
+	if errorlevel 1 exit /b 1
 	if defined SIGN "!SIGNTOOL!" sign /n "!SIGN!" /a /d "!APPNAME! v!VERSION! crash reporter" /du "!APPURL!" /t http://time.certum.pl/ "obj\!PLATFORM!\!CONFIGURATION!\crashreport.exe"
 	if errorlevel 1 exit /b 1
 )
