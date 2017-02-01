@@ -102,4 +102,8 @@ if not defined SIGN %INNOSETUP%                                                 
 if errorlevel 1 exit /b 1
 if not exist setup.exe exit /b 1
 
+rem Package AppVeyor symbol archive artifact
+
+if defined APPVEYOR !7ZIP! a symbols.7z "obj\*\Release\sleepy.pdb" "thirdparty\wine\dlls\dbghelp\vs\bin\*\*\dbghelpw.pdb"
+
 echo build.cmd: Done!

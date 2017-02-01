@@ -3,5 +3,12 @@ skip_branch_with_pr: true
 install:
   - choco install -y InnoSetup
   - git submodule update --init # --depth 1
+
 build_script:
   - build.cmd
+
+artifacts:
+  - path: setup.exe
+    name: Very Sleepy installer
+  - path: symbols.7z
+    name: Debugging symbols
