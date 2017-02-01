@@ -23,7 +23,7 @@ if not defined CONFIGURATION set CONFIGURATION=Release
 rem MSBuild on AppVeyor has some strange problems when building
 rem against the v100 toolset:
 rem http://help.appveyor.com/discussions/problems/6000-link-fatal-error-lnk1158-cannot-run-cvtresexe
-if not defined TOOLSET if defined APPVEYOR set TOOLSET=v110
+if not defined TOOLSET if defined APPVEYOR set TOOLSET=v120_xp
 
 rem Use the v100 toolset by default, for Windows XP compatibility
 if not defined TOOLSET set TOOLSET=v100
