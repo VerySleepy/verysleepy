@@ -27,8 +27,9 @@ if %PLATFORM%==x64   set PLATFORM_BITS=64
 if not exist %DBGHELPERS%\dbghelpdr.dll copy thirdparty\drmingw_build_%PLATFORM_BITS%\bin\mgwhelp.dll %DEST%\dbghelpdr.dll
 if errorlevel 1 exit /b 1
 
-if not defined VCINSTALLDIR if defined VS100COMNTOOLS set VCINSTALLDIR=%VS100COMNTOOLS%\..\..\VC
-for %%D in (msvcr100.dll msvcp100.dll) do copy "%VCINSTALLDIR%\redist\%PLATFORM_X%\Microsoft.VC100.CRT\%%D" %DEST%\%%D
+if not defined VCINSTALLDIR if defined VS120COMNTOOLS set VCINSTALLDIR=%VS120COMNTOOLS%\..\..\VC
+for %%D in (msvcr120.dll msvcp120.dll) do copy "%VCINSTALLDIR%\redist\%PLATFORM_X%\Microsoft.VC120.CRT\%%D" %DEST%\%%D
+if errorlevel 1 echo copyfiles.bat: Warning: couldn't copy the C/C++ runtime DLLs
 
 copy /y src\crashback\bin\%PLATFORM%\%CONFIGURATION%\crashreport.exe %DEST%
 if errorlevel 1 exit /b 1

@@ -37,17 +37,22 @@ if defined SIGN (
 	echo build.cmd: Found SignTool at: !SIGNTOOL!
 )
 
+rem Use the latest working toolset with Windows XP compatibility
+rem (v120_xp at the time of writing).
+
+rem Note: Building dbghelpw on x64 with v140_xp fails with strange
+rem include errors, such as "fatal error C1083: Cannot open
+rem include file: 'fcntl.h': No such file or directory"
+
+rem Note: MSBuild on AppVeyor has some strange problems when
+rem building against the v100 toolset:
+rem http://help.appveyor.com/discussions/problems/6000-link-fatal-error-lnk1158-cannot-run-cvtresexe
+
+if not defined TOOLSET set TOOLSET=v120_xp
+
 rem Build Very Sleepy
 
 if not defined CONFIGURATION set CONFIGURATION=Release
-
-rem MSBuild on AppVeyor has some strange problems when building
-rem against the v100 toolset:
-rem http://help.appveyor.com/discussions/problems/6000-link-fatal-error-lnk1158-cannot-run-cvtresexe
-if not defined TOOLSET if defined APPVEYOR set TOOLSET=v120_xp
-
-rem Use the v100 toolset by default, for Windows XP compatibility
-if not defined TOOLSET set TOOLSET=v100
 
 for %%p in (Win32 x64) do (
 	set PLATFORM=%%p
