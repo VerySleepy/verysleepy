@@ -5,6 +5,7 @@
 [Setup]
 AppName={#APPNAME}
 AppVersion={#VERSION}
+VersionInfoVersion={#VERSION_MAJOR}.{#VERSION_MINOR}.{#VERSION_PATCH}.{#VERSION_DIRTY}
 
 ; AppId is used to identify the program in the registry.
 AppId={#APPNAME}

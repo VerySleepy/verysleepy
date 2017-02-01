@@ -20,8 +20,8 @@ button_exportcsv PNG "Button-ExportCSV.png"
 #include "../appinfo.h"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION    VERSION_MAJOR,VERSION_MINOR,0,0
- PRODUCTVERSION VERSION_MAJOR,VERSION_MINOR,0,0
+ FILEVERSION    VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,VERSION_DIRTY
+ PRODUCTVERSION VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,VERSION_DIRTY
  FILEFLAGSMASK  0x3fL
 #ifdef _DEBUG
  FILEFLAGS      VER_DEBUG
@@ -43,7 +43,7 @@ BEGIN
             VALUE "LegalCopyright",   "Copyright (C) " VENDOR " and contributors" "\0"
             VALUE "OriginalFilename", "sleepy.exe" "\0"
             VALUE "ProductName",      APPNAME "\0"
-            VALUE "ProductVersion",   APPNAME "\0"
+            VALUE "ProductVersion",   VERSION "\0"
         END
     END
     BLOCK "VarFileInfo"
