@@ -11,6 +11,21 @@ echo build.cmd: Building Dr. MinGW
 call thirdparty\drmingw_build_mingw.cmd
 if errorlevel 1 exit /b 1
 
+rem Set up wxWidgets ignores, so that git describe 
+rem does not think we're building with a dirty tree
+
+if exist .git\modules\thirdparty\wxWidgets\info\exclude if not exist .git\modules\thirdparty\wxWidgets\info\exclude_sleepy (
+	echo build.cmd: Configuring .git\modules\thirdparty\wxWidgets\info\exclude
+
+	echo /build/msw/vc_mswu/>>     .git\modules\thirdparty\wxWidgets\info\exclude
+	echo /build/msw/vc_x64_mswu/>> .git\modules\thirdparty\wxWidgets\info\exclude
+	echo /include/wx/msw/setup.h>> .git\modules\thirdparty\wxWidgets\info\exclude
+	echo /lib/vc_lib/>>            .git\modules\thirdparty\wxWidgets\info\exclude
+	echo /lib/vc_x64_lib/>>        .git\modules\thirdparty\wxWidgets\info\exclude
+
+	echo. > .git\modules\thirdparty\wxWidgets\info\exclude_sleepy
+)
+
 rem Find MSBuild
 
 if not defined MSBUILD for %%a in (msbuild.exe) do if not [%%~$PATH:a] == [] set MSBUILD=%%~$PATH:a
