@@ -53,11 +53,13 @@ enum
 	MainWin_ResetToRoot,
 	MainWin_Filters,
 	MainWin_ResetFilters,
+	MainWin_Help_Documentation,
+	MainWin_Help_Support,
 
 	// it is important for the id corresponding to the "About" command to have
 	// this standard value as otherwise it won't be handled properly under Mac
 	// (where it is special and put into the "Apple" menu)
-	MainWin_About = wxID_ABOUT
+	MainWin_Help_About = wxID_ABOUT
 };
 
 MainWin::MainWin(const wxString& title,
@@ -118,7 +120,10 @@ MainWin::MainWin(const wxString& title,
 
 	// the "About" item should be in the help menu
 	wxMenu *helpMenu = new wxMenu;
-	helpMenu->Append(MainWin_About, _T("&About...\tF1"), _T("Show about dialog"));
+	helpMenu->Append(MainWin_Help_Documentation, _T("&Documentation\tF1"), _T("Visit the on-line documentation wiki on GitHub"));
+	helpMenu->Append(MainWin_Help_Support, _T("&Support"), _T("Visit the on-line issue list on GitHub"));
+	helpMenu->AppendSeparator();
+	helpMenu->Append(MainWin_Help_About, _T("&About..."), _T("Show about dialog"));
 
 	// now append the freshly created menu to the menu bar...
 	wxMenuBar *menuBar = new wxMenuBar();
@@ -327,7 +332,9 @@ EVT_UPDATE_UI(MainWin_ResetToRoot, MainWin::OnResetToRootUpdate)
 EVT_MENU(MainWin_ResetFilters, MainWin::OnResetFilters)
 EVT_MENU(MainWin_View_Collapse_OS,  MainWin::OnCollapseOS)
 EVT_MENU(MainWin_View_Stats,  MainWin::OnStats)
-EVT_MENU(MainWin_About, MainWin::OnAbout)
+EVT_MENU(MainWin_Help_Documentation, MainWin::OnDocumentation)
+EVT_MENU(MainWin_Help_Support, MainWin::OnSupport)
+EVT_MENU(MainWin_Help_About, MainWin::OnAbout)
 EVT_PG_CHANGED(MainWin_Filters, MainWin::OnFiltersChanged)
 END_EVENT_TABLE()
 
@@ -520,6 +527,16 @@ void MainWin::OnStats(wxCommandEvent& event)
 	dlg.SetSize(300, 200);
 	dlg.CentreOnScreen();
 	dlg.ShowModal();
+}
+
+void MainWin::OnDocumentation(wxCommandEvent& WXUNUSED(event))
+{
+	wxLaunchDefaultBrowser(GITURL "/wiki");
+}
+
+void MainWin::OnSupport(wxCommandEvent& WXUNUSED(event))
+{
+	wxLaunchDefaultBrowser(GITURL "/issues");
 }
 
 void MainWin::OnAbout(wxCommandEvent& WXUNUSED(event))

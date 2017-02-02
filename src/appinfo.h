@@ -12,6 +12,7 @@
 #define VENDOR  "codersnotes.com"
 
 #define APPURL  "http://www.codersnotes.com/sleepy/sleepy"
+#define GITURL  "https://github.com/VerySleepy/verysleepy"
 
 // Update this whenever backwards-incompatible changes
 // are made to the profiling results file format.

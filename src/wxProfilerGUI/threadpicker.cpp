@@ -41,11 +41,13 @@ enum
 	ProcWin_Options,
 	ProcWin_TimeCtrl,
 	ProcWin_TimeCheck,
+	ProcWin_Help_Documentation,
+	ProcWin_Help_Support,
 
 	// it is important for the id corresponding to the "About" command to have
 	// this standard value as otherwise it won't be handled properly under Mac
 	// (where it is special and put into the "Apple" menu)
-	ProcWin_About = wxID_ABOUT
+	ProcWin_Help_About = wxID_ABOUT
 };
 
 BEGIN_EVENT_TABLE(ThreadPicker, wxModalFrame)
@@ -58,7 +60,9 @@ EVT_MENU(ProcWin_Refresh, ThreadPicker::OnRefresh)
 EVT_MENU(ProcWin_Options, ThreadPicker::OnOptions)
 EVT_MENU(ProcWin_Download, ThreadPicker::OnDownload)
 EVT_MENU(ProcWin_Launch, ThreadPicker::OnLaunchExe)
-EVT_MENU(ProcWin_About, ThreadPicker::OnAbout)
+EVT_MENU(ProcWin_Help_Documentation, ThreadPicker::OnDocumentation)
+EVT_MENU(ProcWin_Help_Support, ThreadPicker::OnSupport)
+EVT_MENU(ProcWin_Help_About, ThreadPicker::OnAbout)
 EVT_BUTTON(ProcWin_Refresh, ThreadPicker::OnRefresh)
 EVT_BUTTON(ProcWin_Download, ThreadPicker::OnDownload)
 EVT_CLOSE(ThreadPicker::OnClose)
@@ -96,9 +100,11 @@ ThreadPicker::ThreadPicker()
 	menuTools->AppendSeparator();
 	menuTools->Append(ProcWin_Options, _T("&Options..."), _T("Opens the options dialog"));
 
-	// the "About" item should be in the help menu
 	wxMenu *menuHelp = new wxMenu;
-	menuHelp->Append(ProcWin_About, _T("&About...\tF1"), _T("Show about dialog"));
+	menuHelp->Append(ProcWin_Help_Documentation, _T("&Documentation\tF1"), _T("Visit the on-line documentation wiki on GitHub"));
+	menuHelp->Append(ProcWin_Help_Support, _T("&Support"), _T("Visit the on-line issue list on GitHub"));
+	menuHelp->AppendSeparator();
+	menuHelp->Append(ProcWin_Help_About, _T("&About..."), _T("Show about dialog"));
 
 	// now append the freshly created menu to the menu bar...
 	wxMenuBar *menuBar = new wxMenuBar();
@@ -274,6 +280,16 @@ void ThreadPicker::OnLaunchExe(wxCommandEvent& event)
 	run_cwd = dlg.GetCwdValue();
 	config.Write("PrevLaunchCwd", run_cwd.c_str());
 	EndModal(RUN);
+}
+
+void ThreadPicker::OnDocumentation(wxCommandEvent& WXUNUSED(event))
+{
+	wxLaunchDefaultBrowser(GITURL "/wiki");
+}
+
+void ThreadPicker::OnSupport(wxCommandEvent& WXUNUSED(event))
+{
+	wxLaunchDefaultBrowser(GITURL "/issues");
 }
 
 void ThreadPicker::OnAbout(wxCommandEvent& event)

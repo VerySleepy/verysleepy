@@ -100,6 +100,8 @@ public:
 	void OnOptions(wxCommandEvent& event);
 	void OnDownload(wxCommandEvent& event);
 	void OnLaunchExe(wxCommandEvent& event);
+	void OnDocumentation(wxCommandEvent& event);
+	void OnSupport(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 	void OnAttachProfiler(wxCommandEvent& event);
 	void OnAttachProfilerAll(wxCommandEvent& event);

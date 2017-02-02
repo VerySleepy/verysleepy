@@ -68,7 +68,6 @@ public:
 	void OnLoadMinidumpSymbols(wxCommandEvent& event);
 	void OnCollapseOS(wxCommandEvent& event);
 	void OnStats(wxCommandEvent& event);
-	void OnAbout(wxCommandEvent& event);
 	void OnBack(wxCommandEvent& event);
 	void OnBackUpdate(wxUpdateUIEvent& event);
 	void OnForward(wxCommandEvent& event);
@@ -77,6 +76,10 @@ public:
 	void OnResetToRootUpdate(wxUpdateUIEvent& event);
 	void OnResetFilters(wxCommandEvent& event);
 	void OnFiltersChanged(wxPropertyGridEvent& event);
+
+	void OnDocumentation(wxCommandEvent& event);
+	void OnSupport(wxCommandEvent& event);
+	void OnAbout(wxCommandEvent& event);
 
 	/// Called after loading a database
 	/// (after construction, and in OnOpen).
