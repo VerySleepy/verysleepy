@@ -3,6 +3,8 @@
 
 This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI.
 
+![Very Sleepy screenshot](https://dump.thecybershadow.net/12df19e403014f88f368da4c2d2482a2/1.png)
+
 ### Features
 
 * Simple user interface
