@@ -416,8 +416,6 @@ bool ProfilerGUI::OnInit()
 	try
 	{
 		EnableDebugPrivilege();
-		if (!dbgHelpInit())
-			return false;
 
 		sleepy_icon = wxICON(sleepy);
 
@@ -488,6 +486,9 @@ void ProfilerGUI::HandleInit()
 /// Returns true if a frame is still active.
 bool ProfilerGUI::Run()
 {
+	if (!dbgHelpInit())
+		return false;
+
 	// Explicitly create and set the default logger, so other threads use it.
 	// Otherwise, wxWidgets will create a default logger on request,
 	// but only by the request of the main thread.
