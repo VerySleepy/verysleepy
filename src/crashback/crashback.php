@@ -19,13 +19,13 @@ mkdir($dir, 0700, true);
 $filelist = "";
 
 foreach ($_FILES as $name => $file)
-    if ($file["error"] == UPLOAD_ERR_OK)
-    {
-        $tmp_name = $file["tmp_name"];
-        $filename = $file["name"];
-        $filename = basename($filename);
-        move_uploaded_file($tmp_name, "$dir/$filename");
-        $filelist .= $url = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . "/$dir/$filename\n";
+	if ($file["error"] == UPLOAD_ERR_OK)
+	{
+		$tmp_name = $file["tmp_name"];
+		$filename = $file["name"];
+		$filename = basename($filename);
+		move_uploaded_file($tmp_name, "$dir/$filename");
+		$filelist .= $url = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . "/$dir/$filename\n";
 	}
 
 
