@@ -68,7 +68,7 @@ public:
 		useSymServer = false;
 		saveMinidump = -1;
 		throttle = 100;
-		useWine = false;
+		useWinePref = useWineSwitch = useMingwSwitch = false;
 	}
 
 	wxString symSearchPath;
@@ -77,7 +77,16 @@ public:
 	wxString symServer;
 	int saveMinidump; // Save minidump after X seconds. -1 = disabled
 	int throttle;
-	bool useWine;
+
+	bool useWinePref, useWineSwitch, useMingwSwitch;
+
+	bool UseWine()
+	{
+		return
+			useMingwSwitch ? false :
+			useWineSwitch ? true :
+			useWinePref;
+	}
 
 	// Add any configured search paths, and the symbol server if enabled.
 	void AdjustSymbolPath(std::wstring &sympath, bool download)

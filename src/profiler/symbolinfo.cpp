@@ -189,7 +189,7 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 	}
 
 	DbgHelp *gcc;
-	if (prefs.useWine)
+	if (prefs.UseWine())
 	{
 		gcc = &dbgHelpWine;
 #ifdef _WIN64

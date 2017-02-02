@@ -135,7 +135,7 @@ OptionsDlg::OptionsDlg()
 	mingwDrMingw->SetToolTip("Use Dr. MinGW's DbgHelp implementation for MinGW symbols (dbghelpdr.dll).");
 	minGwDbgHelpSizer->Add(mingwDrMingw);
 
-	(prefs.useWine ? mingwWine : mingwDrMingw)->SetValue(true);
+	(prefs.useWinePref ? mingwWine : mingwDrMingw)->SetValue(true);
 
 	wxBoxSizer *saveMinidumpSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -217,7 +217,7 @@ void OptionsDlg::OnOk(wxCommandEvent& event)
 		prefs.useSymServer = useSymServer->GetValue();
 		prefs.symCacheDir = symCacheDir->GetPath();
 		prefs.symServer = symServer->GetValue();
-		prefs.useWine = mingwWine->GetValue();
+		prefs.useWinePref = mingwWine->GetValue();
 		prefs.saveMinidump = saveMinidump->GetValue() ? saveMinidumpTimeValue : -1;
 		prefs.throttle = throttle->GetValue();
 		EndModal(wxID_OK);

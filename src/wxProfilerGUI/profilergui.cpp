@@ -63,6 +63,8 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "t", "", "Stops capturing automatically after N seconds time.",	wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
 	{ wxCMD_LINE_SWITCH, "q", "", "Quiet mode (no error messages will be shown).",			wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_SWITCH, "", "wine", "Use Wine DbgHelp.",									wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_SWITCH, "", "mingw", "Use Dr. MinGW DbgHelp.",							wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_PARAM, NULL, NULL, "Loads an existing profile from a file.",				wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL},
 
 	{ wxCMD_LINE_NONE }
@@ -426,7 +428,7 @@ bool ProfilerGUI::OnInit()
 		prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
 		prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
 		prefs.symCacheDir = config.Read("SymbolCache", symCache);
-		prefs.useWine = config.Read("UseWine", (long)0) != 0;
+		prefs.useWinePref = config.Read("UseWine", (long)0) != 0;
 		prefs.saveMinidump = config.Read("SaveMinidump", -1);
 		prefs.throttle = config.Read("SpeedThrottle", 100);
 		if (prefs.throttle < 1)
@@ -525,7 +527,7 @@ int ProfilerGUI::OnExit()
 	config.Write("UseSymbolServer", prefs.useSymServer);
 	config.Write("SymbolServer", prefs.symServer);
 	config.Write("SymbolCache", prefs.symCacheDir);
-	config.Write("UseWine", prefs.useWine);
+	config.Write("UseWine", prefs.useWinePref);
 	config.Write("SaveMinidump", prefs.saveMinidump);
 	config.Write("SpeedThrottle", prefs.throttle);
 
@@ -534,9 +536,9 @@ int ProfilerGUI::OnExit()
 
 void ProfilerGUI::OnInitCmdLine(wxCmdLineParser& parser)
 {
-	parser.DisableLongOptions();
+	//parser.DisableLongOptions();
 	parser.SetDesc(g_cmdLineDesc);
-	parser.SetSwitchChars("/");
+	parser.SetSwitchChars("/-");
 }
 
 bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
@@ -564,6 +566,10 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		cmdline_run = param.c_str();
 	if (parser.Found("a", &param))
 		cmdline_attach = param.c_str();
+	if (parser.Found("wine"))
+		prefs.useWineSwitch = true;
+	if (parser.Found("mingw"))
+		prefs.useMingwSwitch = true;
 
 	return true;
 }
