@@ -8,3 +8,6 @@
 [submodule "thirdparty/wxWidgets"]
 	path = thirdparty/wxWidgets
 	url = https://github.com/wxWidgets/wxWidgets
+[submodule "tests"]
+	path = tests
+	url = https://github.com/VerySleepy/tests

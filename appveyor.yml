@@ -12,3 +12,6 @@ artifacts:
     name: Very Sleepy installer
   - path: symbols.7z
     name: Debugging symbols
+
+test_script:
+  - tests\tests\run_tests.bat
