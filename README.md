@@ -32,6 +32,7 @@ For the latest development version, you can download [the latest AppVeyor artifa
 * Update Wine DbgHelp for Windows
 * Improve and greatly simplify build process ([#40](https://github.com/VerySleepy/verysleepy/pull/40))
 * Add continuous integration via [AppVeyor](https://ci.appveyor.com/project/CyberShadow/verysleepy)
+* Improve Visual Studio 2015 support ([#28](https://github.com/VerySleepy/verysleepy/issues/28))
 * Contributed by [Bernat Muñoz Garcia](https://github.com/shashClp):
     * Use Scintilla for syntax highlighting ([#16](https://github.com/VerySleepy/verysleepy/pull/16))
 * Contributed by [Ashod](https://github.com/Ashod):
