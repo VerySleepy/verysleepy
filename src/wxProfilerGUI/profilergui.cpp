@@ -465,6 +465,7 @@ void ProfilerGUI::HandleInit()
 
 	SetExitOnFrameDelete(false);
 
+	int status = 0;
 	try
 	{
 		if (Run())
@@ -476,8 +477,9 @@ void ProfilerGUI::HandleInit()
 	catch (SleepyException &e)
 	{
 		wxLogError("%ls\n", e.wwhat());
+		status = 1;
 	}
-	wxEventLoop::GetActive()->Exit(1);
+	wxEventLoop::GetActive()->Exit(status);
 }
 
 /// Returns true if a frame is still active.
