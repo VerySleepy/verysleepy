@@ -302,7 +302,9 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 		}
 	}
 
-	if (!ResumeThread(target_thread))
+	// TODO: Don't count samples for suspended threads
+
+	if (ResumeThread(target_thread) == 0xffffffff)
 		throw ProfilerExcep(L"ResumeThread failed.");
 
 	//NOTE: this has to go after ResumeThread.  Otherwise mem allocation needed by std::map
