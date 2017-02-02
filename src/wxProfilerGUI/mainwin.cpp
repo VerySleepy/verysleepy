@@ -581,7 +581,7 @@ void MainWin::showSource( const Database::Symbol * symbol )
 	if (symbol->procname == L"KiFastSystemCallRet")
 		sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, std::vector<double>());
 	else
-		sourceview->showFile(database->getFileName(symbol->sourcefile), database->getAddrInfo(symbol->address)->sourceline, linecounts);
+		sourceview->showFile(database->getFileName(symbol->sourcefile), database->getAddrInfo(symbol->address)->procsourceline, linecounts);
 }
 
 void MainWin::focusSymbol(const Database::Symbol *symbol)
