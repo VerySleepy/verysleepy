@@ -13,6 +13,10 @@ This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU 
 * [MinGW support](https://github.com/VerySleepy/verysleepy/wiki/Profiling-MinGW-Programs)
 * [Late symbol resolution](https://github.com/VerySleepy/verysleepy/wiki/Late-Symbol-Resolution)
 
+### Documentation
+
+Very Sleepy documentation is available on [the GitHub project wiki](https://github.com/VerySleepy/verysleepy/wiki).
+
 ### Download
 
 Official releases can be downloaded from [the project's website](http://www.codersnotes.com/sleepy), or from [the GitHub releases page](https://github.com/VerySleepy/verysleepy/releases).
