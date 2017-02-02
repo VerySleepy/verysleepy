@@ -407,7 +407,10 @@ std::wstring ProfilerGUI::ObtainProfileData()
 bool ProfilerGUI::OnInit()
 {
 #ifndef _DEBUG
-	cbStartup();
+	if (getenv("SLEEPY_SILENT_CRASH"))
+		SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
+	else
+		cbStartup();
 #endif
 	wxInitAllImageHandlers();
 	try
