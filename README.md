@@ -18,12 +18,17 @@ For the latest development version, you can download [the latest AppVeyor artifa
 * Rename project back to Very Sleepy (this fork repository is now the official repository)
 * Use [Dr. MinGW](https://github.com/jrfonseca/drmingw) to resolve MinGW symbols by default
 * Update Wine DbgHelp for Windows
-* Improve and greatly simplify build process
+* Improve and greatly simplify build process ([#40](https://github.com/VerySleepy/verysleepy/pull/40))
 * Add continuous integration via [AppVeyor](https://ci.appveyor.com/project/CyberShadow/verysleepy)
 * Contributed by [Bernat Muñoz Garcia](https://github.com/shashClp):
-    * Use Scintilla for syntax highlighting
-* Contributed by [k4hvd1](https://github.com/VerySleepy/verysleepy/pull/30):
-    * Added command-line option `/a` to profile an existing process by its process ID
+    * Use Scintilla for syntax highlighting ([#16](https://github.com/VerySleepy/verysleepy/pull/16))
+* Contributed by [Ashod](https://github.com/Ashod):
+    * 64-bit fixes ([#21](https://github.com/VerySleepy/verysleepy/pull/21))
+* Contributed by [k4hvd1](https://github.com/k4hvd1):
+    * Added command-line option `/a` to profile an existing process by its process ID ([#30](https://github.com/VerySleepy/verysleepy/pull/30))
+* Contributed by [Markus Gaisbauer](https://github.com/quijote):
+    * Added "Total CPU time" column ([#37](https://github.com/VerySleepy/verysleepy/pull/37))
+    * Improved handling of processes with many threads ([#38](https://github.com/VerySleepy/verysleepy/pull/38))
 
 ##### Version 0.90 (2014-12-23):
 
@@ -35,6 +40,8 @@ For the latest development version, you can download [the latest AppVeyor artifa
 * Fix problems caused by dbghelp.dll hijacking
 * Fix handling of symbols containing whitespace characters
 * More user interface improvements
+* Contributed by [Unknown W. Brackets](https://github.com/unknownbrackets):
+    * 64-bit fixes ([#6](https://github.com/VerySleepy/verysleepy/pull/6))
 * Contributed by Michael Vance:
     * Add CSV export for the callstack view
     * UI fixes and code cleanup
@@ -49,8 +56,9 @@ For the latest development version, you can download [the latest AppVeyor artifa
 * Add late symbol loading by saving a minidump during profiling
 * Install 32-bit version alongside 64-bit version
 * Contributed by [Richard Munn](https://github.com/benjymous):
-    * Added a time limit option to the interface
-    * Added function highlighting and filtering
+    * Added a time limit option to the interface ([#1](https://github.com/VerySleepy/verysleepy/pull/1))
+    * Added function highlighting and filtering ([#2](https://github.com/VerySleepy/verysleepy/pull/2))
+    * Interface improvements ([#3](https://github.com/VerySleepy/verysleepy/pull/3))
 
 ##### [First fork release](http://blog.thecybershadow.net/2013/01/11/very-sleepy-fork/) (2013-01-11):
 
