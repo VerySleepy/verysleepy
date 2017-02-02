@@ -251,6 +251,8 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 		// See which module this IP is in.
 		Module *mod = syminfo->getModuleForAddr(ip);
 		DbgHelp *dbgHelp = mod ? mod->dbghelp : &dbgHelpMs;
+		if (!dbgHelp->Loaded)
+			break;
 
 		// Use whichever dbghelp stack walker is best for this module type.
 		// If we're switching between types, restart the stack walk from
