@@ -65,4 +65,3 @@ private:
 
 
 #endif // __OPTIONSDLG_H__
-

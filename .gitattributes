@@ -1,0 +1,13 @@
+*                                   whitespace=blank-at-eol,space-before-tab,indent-with-non-tab,-tab-in-indent,blank-at-eof,cr-at-eol,tabwidth=4
+*.md                                whitespace=-blank-at-eol,space-before-tab,-indent-with-non-tab,tab-in-indent,blank-at-eof,-cr-at-eol,tabwidth=4
+*.yml                               whitespace=-blank-at-eol,space-before-tab,-indent-with-non-tab,tab-in-indent,blank-at-eof,-cr-at-eol,tabwidth=4
+symsrv.yes                          -diff
+*.iss                               whitespace=blank-at-eol,space-before-tab,-indent-with-non-tab,tab-in-indent,blank-at-eof,cr-at-eol,tabwidth=4
+*.vcxproj                           whitespace=blank-at-eol,space-before-tab,-indent-with-non-tab,tab-in-indent,blank-at-eof,cr-at-eol,tabwidth=4
+*.vcxproj.filters                   whitespace=blank-at-eol,space-before-tab,-indent-with-non-tab,tab-in-indent,blank-at-eof,cr-at-eol,tabwidth=4
+
+/COPYING.LIB                        whitespace=-blank-at-eol
+/license.rtf                        whitespace=-blank-at-eol
+/license.txt                        whitespace=-blank-at-eol,-indent-with-non-tab
+/src/utils/dbghelp.h                whitespace=-blank-at-eol
+/thirdparty/wxWidgetsSetup/setup.h  whitespace=-indent-with-non-tab,-blank-at-eof

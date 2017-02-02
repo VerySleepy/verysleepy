@@ -66,7 +66,3 @@ private:
 
 
 #endif //__THREADINFO_H_666_
-
-
-
-

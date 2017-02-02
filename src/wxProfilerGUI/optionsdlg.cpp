@@ -30,21 +30,21 @@ http://www.gnu.org/copyleft/gpl.html.
 class wxPercentSlider : public wxSlider
 {
 public:
-    wxPercentSlider(wxWindow *parent,
-             wxWindowID id,
-             int value,
-             int minValue,
-             int maxValue,
-             const wxPoint& pos = wxDefaultPosition,
-             const wxSize& size = wxDefaultSize,
-             long style = wxSL_HORIZONTAL,
-             const wxValidator& validator = wxDefaultValidator,
-             const wxString& name = wxSliderNameStr)
-    {
-        Init();
+	wxPercentSlider(wxWindow *parent,
+			wxWindowID id,
+			int value,
+			int minValue,
+			int maxValue,
+			const wxPoint& pos = wxDefaultPosition,
+			const wxSize& size = wxDefaultSize,
+			long style = wxSL_HORIZONTAL,
+			const wxValidator& validator = wxDefaultValidator,
+			const wxString& name = wxSliderNameStr)
+	{
+		Init();
 
-        Create(parent, id, value, minValue, maxValue, pos, size, style, validator, name);
-    }
+		Create(parent, id, value, minValue, maxValue, pos, size, style, validator, name);
+	}
 
 protected:
 
@@ -52,7 +52,7 @@ protected:
 	// Just go into include/wx/msw/slider.h, and change the definition of this
 	// from 'static' to 'virtual', and add a const modifier. Then you have to do
 	// a full 'make clean' and rebuild for it to take.
-    virtual wxString Format(int n) const { return wxString::Format(wxT("%d%%"), n); }
+	virtual wxString Format(int n) const { return wxString::Format(wxT("%d%%"), n); }
 };
 
 enum OptionsId

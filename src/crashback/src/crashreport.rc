@@ -12,7 +12,7 @@ BEGIN
 
 	CONTROL			"",					ID_PROGRESS,	"msctls_progress32", 0x8,	40, 75, 203, 12
 
-	CONTROL			"Examine...",		ID_EXAMINE,		"LINK", 0, 10, 98, 50, 14 
+	CONTROL			"Examine...",		ID_EXAMINE,		"LINK", 0, 10, 98, 50, 14
 
 	DEFPUSHBUTTON   "Send",				IDOK,			138, 95, 50, 14
 	PUSHBUTTON		"Don't send",		IDCANCEL,		193, 95, 50, 14

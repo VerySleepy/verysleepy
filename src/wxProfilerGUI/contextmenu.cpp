@@ -211,4 +211,3 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 		break;
 	}
 }
-

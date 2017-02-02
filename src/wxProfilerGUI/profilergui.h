@@ -157,7 +157,3 @@ extern Prefs prefs;
 extern wxConfig config;
 
 #endif //__PROFILERGUI_H_666_
-
-
-
-

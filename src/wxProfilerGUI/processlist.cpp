@@ -62,7 +62,7 @@ ProcessList::ProcessList(wxWindow *parent, const wxPoint& pos,
 
 	SetColumnWidth(COL_NAME, 220);
 	SetColumnWidth(COL_CPUUSAGE, 80);
-	SetColumnWidth(COL_TOTALCPU, 100);	
+	SetColumnWidth(COL_TOTALCPU, 100);
 	SetColumnWidth(COL_PID, 60);
 
 #ifdef _WIN64
@@ -73,7 +73,7 @@ ProcessList::ProcessList(wxWindow *parent, const wxPoint& pos,
 
 	sort_column = COL_CPUUSAGE;
 	sort_dir = SORT_DOWN;
-	SetSortImage(sort_column, sort_dir); 
+	SetSortImage(sort_column, sort_dir);
 
 	timer.Start(1000); // 1 second interval
 }
@@ -321,7 +321,7 @@ void ProcessList::fillList()
 		if (processes[i].totalCpuTimeMs >= 0)
 			sprintf(str, "%0.1f s", (double) (processes[i].totalCpuTimeMs) / 1000);
 		else
-			strcpy(str, "-");		
+			strcpy(str, "-");
 		this->SetItem(i, COL_TOTALCPU, str);
 
 		sprintf(str, "%i", processes[i].getID());
@@ -400,7 +400,7 @@ void ProcessList::updateProcesses()
 			if(processInfo.getID() == selectedProcessId){
 				this->SetFocus();
 				this->EnsureVisible(index);
-			    int state = this->GetItemState(index, wxLIST_STATE_SELECTED);
+				int state = this->GetItemState(index, wxLIST_STATE_SELECTED);
 				state |= wxLIST_STATE_SELECTED;
 				this->SetItemState(index, state, wxLIST_STATE_SELECTED);
 				break;
@@ -423,7 +423,7 @@ void ProcessList::updateTimes()
 
 		__int64 coreCount = 0;
 
-		HANDLE process_handle = processes[i].getProcessHandle(); 
+		HANDLE process_handle = processes[i].getProcessHandle();
 		BOOL result = FALSE;
 		FILETIME CreationTime, ExitTime, KernelTime, UserTime;
 		if (process_handle != NULL)
@@ -438,7 +438,7 @@ void ProcessList::updateTimes()
 			coreCount = GetCoresForProcess(process_handle);
 		}
 
-		if (result) 
+		if (result)
 		{
 			__int64 kernel_diff = getDiff(processes[i].prevKernelTime, KernelTime);
 			__int64 user_diff = getDiff(processes[i].prevUserTime, UserTime);
@@ -455,5 +455,3 @@ void ProcessList::updateTimes()
 
 	fillList();
 }
-
-

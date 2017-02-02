@@ -31,25 +31,25 @@ http://www.gnu.org/copyleft/gpl.html.
 class LaunchDlg : public wxDialog
 {
 public:
-    LaunchDlg(wxWindow *parent);
+	LaunchDlg(wxWindow *parent);
 
-    void SetCmdValue(const wxString& val);
+	void SetCmdValue(const wxString& val);
 	void SetCwdValue(const wxString& val);
-    wxString GetCmdValue() const { return m_cmdvalue; }
+	wxString GetCmdValue() const { return m_cmdvalue; }
 	wxString GetCwdValue() const { return m_cwdvalue; }
 
 protected:
-    wxTextCtrl *m_cmdctl;
-    wxString    m_cmdvalue;
+	wxTextCtrl *m_cmdctl;
+	wxString    m_cmdvalue;
 	wxTextCtrl *m_cwdctl;
 	wxString    m_cwdvalue;
 	long        m_dialogStyle;
 
-    void OnOK(wxCommandEvent& event);
-    void OnChooseCmd(wxCommandEvent& event);
+	void OnOK(wxCommandEvent& event);
+	void OnChooseCmd(wxCommandEvent& event);
 	void OnChooseCwd(wxCommandEvent& event);
 
-    DECLARE_EVENT_TABLE()
+	DECLARE_EVENT_TABLE()
 };
 
 #endif // __LAUNCHDLG_H__

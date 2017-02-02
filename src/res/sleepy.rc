@@ -32,22 +32,22 @@ VS_VERSION_INFO VERSIONINFO
  FILETYPE       VFT_APP
  FILESUBTYPE    0
 BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904E4"
-        BEGIN
-            VALUE "CompanyName",      VENDOR   "\0"
-            VALUE "FileDescription",  APPNAME  "\0"
-            VALUE "FileVersion",      VERSION  "\0"
-            VALUE "InternalName",     "sleepy" "\0"
-            VALUE "LegalCopyright",   "Copyright (C) " VENDOR " and contributors" "\0"
-            VALUE "OriginalFilename", "sleepy.exe" "\0"
-            VALUE "ProductName",      APPNAME "\0"
-            VALUE "ProductVersion",   VERSION "\0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "CompanyName",      VENDOR   "\0"
+			VALUE "FileDescription",  APPNAME  "\0"
+			VALUE "FileVersion",      VERSION  "\0"
+			VALUE "InternalName",     "sleepy" "\0"
+			VALUE "LegalCopyright",   "Copyright (C) " VENDOR " and contributors" "\0"
+			VALUE "OriginalFilename", "sleepy.exe" "\0"
+			VALUE "ProductName",      APPNAME "\0"
+			VALUE "ProductVersion",   VERSION "\0"
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x409, 1252
+	END
 END

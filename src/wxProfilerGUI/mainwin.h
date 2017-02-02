@@ -175,7 +175,3 @@ extern MainWin *theMainWin;
 
 
 #endif //__MAINWIN_H_666_
-
-
-
-

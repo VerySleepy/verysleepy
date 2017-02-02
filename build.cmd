@@ -11,7 +11,7 @@ echo build.cmd: Building Dr. MinGW
 call thirdparty\drmingw_build_mingw.cmd
 if errorlevel 1 exit /b 1
 
-rem Set up wxWidgets ignores, so that git describe 
+rem Set up wxWidgets ignores, so that git describe
 rem does not think we're building with a dirty tree
 
 if exist .git\modules\thirdparty\wxWidgets\info\exclude if not exist .git\modules\thirdparty\wxWidgets\info\exclude_sleepy (

@@ -43,12 +43,12 @@ public:
 	/*=====================================================================
 	ProcessList
 	-----------
-	
+
 	=====================================================================*/
 	// DE: 20090325 ProcessList knows about threadlist and updates it based on process selection
 	ProcessList(wxWindow *parent, const wxPoint& pos,
-               const wxSize& size,
-			   ThreadList* threadList);
+			const wxSize& size,
+			ThreadList* threadList);
 
 	virtual ~ProcessList();
 
@@ -72,7 +72,7 @@ public:
 	const ProcessInfo* getSelectedProcess();
 	SymbolInfo* takeSymbolInfo();
 private:
-    DECLARE_EVENT_TABLE()
+	DECLARE_EVENT_TABLE()
 
 	enum {
 		COL_NAME,
@@ -105,13 +105,9 @@ private:
 
 enum
 {
-    PROCESS_LIST = 4000,
-    PROCESS_LIST_TIMER = 4001
+	PROCESS_LIST = 4000,
+	PROCESS_LIST_TIMER = 4001
 };
 
 
 #endif //__PROCESSLIST_H_666_
-
-
-
-

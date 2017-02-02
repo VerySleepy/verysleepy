@@ -293,4 +293,3 @@ void CallstackView::OnContextMenu(wxContextMenuEvent& event)
 {
 	FunctionMenu(listCtrl, database);
 }
-

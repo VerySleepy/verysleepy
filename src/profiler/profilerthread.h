@@ -116,7 +116,3 @@ private:
 
 
 #endif //__PROFILERTHREAD_H_666_
-
-
-
-

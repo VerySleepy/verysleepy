@@ -58,7 +58,7 @@ EVT_MENU(ProcWin_Refresh, ThreadPicker::OnRefresh)
 EVT_MENU(ProcWin_Options, ThreadPicker::OnOptions)
 EVT_MENU(ProcWin_Download, ThreadPicker::OnDownload)
 EVT_MENU(ProcWin_Launch, ThreadPicker::OnLaunchExe)
-EVT_MENU(ProcWin_About, ThreadPicker::OnAbout)	
+EVT_MENU(ProcWin_About, ThreadPicker::OnAbout)
 EVT_BUTTON(ProcWin_Refresh, ThreadPicker::OnRefresh)
 EVT_BUTTON(ProcWin_Download, ThreadPicker::OnDownload)
 EVT_CLOSE(ThreadPicker::OnClose)
@@ -78,7 +78,7 @@ void symLogCallback(const wchar_t *text)
 }
 
 ThreadPicker::ThreadPicker()
-:	wxModalFrame(NULL, -1, wxString(APPNAME), 
+:	wxModalFrame(NULL, -1, wxString(APPNAME),
 			 wxDefaultPosition, wxDefaultSize,
 			 wxDEFAULT_FRAME_STYLE)
 {
@@ -350,10 +350,10 @@ void ThreadPicker::AttachToProcess(bool allThreads)
 	//------------------------------------------------------------------------
 	//Get handle to target process
 	//------------------------------------------------------------------------
-	attach_info->process_handle = processInfo->getProcessHandle(); 
+	attach_info->process_handle = processInfo->getProcessHandle();
 	attach_info->sym_info = processlist->takeSymbolInfo();
 	enforce(attach_info->sym_info, "No symbol info");
-	
+
 	// Check it didn't exit.
 	if (WaitForSingleObject(attach_info->process_handle, 0) == WAIT_OBJECT_0)
 		attach_info->process_handle = NULL;
@@ -388,4 +388,3 @@ void ThreadPicker::AttachToProcess(bool allThreads)
 	// DE: 20090325 attaches to specific a list of threads
 	enforce(attach_info->thread_handles.size(), "Cannot attach to any threads");
 }
-

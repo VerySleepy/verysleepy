@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem This batch file attempts to build Dr. MinGW in a way 
+rem This batch file attempts to build Dr. MinGW in a way
 rem that's compatible with Very Sleepy's project file.
 
 rem Find 7-Zip.

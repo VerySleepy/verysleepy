@@ -95,7 +95,7 @@ void cbReport( CbCrashType type, EXCEPTION_POINTERS *excep )
 }
 
 LONG CALLBACK cbExceptionHandler( EXCEPTION_POINTERS *excep )
-{ 
+{
 	WaitForSingleObject( cbLock, INFINITE );
 	cbReport( CB_CRASH_WIN32_SEH, excep );
 	TerminateProcess( GetCurrentProcess(), 1 );
@@ -124,10 +124,10 @@ void cbPureCallHandler()
 }
 
 void cbInvalidParameterHandler(
-							   const wchar_t *expression, 
-							   const wchar_t *function, 
-							   const wchar_t *file, 
-							   unsigned int line, 
+							   const wchar_t *expression,
+							   const wchar_t *function,
+							   const wchar_t *file,
+							   unsigned int line,
 							   uintptr_t pReserved )
 {
 	WaitForSingleObject( cbLock, INFINITE );
@@ -206,10 +206,10 @@ extern "C" void cbStartup()
 	// Set up shared memory to communicate with the report handler EXE.
 	HANDLE hShared = CreateFileMapping(
 		INVALID_HANDLE_VALUE,    // use paging file
-		NULL,                    // default security 
+		NULL,                    // default security
 		PAGE_READWRITE,          // read/write access
-		0,                       // max. object size 
-		sizeof(CbReport),        // buffer size  
+		0,                       // max. object size
+		sizeof(CbReport),        // buffer size
 		cbShareName );           // name of mapping object
 	if ( !hShared )
 		return;
@@ -224,9 +224,9 @@ extern "C" void cbStartup()
 	// Register the handlers.
 	SetUnhandledExceptionFilter( &cbExceptionHandler );
 	_set_error_mode( _OUT_TO_STDERR );
-	_set_purecall_handler( cbPureCallHandler );    
+	_set_purecall_handler( cbPureCallHandler );
 	_set_new_mode( 1 ); // malloc calls the new handler on failure
 	_set_new_handler( cbNewHandler );
-	_set_invalid_parameter_handler( cbInvalidParameterHandler ); 
+	_set_invalid_parameter_handler( cbInvalidParameterHandler );
 	_set_abort_behavior( _CALL_REPORTFAULT, _CALL_REPORTFAULT );
 }

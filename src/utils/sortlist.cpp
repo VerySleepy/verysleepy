@@ -116,4 +116,3 @@ void wxSortedListCtrl::SetSortImage(int col, SortType type)
 	item.SetImage(type);
 	SetColumn(col, item);
 }
-

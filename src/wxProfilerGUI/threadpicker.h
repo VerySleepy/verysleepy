@@ -40,12 +40,12 @@ class wxModalFrame : public wxFrame
 public:
 	wxModalFrame() { m_evtLoop = NULL; m_retCode = -1; }
 	wxModalFrame::wxModalFrame(wxWindow *parent,
-            wxWindowID id,
-            const wxString& title,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_FRAME_STYLE,
-            const wxString& name = wxFrameNameStr)
+			wxWindowID id,
+			const wxString& title,
+			const wxPoint& pos = wxDefaultPosition,
+			const wxSize& size = wxDefaultSize,
+			long style = wxDEFAULT_FRAME_STYLE,
+			const wxString& name = wxFrameNameStr)
 		: wxFrame(parent, id, title, pos, size, style, name)
 	{
 		m_evtLoop = NULL; m_retCode = -1;
@@ -129,7 +129,3 @@ private:
 
 
 #endif //__THREADPICKER_H_666_
-
-
-
-

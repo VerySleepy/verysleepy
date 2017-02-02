@@ -55,7 +55,3 @@ private:
 
 
 #endif //__CAPTUREWIN_H__
-
-
-
-

@@ -59,7 +59,7 @@ ThreadList::ThreadList(wxWindow *parent, const wxPoint& pos,
 	InsertColumn(COL_TOTALCPU, itemCol);
 	itemCol.m_text = _T("TID");
 	InsertColumn(COL_ID, itemCol);
-	
+
 	SetColumnWidth(COL_LOCATION, 220);
 	SetColumnWidth(COL_CPUUSAGE, 80);
 	SetColumnWidth(COL_TOTALCPU, 100);
@@ -67,7 +67,7 @@ ThreadList::ThreadList(wxWindow *parent, const wxPoint& pos,
 
 	sort_column = COL_CPUUSAGE;
 	sort_dir = SORT_DOWN;
-	SetSortImage(sort_column, sort_dir); 
+	SetSortImage(sort_column, sort_dir);
 
 	process_handle = NULL;
 	syminfo = NULL;
@@ -252,11 +252,11 @@ void ThreadList::fillList()
 		if (threads[i].totalCpuTimeMs >= 0)
 			sprintf(str, "%0.1f s", (double) (threads[i].totalCpuTimeMs) / 1000);
 		else
-			strcpy(str, "-");		
+			strcpy(str, "-");
 		this->SetItem(i, COL_TOTALCPU, str);
 
 		sprintf(str, "%d", threads[i].getID());
-		this->SetItem(i, COL_ID, str);		
+		this->SetItem(i, COL_ID, str);
 	}
 	Thaw();
 }
@@ -275,8 +275,7 @@ void ThreadList::updateThreads(const ProcessInfo* processInfo, SymbolInfo *symIn
 		this->syminfo = symInfo;
 
 		this->threads = processInfo->threads;
-		
-		
+
 		int numDisplayedThreads = getNumDisplayedThreads();
 		for(int i=0; i<numDisplayedThreads; ++i)
 		{
@@ -305,12 +304,12 @@ void ThreadList::updateTimes()
 		this->threads[i].totalCpuTimeMs = -1;
 		this->threads[i].setLocation(L"-");
 
-		HANDLE thread_handle = this->threads[i].getThreadHandle(); 
+		HANDLE thread_handle = this->threads[i].getThreadHandle();
 		if (thread_handle == NULL)
 			continue;
-		
+
 		FILETIME CreationTime, ExitTime, KernelTime, UserTime;
-	
+
 		if ( GetThreadTimes(
 			thread_handle,
 			&CreationTime,
@@ -389,7 +388,7 @@ std::wstring ThreadList::getLocation(HANDLE thread_handle) {
 	{
 		std::wstring file;
 		int line;
-			
+
 		// Grab the name of the current IP location.
 		return syminfo->getProcForAddr(profaddr, file, line);
 	}

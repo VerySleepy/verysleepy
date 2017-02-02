@@ -33,12 +33,12 @@ bool ReadReport()
 	swprintf_s( shareName, 256, L"CrashBack_%x", targetProcessId );
 
 	HANDLE hShared = CreateFileMappingW(
-                 INVALID_HANDLE_VALUE,    // use paging file
-                 NULL,                    // default security 
-                 PAGE_READWRITE,          // read/write access
-                 0,                       // max. object size 
-                 sizeof(CbReport),        // buffer size  
-                 shareName );             // name of mapping object
+		INVALID_HANDLE_VALUE,    // use paging file
+		NULL,                    // default security
+		PAGE_READWRITE,          // read/write access
+		0,                       // max. object size
+		sizeof(CbReport),        // buffer size
+		shareName );             // name of mapping object
 	if ( !hShared )
 		return false;
 
@@ -90,7 +90,7 @@ bool SendReport()
 	memcpy( &addr.sin_addr, he->h_addr_list[0], he->h_length );
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons( PORT );
-	
+
 	if ( connect(sock, (struct sockaddr *)&addr, sizeof(addr) ) == SOCKET_ERROR )
 		return false;
 
@@ -127,7 +127,7 @@ bool SendReport()
 
 	contentSize += sprintf( contentEnd,
 		"--THAT_WOULD_BE_AN_ECUMENICAL_MATTER--\r\n" );
-	
+
 	sprintf( header,
 		"POST %s HTTP/1.0\r\n"
 		"Host: %s\r\n"
@@ -135,7 +135,7 @@ bool SendReport()
 		"Content-Length: %i\r\n"
 		"\r\n",
 		PAGE, HOSTNAME, contentSize );
-	
+
 	if ( send( sock, header, (int)strlen( header ), 0 ) == SOCKET_ERROR )
 		return false;
 	if ( send( sock, contentStart, (int)strlen( contentStart ), 0 ) == SOCKET_ERROR )
@@ -235,7 +235,7 @@ char *GetOSDesc()
 	static char buffer[1024];
 	char prod[1024]="?", build[1024]="?", csd[1024]="?";
 
-    HKEY key;
+	HKEY key;
 	DWORD size, type;
 	if ( RegOpenKeyEx( HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_READ, &key ) == ERROR_SUCCESS )
 	{
@@ -280,10 +280,10 @@ bool SaveInfo()
 
 	OSVERSIONINFO osInfo = { 0 };
 	SYSTEM_INFO sysInfo;
-    osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	GetSystemInfo( &sysInfo );
 	GetVersionEx( &osInfo );
-	
+
 	// On XP and higher, use the actually correct version instead.
 	typedef VOID WINAPI Fn( LPSYSTEM_INFO lpSystemInfo );
 	Fn *fn = (Fn *)GetProcAddress( LoadLibrary( "kernel32.dll" ), "GetNativeSystemInfo" );
@@ -337,7 +337,7 @@ DWORD CALLBACK ReportThread( LPVOID param )
 	// Send it. We don't really care whether it worked or not here.
 	SendReport();
 
-	// Make sure the user sees some feedback.	
+	// Make sure the user sees some feedback.
 	DWORD endTime = GetTickCount();
 	int diff = endTime - startTime;
 	int minTime = 2000;
@@ -438,7 +438,7 @@ LRESULT CALLBACK LinkProc( HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam )
 	return DefWindowProc( hWnd, Msg, wParam, lParam );
 }
 
-int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow ) 
+int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 {
 	targetProcessId = strtoul( lpCmdLine, NULL, 16 );
 	if ( !targetProcessId )
@@ -458,14 +458,14 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 
 	WSADATA wsaData;
-    int err = WSAStartup( MAKEWORD(2, 2), &wsaData );
-    if ( err != 0 )
+	int err = WSAStartup( MAKEWORD(2, 2), &wsaData );
+	if ( err != 0 )
 		return 1;
 
 	if ( !CreateFiles() )
 		return 1;
-	
+
 	DialogBox( hInstance, MAKEINTRESOURCE(IDD_CRASH), NULL, reinterpret_cast<DLGPROC>(DlgProc) );
 
 	return 0;
-} 
+}

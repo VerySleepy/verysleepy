@@ -59,7 +59,7 @@ Debugger::~Debugger()
 bool Debugger::Attach()
 {
 	assert( !process );
-	assert( !debuggerThread );	
+	assert( !debuggerThread );
 
 	debuggerThread = new DebuggerThread( this );
 	debuggerThread->launch( false, THREAD_PRIORITY_TIME_CRITICAL );
@@ -132,26 +132,26 @@ void DebuggerThread::run()
 			//	SetThreadPriority( target_thread, THREAD_PRIORITY_NORMAL );
 
 			//	ResumeThread(target_thread);
-			//	
+			//
 			//	DWORD t1 = GetTickCount();
 			//	char buf[256];
 			//	sprintf(buf, "%08x - %ims\n", t1, t1 - t0);
 			//	OutputDebugString(buf);
 			//}
-	
+
 			DWORD err = GetLastError();
 			continue;
 		}
 
 		WaitForSingleObject( hMutex, INFINITE );
-		switch (dbgEvent.dwDebugEventCode) 
-		{ 
+		switch (dbgEvent.dwDebugEventCode)
+		{
 		case EXCEPTION_DEBUG_EVENT:
 			SetEvent( readyEvent );
 			//go = true;
 			break;
 
-		case CREATE_THREAD_DEBUG_EVENT: 
+		case CREATE_THREAD_DEBUG_EVENT:
 			debugger->hThreads.push_back( ThreadInfo( dbgEvent.dwThreadId, dbgEvent.u.CreateThread.hThread ) );
 			break;
 
@@ -162,29 +162,29 @@ void DebuggerThread::run()
 			//target_thread = dbgEvent.u.CreateProcessInfo.hThread;
 			break;
 
-		case EXIT_THREAD_DEBUG_EVENT: 
-			// Display the thread's exit code. 
+		case EXIT_THREAD_DEBUG_EVENT:
+			// Display the thread's exit code.
 			break;
 
-		case EXIT_PROCESS_DEBUG_EVENT: 
-			// Display the process's exit code. 
+		case EXIT_PROCESS_DEBUG_EVENT:
+			// Display the process's exit code.
 			break;
 
-		case LOAD_DLL_DEBUG_EVENT: 
-			// Read the debugging information included in the newly 
-			// loaded DLL. Be sure to close the handle to the loaded DLL 
+		case LOAD_DLL_DEBUG_EVENT:
+			// Read the debugging information included in the newly
+			// loaded DLL. Be sure to close the handle to the loaded DLL
 			// with CloseHandle.
 			break;
 
-		case UNLOAD_DLL_DEBUG_EVENT: 
-			// Display a message that the DLL has been unloaded. 
+		case UNLOAD_DLL_DEBUG_EVENT:
+			// Display a message that the DLL has been unloaded.
 			break;
 
-		case OUTPUT_DEBUG_STRING_EVENT: 
-			// Display the output debugging string. 
+		case OUTPUT_DEBUG_STRING_EVENT:
+			// Display the output debugging string.
 			break;
 
-		} 
+		}
 
 		ReleaseMutex( hMutex );
 		ContinueDebugEvent( dbgEvent.dwProcessId, dbgEvent.dwThreadId, DBG_EXCEPTION_NOT_HANDLED );

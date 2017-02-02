@@ -31,17 +31,17 @@ public:
 	wxSortedListCtrl() { Init(); }
 
 	wxSortedListCtrl(wxWindow *parent,
-               wxWindowID id = wxID_ANY,
-               const wxPoint& pos = wxDefaultPosition,
-               const wxSize& size = wxDefaultSize,
-               long style = wxLC_ICON,
-               const wxValidator& validator = wxDefaultValidator,
-               const wxString& name = wxListCtrlNameStr)
-    {
-        Init();
+			wxWindowID id = wxID_ANY,
+			const wxPoint& pos = wxDefaultPosition,
+			const wxSize& size = wxDefaultSize,
+			long style = wxLC_ICON,
+			const wxValidator& validator = wxDefaultValidator,
+			const wxString& name = wxListCtrlNameStr)
+	{
+		Init();
 
-        Create(parent, id, pos, size, style, validator, name);
-    }
+		Create(parent, id, pos, size, style, validator, name);
+	}
 
 	enum SortType { SORT_NONE, SORT_UP, SORT_DOWN };
 

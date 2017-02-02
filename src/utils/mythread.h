@@ -76,7 +76,3 @@ private:
 
 
 #endif //__MYTHREAD_H_666_
-
-
-
-
