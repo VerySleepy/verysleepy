@@ -154,6 +154,10 @@ struct DbgHelp
 		__in_opt PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
 		__in_opt PMINIDUMP_CALLBACK_INFORMATION CallbackParam
 		);
+
+	LPCWSTR Name;
+	bool Loaded;
+	DbgHelp() : Loaded(false) {}
 };
 
 extern DbgHelp dbgHelpMs;

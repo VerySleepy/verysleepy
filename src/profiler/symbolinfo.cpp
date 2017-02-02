@@ -36,18 +36,24 @@ http://www.gnu.org/copyleft/gpl.html..
 
 SymLogFn *g_symLog = NULL;
 
+struct SymbolInfoContext
+{
+	SymbolInfo* syminfo;
+	DbgHelp* dbgHelp;
+};
+
 BOOL CALLBACK EnumModules(
 	PCWSTR   ModuleName,
 	DWORD64 BaseOfDll,
 	PVOID   UserContext )
 {
-	SymbolInfo* syminfo = static_cast<SymbolInfo*>(UserContext);
+	SymbolInfoContext* context = static_cast<SymbolInfoContext*>(UserContext);
 
 	HMODULE hMod;
 	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, ModuleName, &hMod);
 
-	Module mod((PROFILER_ADDR)BaseOfDll, ModuleName, &dbgHelpMs);
-	syminfo->addModule(mod);
+	Module mod((PROFILER_ADDR)BaseOfDll, ModuleName, context->dbgHelp);
+	context->syminfo->addModule(mod);
 
 	return TRUE;
 }
@@ -95,15 +101,18 @@ void symWineCallback(const char *msg)
 	}
 }
 
-void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
+void SymbolInfo::loadSymbolsUsing(DbgHelp* dbgHelp, const std::wstring& sympath)
 {
-	process_handle = process_handle_;
+	if (!dbgHelp->Loaded)
+	{
+		if (g_symLog)
+		{
+			g_symLog(dbgHelp->Name); g_symLog(L" is not loaded, skipping.\n");
+		}
+		return;
+	}
 
-	wxBusyCursor busy;
-
-	is64BitProcess = Is64BitProcess(process_handle);
-
-	DWORD options = dbgHelpMs.SymGetOptions();
+	DWORD options = dbgHelp->SymGetOptions();
 
 #ifdef _WIN64
 	if(!is64BitProcess) {
@@ -113,66 +122,62 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 
 	options |= SYMOPT_LOAD_LINES | SYMOPT_DEBUG;
 
-	dbgHelpMs.SymSetOptions(options);
-	dbgHelpWine.SymSetOptions(options);
-#ifdef _WIN64
-	dbgHelpWineWow64.SymSetOptions(options);
-#endif
+	dbgHelp->SymSetOptions(options);
 
-	std::wstring sympath;
-
-	// Add the program's own directory to the search path.
-	// Useful if someone's copied the EXE and PDB to a different machine or location.
-	wchar_t szExePath[MAX_PATH] = L"";
-	DWORD pathsize = MAX_PATH;
-	BOOL gotImageName = FALSE;
-#ifdef _WIN64
-	// GetModuleFileNameEx doesn't always work across 64->32 bit boundaries.
-	// Use QueryFullProcessImageName if we have it.
-	{
-		typedef BOOL WINAPI QueryFullProcessImageNameFn(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
-
-		QueryFullProcessImageNameFn *fn = (QueryFullProcessImageNameFn *)GetProcAddress(GetModuleHandle(L"kernel32"),"QueryFullProcessImageNameW");
-		if (fn)
-			gotImageName = fn(process_handle, 0, szExePath, &pathsize);
-	}
-#endif
-
-	if (!gotImageName)
-		gotImageName = GetModuleFileNameEx(process_handle, NULL, szExePath, pathsize);
-
-	if (gotImageName)
-	{
-		// Convert the EXE path to its containing folder and append the
-		// resulting folder to the symbol search path.
-		wchar_t *p = wcsrchr(szExePath, '\\');
-
-		if (p != NULL)
-		{
-			*p = '\0';
-			sympath += std::wstring(L";") + szExePath;
-		}
-	}
-
-	prefs.AdjustSymbolPath(sympath, download);
+	if (dbgHelp->SymSetDbgPrint)
+		dbgHelp->SymSetDbgPrint(&symWineCallback);
 
 	for( int n=0;n<4;n++ )
 	{
-		wenforce(dbgHelpMs.SymInitializeW(process_handle, L"", FALSE), "SymInitialize");
+		wenforce(dbgHelp->SymInitializeW(process_handle, L"", FALSE), "SymInitialize");
 
 		// Hook the debug output, so we actually can provide a clue as to
 		// what's happening.
-		dbgHelpMs.SymRegisterCallbackW64(process_handle, symCallback, NULL);
+		dbgHelp->SymRegisterCallbackW64(process_handle, symCallback, NULL);
 
 		// Add our PDB search paths.
-		wenforce(dbgHelpMs.SymSetSearchPathW(process_handle, sympath.c_str()), "SymSetSearchPathW");
+		if (dbgHelp == &dbgHelpMs)
+			wenforce(dbgHelp->SymSetSearchPathW(process_handle, sympath.c_str()), "SymSetSearchPathW");
 
-		// Load symbol information for all modules.
-		// Normally SymInitialize would do this, but we instead do it ourselves afterwards
-		// so that we can hook the debug output for it.
-		wenforce(dbgHelpMs.SymRefreshModuleList(process_handle), "SymRefreshModuleList");
+		if (modules.empty())
+		{
+			// Load symbol information for all modules.
+			// Normally SymInitialize would do this, but we instead do it ourselves afterwards
+			// so that we can hook the debug output for it.
+			wenforce(dbgHelp->SymRefreshModuleList(process_handle), "SymRefreshModuleList");
 
-		wenforce(dbgHelpMs.SymEnumerateModulesW64(process_handle, EnumModules, this), "SymEnumerateModules64");
+			SymbolInfoContext context;
+			context.syminfo = this;
+			context.dbgHelp = dbgHelp;
+
+			wenforce(dbgHelp->SymEnumerateModulesW64(process_handle, EnumModules, &context), "SymEnumerateModules64");
+		}
+		else
+		{
+			// This is a secondary dbgHelp, so just complement debug
+			// information for modules that have none.
+			
+			for (size_t n=0;n<modules.size();n++)
+			{
+				Module &mod = modules[n];
+
+				IMAGEHLP_MODULEW64 info;
+				info.SizeOfStruct = sizeof(info);
+				if (!mod.dbghelp->SymGetModuleInfoW64(process_handle, mod.base_addr, &info))
+					continue;
+
+				// If we have a module with no symbol information from the previous (MS) dbghelp,
+				// let the current one handle it instead.
+				if (info.SymType == SymNone)
+				{
+					DWORD64 ret = dbgHelp->SymLoadModuleExW(process_handle, NULL,
+						info.ImageName, info.ModuleName, info.BaseOfImage, info.ImageSize,
+						NULL, 0);
+					if (ret)
+						mod.dbghelp = dbgHelp;
+				}
+			}
+		}
 
 		if (!modules.empty())
 			break;
@@ -185,56 +190,81 @@ void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
 		// as each sample comes in? That'd also solve the problem of modules getting loaded/unloaded
 		// mid-profile. Yes, I'll probably do that some day.
 		Sleep(100);
-		dbgHelpMs.SymCleanup(process_handle);
+		dbgHelp->SymCleanup(process_handle);
+	}
+}
+
+void SymbolInfo::loadSymbols(HANDLE process_handle_, bool download)
+{
+	process_handle = process_handle_;
+
+	wxBusyCursor busy;
+
+	is64BitProcess = Is64BitProcess(process_handle);
+
+	std::wstring sympath;
+	{
+		// Add the program's own directory to the search path.
+		// Useful if someone's copied the EXE and PDB to a different machine or location.
+		wchar_t szExePath[MAX_PATH] = L"";
+		DWORD pathsize = MAX_PATH;
+		BOOL gotImageName = FALSE;
+#ifdef _WIN64
+		// GetModuleFileNameEx doesn't always work across 64->32 bit boundaries.
+		// Use QueryFullProcessImageName if we have it.
+		{
+			typedef BOOL WINAPI QueryFullProcessImageNameFn(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
+
+			QueryFullProcessImageNameFn *fn = (QueryFullProcessImageNameFn *)GetProcAddress(GetModuleHandle(L"kernel32"), "QueryFullProcessImageNameW");
+			if (fn)
+				gotImageName = fn(process_handle, 0, szExePath, &pathsize);
+		}
+#endif
+
+		if (!gotImageName)
+			gotImageName = GetModuleFileNameEx(process_handle, NULL, szExePath, pathsize);
+
+		if (gotImageName)
+		{
+			// Convert the EXE path to its containing folder and append the
+			// resulting folder to the symbol search path.
+			wchar_t *p = wcsrchr(szExePath, '\\');
+
+			if (p != NULL)
+			{
+				*p = '\0';
+				sympath += std::wstring(L";") + szExePath;
+			}
+		}
+
+		prefs.AdjustSymbolPath(sympath, download);
 	}
 
-	DbgHelp *gcc;
+	loadSymbolsUsing(&dbgHelpMs, sympath);
+	loadSymbolsUsing(getGccDbgHelp(), sympath);
+
+	if (g_symLog)
+		g_symLog(L"\nFinished.\n");
+	sortModules();
+}
+
+DbgHelp* SymbolInfo::getGccDbgHelp()
+{
 	if (prefs.UseWine())
 	{
-		gcc = &dbgHelpWine;
 #ifdef _WIN64
 		// We can't use the regular dbghelpw to profile 32-bit applications,
 		// as it's got compiled-in things that assume 64-bit. So we instead have
 		// a special Wow64 build, which is compiled as 64-bit code but using 32-bit
 		// definitions. We load that instead.
 		if (!is64BitProcess)
-			gcc = &dbgHelpWineWow64;
+			return &dbgHelpWineWow64;
+		else
 #endif
+			return &dbgHelpWine;
 	}
 	else
-		gcc = &dbgHelpDrMingw;
-
-	if (gcc->SymSetDbgPrint)
-		gcc->SymSetDbgPrint(&symWineCallback);
-
-	// Now that we've loaded all the modules and debug info for the regular stuff,
-	// we initialize the GCC dbghelp and let it have a go at the ones we couldn't do.
-	wenforce(gcc->SymInitializeW(process_handle, NULL, FALSE), "SymInitialize");
-
-	for (size_t n=0;n<modules.size();n++)
-	{
-		Module &mod = modules[n];
-
-		IMAGEHLP_MODULEW64 info;
-		info.SizeOfStruct = sizeof(info);
-		if (!dbgHelpMs.SymGetModuleInfoW64(process_handle, mod.base_addr, &info))
-			continue;
-
-		// If we have a module with no symbol information from the MS dbghelp,
-		// let the gcc one handle it instead.
-		if (info.SymType == SymNone)
-		{
-			DWORD64 ret = gcc->SymLoadModuleExW(process_handle, NULL,
-				info.ImageName, info.ModuleName, info.BaseOfImage, info.ImageSize,
-				NULL, 0);
-			if (ret)
-				mod.dbghelp = gcc;
-		}
-	}
-
-	if (g_symLog)
-		g_symLog(L"\nFinished.\n");
-	sortModules();
+		return &dbgHelpDrMingw;
 }
 
 SymbolInfo::~SymbolInfo()
@@ -244,18 +274,13 @@ SymbolInfo::~SymbolInfo()
 	//------------------------------------------------------------------------
 	if ( process_handle )
 	{
-		DbgHelp *gcc = &dbgHelpWine;
-#ifdef _WIN64
-		if (is64BitProcess)
-			gcc = &dbgHelpWineWow64;
-#endif
-
-		if (!gcc->SymCleanup(process_handle))
+		DbgHelp *gcc = getGccDbgHelp();
+		if (gcc->Loaded && !gcc->SymCleanup(process_handle))
 		{
 			//error
 		}
 
-		if (!dbgHelpMs.SymCleanup(process_handle))
+		if (dbgHelpMs.Loaded && !dbgHelpMs.SymCleanup(process_handle))
 		{
 			//error
 		}
