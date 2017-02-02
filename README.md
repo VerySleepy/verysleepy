@@ -5,6 +5,14 @@
 
 This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI.
 
+### Features
+
+* Simple user interface
+* Microsoft Symbol Server support
+* [Command-line operation](https://github.com/VerySleepy/verysleepy/wiki/Command-Line-Usage)
+* [MinGW support](https://github.com/VerySleepy/verysleepy/wiki/Profiling-MinGW-Programs)
+* [Late symbol resolution](https://github.com/VerySleepy/verysleepy/wiki/Late-Symbol-Resolution)
+
 ### Download
 
 Official releases can be downloaded from [the project's website](http://www.codersnotes.com/sleepy), or from [the GitHub releases page](https://github.com/VerySleepy/verysleepy/releases).
