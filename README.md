@@ -1,11 +1,15 @@
 ﻿Very Sleepy
 -----------
 
+[![Build status](https://ci.appveyor.com/api/projects/status/5gf55tjd7mc80b05/branch/master?svg=true)](https://ci.appveyor.com/project/CyberShadow/verysleepy/branch/master)
+
 This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI.
 
 ### Download
 
-You can download an installer on [the project's website](http://www.codersnotes.com/sleepy), or from [the GitHub releases page](https://github.com/VerySleepy/verysleepy/releases).
+Official releases can be downloaded from [the project's website](http://www.codersnotes.com/sleepy), or from [the GitHub releases page](https://github.com/VerySleepy/verysleepy/releases).
+
+For the latest development version, you can download [the latest AppVeyor artifact](https://ci.appveyor.com/api/projects/CyberShadow/verysleepy/artifacts/setup.exe?branch=master).
 
 ### History
 
@@ -15,6 +19,7 @@ You can download an installer on [the project's website](http://www.codersnotes.
 * Use [Dr. MinGW](https://github.com/jrfonseca/drmingw) to resolve MinGW symbols by default
 * Update Wine DbgHelp for Windows
 * Improve and greatly simplify build process
+* Add continuous integration via [AppVeyor](https://ci.appveyor.com/project/CyberShadow/verysleepy)
 * Contributed by [Bernat Muñoz Garcia](https://github.com/shashClp):
     * Use Scintilla for syntax highlighting
 * Contributed by [k4hvd1](https://github.com/VerySleepy/verysleepy/pull/30):
