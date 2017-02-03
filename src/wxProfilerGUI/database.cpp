@@ -387,8 +387,6 @@ void Database::loadStats(wxInputStream &file)
 
 void Database::setRoot(const Database::Symbol *root)
 {
-	mainList.items.clear();
-	mainList.totalcount = 0;
 	currentRoot = root;
 	scanMainList();
 }
@@ -419,7 +417,8 @@ void Database::scanMainList()
 	{
 		const auto& i = *it;
 		// Only use call stacks that include the current root
-		if (!includeCallstack(i)) continue;
+		if (!includeCallstack(i))
+			continue;
 
 		exclusive[i.symbols[0]->id] += i.samplecount;
 		std::vector<bool> seen(symbols.size());
