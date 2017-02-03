@@ -29,6 +29,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/button.h>
 #include <wx/stattext.h>
 #include "../utils/except.h"
+#include "../appinfo.h"
 
 // IDs for the controls and the menu commands
 enum

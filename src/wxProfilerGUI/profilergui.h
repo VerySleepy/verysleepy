@@ -41,8 +41,6 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <vector>
 #include <map>
 
-#include "../appinfo.h"
-
 extern wxIcon sleepy_icon;
 
 class SymbolInfo;

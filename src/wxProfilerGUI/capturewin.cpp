@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/stattext.h>
 #include <wx/gauge.h>
 #include <wx/button.h>
+#include "../appinfo.h"
 
 // If like me your SDK doesn't have the newest Windows 7 stuff, define it here ourselves.
 // I swear they make this stuff complicated on purpose.

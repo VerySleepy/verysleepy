@@ -33,6 +33,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/gauge.h>
 #include <set>
 #include "../utils/except.h"
+#include "../appinfo.h"
 
 MainWin *theMainWin;
 

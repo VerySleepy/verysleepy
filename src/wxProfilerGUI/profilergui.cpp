@@ -41,6 +41,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "crashback.h"
 #include "aboutdlg.h"
 #include "../utils/except.h"
+#include "../appinfo.h"
 
 // DE: 20090325 Linking fails in debug target under visual studio 2005
 // RJM: works for me :-/
