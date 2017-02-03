@@ -198,6 +198,9 @@ void ProcList::displayList()
 
 		if (sym->isCollapseFunction || sym->isCollapseModule)
 			item.SetTextColour(wxColor(0,128,0));
+		else
+		if (i->inclusive == 0 && i->exclusive == 0)
+			item.SetTextColour(wxColor(128, 128, 128));
 
 		if (set_get(viewstate->highlighted, sym->address))
 			item.SetBackgroundColour(wxColor(255,255,0));
