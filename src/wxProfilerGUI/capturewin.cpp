@@ -96,9 +96,9 @@ CaptureWin::CaptureWin()
 	pauseButton = new wxBitmapToggleButton(
 		panel, CaptureWin_Pause, pause, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT );
 
-	wxButton *okButton = new wxButton(panel, wxID_OK, "Stop");
+	wxButton *okButton = new wxButton(panel, wxID_OK, "&Stop");
 	okButton->SetToolTip("Stop profiling and display collected results.");
-	wxButton *cancelButton = new wxButton(panel, wxID_CANCEL, "Abort");
+	wxButton *cancelButton = new wxButton(panel, wxID_CANCEL, "&Abort");
 	cancelButton->SetToolTip("Stop profiling, discard collected results, and exit.");
 
 	int border = ConvertDialogToPixels(wxSize(2, 0)).x;
