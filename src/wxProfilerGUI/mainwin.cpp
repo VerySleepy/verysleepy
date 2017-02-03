@@ -474,7 +474,7 @@ void MainWin::OnForwardUpdate(wxUpdateUIEvent& event)
 void MainWin::OnResetToRoot(wxCommandEvent& WXUNUSED(event))
 {
 	database->setRoot(NULL);
-	Refresh();
+	refresh();
 }
 
 void MainWin::OnResetToRootUpdate(wxUpdateUIEvent& event)
