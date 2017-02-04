@@ -24,6 +24,7 @@ SolidCompression=yes
 OutputDir=.
 ArchitecturesInstallIn64BitMode=x64
 UninstallDisplayIcon={app}\sleepy.exe
+DisableWelcomePage=no
 
 #ifdef SIGN
 SignTool=sleepy /d "{#APPNAME} v{#VERSION} installer" /du "{#APPURL}"
