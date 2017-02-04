@@ -1,6 +1,7 @@
 ; Very Sleepy install script, for Inno Setup
 
 #include "src/appinfo.h"
+#include "src/version.h"
 
 [Setup]
 AppName={#APPNAME}
