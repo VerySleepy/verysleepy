@@ -6,7 +6,7 @@
 #include <time.h>
 #include "crashreport.h"
 #include "resource.h"
-#include "dbghelp.h"
+#include "..\..\..\thirdparty\ms\dbghelp.h"
 #include "..\..\appinfo.h"
 #include "..\..\version.h"
 

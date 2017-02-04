@@ -9,5 +9,5 @@ symsrv.yes                          -diff
 /COPYING.LIB                        whitespace=-blank-at-eol
 /license.rtf                        whitespace=-blank-at-eol
 /license.txt                        whitespace=-blank-at-eol,-indent-with-non-tab
-/src/utils/dbghelp.h                whitespace=-blank-at-eol
+/thirdparty/ms/dbghelp.h            whitespace=-blank-at-eol
 /thirdparty/wxWidgetsSetup/setup.h  whitespace=-indent-with-non-tab,-blank-at-eof

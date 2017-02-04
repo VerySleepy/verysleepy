@@ -25,7 +25,7 @@ http://www.gnu.org/copyleft/gpl.html.
 
 // Use our own copy of dbghelp.h, to make sure it's the latest version.
 #include <windows.h>
-#include "dbghelp.h"
+#include "..\..\thirdparty\ms\dbghelp.h"
 
 // We provide a wrapper around the dbghelp functions we need, so that
 // we can switch to either the MS or Wine versions at runtime.
