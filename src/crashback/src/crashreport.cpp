@@ -8,6 +8,7 @@
 #include "resource.h"
 #include "dbghelp.h"
 #include "..\..\appinfo.h"
+#include "..\..\version.h"
 
 #define HOSTNAME	"thecybershadow.net"
 #define PORT		80

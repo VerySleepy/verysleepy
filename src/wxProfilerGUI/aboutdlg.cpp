@@ -28,6 +28,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/stattext.h>
 #include <wx/statline.h>
 #include "../appinfo.h"
+#include "../version.h"
 
 AboutDlg::AboutDlg()
 {
