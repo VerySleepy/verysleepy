@@ -33,6 +33,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <algorithm>
 #include <shlwapi.h>
 #include "../utils/except.h"
+#include "../appinfo.h"
 
 SymLogFn *g_symLog = NULL;
 
