@@ -60,11 +60,11 @@ LateSymbolInfo::~LateSymbolInfo()
 // The UI implements a logging facility in the form of a log panel.
 struct DebugOutputCallbacksWide : public IDebugOutputCallbacksWide
 {
-	HRESULT	STDMETHODCALLTYPE QueryInterface(__in REFIID InterfaceId, __out PVOID* Interface) { return E_NOINTERFACE; }
+	HRESULT	STDMETHODCALLTYPE QueryInterface(__in REFIID WXUNUSED(InterfaceId), __out PVOID* WXUNUSED(Interface)) { return E_NOINTERFACE; }
 	ULONG	STDMETHODCALLTYPE AddRef() { return 1; }
 	ULONG	STDMETHODCALLTYPE Release() { return 0; }
 
-	HRESULT	STDMETHODCALLTYPE Output(__in ULONG Mask, __in PCWSTR Text)
+	HRESULT	STDMETHODCALLTYPE Output(__in ULONG WXUNUSED(Mask), __in PCWSTR Text)
 	{
 		//OutputDebugStringW(Text);
 		wxLogMessage(L"%s", Text);

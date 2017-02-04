@@ -126,15 +126,11 @@ ProcessInfo ProcessInfo::FindProcessById(DWORD process_id)
 {
 	std::vector<ProcessInfo> allProcesses;
 	enumProcesses(allProcesses);
-	bool found = false;
-	for(int i =0;i< allProcesses.size();i++)
+	for (size_t i=0; i < allProcesses.size(); i++)
 	{
 		auto process = allProcesses[i];
 		if(process.getID() == process_id)
-		{
 			return process;
-			found = true;
-		}
 	}
 	throw SleepyException("Could not found process with specified id: " + std::to_string((unsigned long long) process_id));
 }

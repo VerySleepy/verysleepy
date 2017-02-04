@@ -274,7 +274,7 @@ void readQuote(std::wistream& stream, std::wstring& str_out)
 	str_out = L"";
 
 	// Parse to first "
-	while (1)
+	for (;;)
 	{
 		stream.get(c);
 		enforce(stream.good(), "Expected quoted string, got end of stream");
@@ -285,7 +285,7 @@ void readQuote(std::wistream& stream, std::wstring& str_out)
 
 	// Parse quoted text
 	bool escaping = false;
-	while (1)
+	for (;;)
 	{
 		stream.get(c);
 		enforce(stream.good(), "Unexpected end of stream while reading quoted string");

@@ -130,7 +130,7 @@ static __int64 getTotal(FILETIME time)
 	return (__int64(time.dwHighDateTime) << 32) + time.dwLowDateTime;
 }
 
-void ThreadList::OnTimer(wxTimerEvent& event)
+void ThreadList::OnTimer(wxTimerEvent& WXUNUSED(event))
 {
 	updateTimes();
 }

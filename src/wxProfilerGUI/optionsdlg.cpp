@@ -209,7 +209,7 @@ OptionsDlg::~OptionsDlg()
 {
 }
 
-void OptionsDlg::OnOk(wxCommandEvent& event)
+void OptionsDlg::OnOk(wxCommandEvent& WXUNUSED(event))
 {
 	if ( Validate() && TransferDataFromWindow() )
 	{
@@ -224,7 +224,7 @@ void OptionsDlg::OnOk(wxCommandEvent& event)
 	}
 }
 
-void OptionsDlg::OnUseSymServer(wxCommandEvent& event)
+void OptionsDlg::OnUseSymServer(wxCommandEvent& WXUNUSED(event))
 {
 	bool enabled = useSymServer->GetValue();
 	symCacheDir->Enable(enabled);
@@ -239,12 +239,12 @@ void OptionsDlg::UpdateSymPathButtons()
 	symPathMoveDown->Enable(sel >= 0 && sel < (int)symPaths->GetCount()-1);
 }
 
-void OptionsDlg::OnSymPath( wxCommandEvent & event )
+void OptionsDlg::OnSymPath(wxCommandEvent& WXUNUSED(event))
 {
 	UpdateSymPathButtons();
 }
 
-void OptionsDlg::OnSymPathAdd( wxCommandEvent & event )
+void OptionsDlg::OnSymPathAdd(wxCommandEvent& WXUNUSED(event))
 {
 	wxDirDialog dlg(this, "Select a symbol search path to add");
 	if (dlg.ShowModal()==wxID_OK)
@@ -255,7 +255,7 @@ void OptionsDlg::OnSymPathAdd( wxCommandEvent & event )
 	}
 }
 
-void OptionsDlg::OnSymPathRemove( wxCommandEvent & event )
+void OptionsDlg::OnSymPathRemove(wxCommandEvent& WXUNUSED(event))
 {
 	int sel = symPaths->GetSelection();
 	symPaths->Delete(sel);
@@ -264,7 +264,7 @@ void OptionsDlg::OnSymPathRemove( wxCommandEvent & event )
 	UpdateSymPathButtons();
 }
 
-void OptionsDlg::OnSymPathMoveUp( wxCommandEvent & event )
+void OptionsDlg::OnSymPathMoveUp(wxCommandEvent& WXUNUSED(event))
 {
 	int sel = symPaths->GetSelection();
 	wxString s = symPaths->GetString(sel);
@@ -274,7 +274,7 @@ void OptionsDlg::OnSymPathMoveUp( wxCommandEvent & event )
 	UpdateSymPathButtons();
 }
 
-void OptionsDlg::OnSymPathMoveDown( wxCommandEvent & event )
+void OptionsDlg::OnSymPathMoveDown(wxCommandEvent& WXUNUSED(event))
 {
 	int sel = symPaths->GetSelection();
 	wxString s = symPaths->GetString(sel);
@@ -284,7 +284,7 @@ void OptionsDlg::OnSymPathMoveDown( wxCommandEvent & event )
 	UpdateSymPathButtons();
 }
 
-void OptionsDlg::OnSaveMinidump( wxCommandEvent & event )
+void OptionsDlg::OnSaveMinidump(wxCommandEvent& WXUNUSED(event))
 {
 	saveMinidumpTime->Enable(saveMinidump->IsChecked());
 }

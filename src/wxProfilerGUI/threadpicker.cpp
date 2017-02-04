@@ -208,54 +208,54 @@ ThreadPicker::ThreadPicker()
 	g_symLog = symLogCallback;
 }
 
-void ThreadPicker::OnOpen(wxCommandEvent& event)
+void ThreadPicker::OnOpen(wxCommandEvent& WXUNUSED(event))
 {
 	open_filename = ProfilerGUI::PromptOpen(this);
 	if (!open_filename.empty())
 		EndModal(OPEN);
 }
 
-void ThreadPicker::OnAttachProfiler(wxCommandEvent& event)
+void ThreadPicker::OnAttachProfiler(wxCommandEvent& WXUNUSED(event))
 {
 	if (TryAttachToProcess(false))
 		EndModal(ATTACH);
 }
 
-void ThreadPicker::OnAttachProfilerAll(wxCommandEvent& event)
+void ThreadPicker::OnAttachProfilerAll(wxCommandEvent& WXUNUSED(event))
 {
 	if (TryAttachToProcess(true))
 		EndModal(ATTACH);
 }
 
-void ThreadPicker::OnDoubleClicked(wxListEvent& event)
+void ThreadPicker::OnDoubleClicked(wxListEvent& WXUNUSED(event))
 {
 	if (TryAttachToProcess(false))
 		EndModal(ATTACH);
 }
 
-void ThreadPicker::OnClose(wxCloseEvent& event)
+void ThreadPicker::OnClose(wxCloseEvent& WXUNUSED(event))
 {
 	EndModal(QUIT);
 }
 
-void ThreadPicker::OnQuit(wxCommandEvent& event)
+void ThreadPicker::OnQuit(wxCommandEvent& WXUNUSED(event))
 {
 	EndModal(QUIT);
 }
 
-void ThreadPicker::OnRefresh(wxCommandEvent& event)
+void ThreadPicker::OnRefresh(wxCommandEvent& WXUNUSED(event))
 {
 	processlist->updateProcesses();
 }
 
-void ThreadPicker::OnOptions(wxCommandEvent& event)
+void ThreadPicker::OnOptions(wxCommandEvent& WXUNUSED(event))
 {
 	OptionsDlg dlg;
 	if (dlg.ShowModal() != wxID_OK)
 		return;
 }
 
-void ThreadPicker::OnDownload(wxCommandEvent& event)
+void ThreadPicker::OnDownload(wxCommandEvent& WXUNUSED(event))
 {
 	g_symProgress = new wxProgressDialog(APPNAME, "Downloading symbols...", 100, this);
 	processlist->reloadSymbols(true);
@@ -263,7 +263,7 @@ void ThreadPicker::OnDownload(wxCommandEvent& event)
 	g_symProgress = NULL;
 }
 
-void ThreadPicker::OnLaunchExe(wxCommandEvent& event)
+void ThreadPicker::OnLaunchExe(wxCommandEvent& WXUNUSED(event))
 {
 	wxString prevCmdPath;
 	config.Read("PrevLaunchPath", &prevCmdPath, "");
@@ -293,12 +293,12 @@ void ThreadPicker::OnSupport(wxCommandEvent& WXUNUSED(event))
 	wxLaunchDefaultBrowser(GITURL "/issues");
 }
 
-void ThreadPicker::OnAbout(wxCommandEvent& event)
+void ThreadPicker::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 	ProfilerGUI::ShowAboutBox();
 }
 
-void ThreadPicker::OnTimeCheck(wxCommandEvent& event)
+void ThreadPicker::OnTimeCheck(wxCommandEvent& WXUNUSED(event))
 {
 	if( time_check->IsChecked() )
 	{

@@ -235,7 +235,7 @@ void Database::loadSymbols(wxInputStream &file)
 		info.symbol = sym;
 
 		wxFileOffset offset = file.TellI();
-		if (offset != wxInvalidOffset && offset != filesize)
+		if (offset != wxInvalidOffset && offset != (wxFileOffset)filesize)
 			progressdlg.Update(kMaxProgress * offset / filesize);
 	}
 
@@ -299,7 +299,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 		callstacks.emplace_back(std::move(callstack));
 
 		wxFileOffset offset = file.TellI();
-		if (offset != wxInvalidOffset && offset != filesize)
+		if (offset != wxInvalidOffset && offset != (wxFileOffset)filesize)
 			progressdlg.Update(kMaxProgress * offset / filesize);
 	}
 
@@ -346,7 +346,6 @@ void Database::loadIpCounts(wxInputStream &file)
 
 	str >> totalcount;
 
-	int c = 0;
 	while(!file.Eof())
 	{
 		wxString line = str.ReadLine();
@@ -374,7 +373,6 @@ void Database::loadStats(wxInputStream &file)
 
 	stats.clear();
 
-	int c = 0;
 	while(!file.Eof())
 	{
 		wxString line = str.ReadLine();
@@ -413,7 +411,7 @@ void Database::scanMainList()
 	Symbol::ID currentRootID = currentRoot ? currentRoot->id : -1;
 
 	int progress = 0;
-	for (auto& it = callstacks.begin(); it != callstacks.end(); ++it)
+	for (auto it = callstacks.begin(); it != callstacks.end(); ++it)
 	{
 		const auto& i = *it;
 		// Only use call stacks that include the current root
@@ -454,7 +452,7 @@ void Database::scanMainList()
 std::vector<const Database::CallStack*> Database::getCallstacksContaining(const Database::Symbol *symbol) const
 {
 	std::vector<const CallStack *> ret;
-	for (auto& it = callstacks.begin(); it != callstacks.end(); ++it)
+	for (auto it = callstacks.begin(); it != callstacks.end(); ++it)
 	{
 		const auto& i = *it;
 		// Only use call stacks that include the current root
@@ -477,7 +475,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 {
 	List list;
 	std::map<Address, double> counts;
-	for (auto& it = callstacks.begin(); it != callstacks.end(); ++it)
+	for (auto it = callstacks.begin(); it != callstacks.end(); ++it)
 	{
 		const auto& i = *it;
 		// Only use call stacks that include the current root

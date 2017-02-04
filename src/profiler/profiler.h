@@ -27,10 +27,6 @@ http://www.gnu.org/copyleft/gpl.html..
 #ifndef __PROFILER_H_666_
 #define __PROFILER_H_666_
 
-
-#pragma warning(disable : 4786)//disable long debug name warning
-
-
 #include <windows.h>
 #include <map>
 #include <iostream>

@@ -66,9 +66,9 @@ private:
 		option = event.GetId();
 	}
 
-	void OnOpen(wxMenuEvent &evt)
+	void OnOpen(wxMenuEvent &event)
 	{
-		this->mMenu = evt.GetMenu();
+		this->mMenu = event.GetMenu();
 		if (!mPushed)
 		{
 			theMainWin->GetStatusBar()->PushStatusText(wxString());
@@ -76,7 +76,7 @@ private:
 		}
 	}
 
-	void OnClose(wxMenuEvent &evt)
+	void OnClose(wxMenuEvent &WXUNUSED(event))
 	{
 		if (mPushed)
 		{
@@ -85,21 +85,21 @@ private:
 		}
 	}
 
-	const wxString GetHelpString(wxMenuEvent &evt)
+	const wxString GetHelpString(wxMenuEvent &event)
 	{
-		if (evt.GetMenuId() < 0)
+		if (event.GetMenuId() < 0)
 			return wxString();
 		else
-			return mMenu->GetHelpString(evt.GetMenuId());
+			return mMenu->GetHelpString(event.GetMenuId());
 	}
 
-	void OnHighlight(wxMenuEvent &evt)
+	void OnHighlight(wxMenuEvent &event)
 	{
 		if (mPushed)
-			theMainWin->GetStatusBar()->SetStatusText(GetHelpString(evt));
+			theMainWin->GetStatusBar()->SetStatusText(GetHelpString(event));
 		else
 		{
-			theMainWin->GetStatusBar()->PushStatusText(GetHelpString(evt));
+			theMainWin->GetStatusBar()->PushStatusText(GetHelpString(event));
 			mPushed = true;
 		}
 	}

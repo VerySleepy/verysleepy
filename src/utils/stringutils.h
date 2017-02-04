@@ -27,11 +27,6 @@ http://www.gnu.org/copyleft/gpl.html.
 //NOTE: not all of this code has been used/tested for ages.
 //Your mileage may vary; test the code before you use it!!!!
 
-
-
-#pragma warning(disable:4786)
-//disable long name warning
-
 #include <string>
 #include <assert.h>
 #include <vector>

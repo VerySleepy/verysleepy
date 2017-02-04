@@ -435,7 +435,7 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 	}
 }
 
-void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
+void MainWin::OnLoadMinidumpSymbols(wxCommandEvent& WXUNUSED(event))
 {
 	// Open the log tab, so the user sees output from the debug engine.
 	sourceAndLog->SetSelection(1);
@@ -449,7 +449,7 @@ void MainWin::OnLoadMinidumpSymbols( wxCommandEvent& event )
 	refresh();
 }
 
-void MainWin::OnBack(wxCommandEvent& event)
+void MainWin::OnBack(wxCommandEvent& WXUNUSED(event))
 {
 	historyPos--;
 	inspectSymbol(database->getAddrInfo(history[historyPos])->symbol, false);
@@ -460,7 +460,7 @@ void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
 	event.Enable(historyPos > 0);
 }
 
-void MainWin::OnForward(wxCommandEvent& event)
+void MainWin::OnForward(wxCommandEvent& WXUNUSED(event))
 {
 	historyPos++;
 	inspectSymbol(database->getAddrInfo(history[historyPos])->symbol, false);
@@ -482,7 +482,7 @@ void MainWin::OnResetToRootUpdate(wxUpdateUIEvent& event)
 	event.Enable(database->getRoot() != NULL);
 }
 
-void MainWin::OnResetFilters(wxCommandEvent& event)
+void MainWin::OnResetFilters(wxCommandEvent& WXUNUSED(event))
 {
 	filters->GetProperty("procname"  )->SetValueFromString("");
 	filters->GetProperty("module"    )->SetValueFromString("");
@@ -491,13 +491,13 @@ void MainWin::OnResetFilters(wxCommandEvent& event)
 	refresh();
 }
 
-void MainWin::OnCollapseOS(wxCommandEvent& event)
+void MainWin::OnCollapseOS(wxCommandEvent& WXUNUSED(event))
 {
 	reload();
 	refresh();
 }
 
-void MainWin::OnStats(wxCommandEvent& event)
+void MainWin::OnStats(wxCommandEvent& WXUNUSED(event))
 {
 	wxDialog dlg(this, -1, wxString("Statistics"), wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE);
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -545,7 +545,7 @@ void MainWin::OnAbout(wxCommandEvent& WXUNUSED(event))
 	ProfilerGUI::ShowAboutBox();
 }
 
-void MainWin::OnFiltersChanged(wxPropertyGridEvent& event)
+void MainWin::OnFiltersChanged(wxPropertyGridEvent& WXUNUSED(event))
 {
 	applyFilters();
 	refresh();

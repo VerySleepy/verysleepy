@@ -60,7 +60,7 @@ public:
 // which includes timestamps. Since the debug engine sends output in line fragments at a time,
 // the default formatting would prepend each line fragment with a timestamp, which results
 // in a corrupted log.
-void LogViewLog::DoLogRecord(wxLogLevel level, const wxString& msg, const wxLogRecordInfo& info)
+void LogViewLog::DoLogRecord(wxLogLevel WXUNUSED(level), const wxString& msg, const wxLogRecordInfo& WXUNUSED(info))
 {
 	wxString str = msg;
 
@@ -145,7 +145,7 @@ LogView::~LogView()
 	}
 }
 
-void LogView::OnContextMenu(wxContextMenuEvent& event)
+void LogView::OnContextMenu(wxContextMenuEvent& WXUNUSED(event))
 {
 	wxMenu *menu = new wxMenu;
 	menu->Append(wxID_COPY, _("&Copy"));
@@ -157,22 +157,22 @@ void LogView::OnContextMenu(wxContextMenuEvent& event)
 	delete menu;
 }
 
-void LogView::OnCopy(wxCommandEvent& event)
+void LogView::OnCopy(wxCommandEvent& WXUNUSED(event))
 {
 	Copy();
 }
 
-void LogView::OnClearLog(wxCommandEvent& event)
+void LogView::OnClearLog(wxCommandEvent& WXUNUSED(event))
 {
 	Clear();
 }
 
-void LogView::OnSelectAll(wxCommandEvent& event)
+void LogView::OnSelectAll(wxCommandEvent& WXUNUSED(event))
 {
 	SetSelection(-1, -1);
 }
 
-void LogView::OnIdle(wxIdleEvent& event)
+void LogView::OnIdle(wxIdleEvent& WXUNUSED(event))
 {
 	if (IsFrozen())
 		Thaw();

@@ -130,8 +130,11 @@ void SourceView::setCppMode()
 	StyleSetBold(wxSTC_C_WORD2, true);
 	StyleSetBold(wxSTC_C_COMMENTDOCKEYWORD, true);
 
-	for (int i = wxSTC_C_DEFAULT; i<=wxSTC_C_PREPROCESSORCOMMENT; ++i)
-		StyleSetFont(i, wxFont( wxFontInfo(10).FaceName("Consolas") ) );
+	for (int i = wxSTC_C_DEFAULT; i <= wxSTC_C_PREPROCESSORCOMMENT; ++i)
+	{
+		wxFont font(wxFontInfo(10).FaceName("Consolas"));
+		StyleSetFont(i, font);
+	}
 }
 
 void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<double> &linecounts)

@@ -65,7 +65,7 @@ SymbolInfo::SymbolInfo()
 {
 }
 
-BOOL CALLBACK symCallback(HANDLE hProcess, ULONG ActionCode, ULONG64 CallbackData, ULONG64 UserContext)
+BOOL CALLBACK symCallback(HANDLE WXUNUSED(hProcess), ULONG ActionCode, ULONG64 CallbackData, ULONG64 WXUNUSED(UserContext))
 {
 	switch(ActionCode)
 	{
@@ -352,7 +352,6 @@ const std::wstring SymbolInfo::getProcForAddr(PROFILER_ADDR addr,
 
 	if(!result)
 	{
-		DWORD err = GetLastError();
 		wchar_t buf[256];
 #if defined(_WIN64)
 		if(is64BitProcess)
@@ -391,7 +390,6 @@ void SymbolInfo::getLineForAddr(PROFILER_ADDR addr, std::wstring& filepath_out, 
 	}
 	else
 	{
-		DWORD err = GetLastError();
 		filepath_out = L"[unknown]";
 		linenum_out = 0;
 	}

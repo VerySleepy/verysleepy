@@ -127,7 +127,7 @@ void ProcList::OnSort(wxListEvent& event)
 	displayList();
 }
 
-void ProcList::OnContextMenu(wxContextMenuEvent& event)
+void ProcList::OnContextMenu(wxContextMenuEvent& WXUNUSED(event))
 {
 	FunctionMenu(this, database);
 }

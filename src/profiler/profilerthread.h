@@ -27,9 +27,6 @@ http://www.gnu.org/copyleft/gpl.html..
 #ifndef __PROFILERTHREAD_H_666_
 #define __PROFILERTHREAD_H_666_
 
-#pragma warning(disable : 4786)//disable long debug name warning
-
-
 #include "../utils/mythread.h"
 #include "profiler.h"
 #include "symbolinfo.h"

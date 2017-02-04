@@ -211,7 +211,7 @@ void CaptureWin::OnPause(wxCommandEvent& event)
 	}
 }
 
-void CaptureWin::OnOk(wxCommandEvent& event)
+void CaptureWin::OnOk(wxCommandEvent& WXUNUSED(event))
 {
 	if (win7taskBar)
 	{
@@ -221,7 +221,7 @@ void CaptureWin::OnOk(wxCommandEvent& event)
 	stopped = true;
 }
 
-void CaptureWin::OnCancel(wxCommandEvent& event)
+void CaptureWin::OnCancel(wxCommandEvent& WXUNUSED(event))
 {
 	if (win7taskBar)
 	{

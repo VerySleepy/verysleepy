@@ -165,7 +165,7 @@ void ProcessList::updateThreadList()
 	}
 }
 
-void ProcessList::OnTimer(wxTimerEvent& event)
+void ProcessList::OnTimer(wxTimerEvent& WXUNUSED(event))
 {
 	if (firstUpdate)
 	{
@@ -424,33 +424,31 @@ void ProcessList::updateTimes()
 		__int64 coreCount = 0;
 
 		HANDLE process_handle = processes[i].getProcessHandle();
-		BOOL result = FALSE;
+		if (!process_handle)
+			continue;
+
 		FILETIME CreationTime, ExitTime, KernelTime, UserTime;
-		if (process_handle != NULL)
-		{
-			result = GetProcessTimes(
-				process_handle,
-				&CreationTime,
-				&ExitTime,
-				&KernelTime,
-				&UserTime
-				);
-			coreCount = GetCoresForProcess(process_handle);
-		}
+		BOOL result = GetProcessTimes(
+			process_handle,
+			&CreationTime,
+			&ExitTime,
+			&KernelTime,
+			&UserTime
+		);
+		if (!result)
+			continue;
 
-		if (result)
-		{
-			__int64 kernel_diff = getDiff(processes[i].prevKernelTime, KernelTime);
-			__int64 user_diff = getDiff(processes[i].prevUserTime, UserTime);
-			processes[i].prevKernelTime = KernelTime;
-			processes[i].prevUserTime = UserTime;
+		coreCount = GetCoresForProcess(process_handle);
 
-			if (sampleTimeDiff > 0){
-				processes[i].cpuUsage = (((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff) / coreCount;
-			}
-			processes[i].totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
+		__int64 kernel_diff = getDiff(processes[i].prevKernelTime, KernelTime);
+		__int64 user_diff = getDiff(processes[i].prevUserTime, UserTime);
+		processes[i].prevKernelTime = KernelTime;
+		processes[i].prevUserTime = UserTime;
 
-		}
+		if (sampleTimeDiff > 0)
+			processes[i].cpuUsage = (((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff) / coreCount;
+
+		processes[i].totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
 	}
 
 	fillList();

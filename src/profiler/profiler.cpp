@@ -246,7 +246,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 	DbgHelp *prevDbgHelp = NULL;
 	bool first = true;
 
-	while(true)
+	for (;;)
 	{
 		// See which module this IP is in.
 		Module *mod = syminfo->getModuleForAddr(ip);

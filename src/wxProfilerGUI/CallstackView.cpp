@@ -43,7 +43,7 @@ public:
 		SetBackgroundColour(*wxGREEN);
 	}
 
-	void OnPaint(wxPaintEvent &event)
+	void OnPaint(wxPaintEvent& WXUNUSED(event))
 	{
 		wxPaintDC dc(this);
 		dc.SetBackgroundMode(wxTRANSPARENT);
@@ -56,9 +56,8 @@ public:
 		this->label = label;
 	}
 
-	void OnEraseBackground(wxEraseEvent& event)
+	void OnEraseBackground(wxEraseEvent& WXUNUSED(event))
 	{
-
 	}
 
 	DECLARE_EVENT_TABLE()
@@ -77,7 +76,7 @@ EVT_CONTEXT_MENU(CallstackView::OnContextMenu)
 END_EVENT_TABLE()
 
 CallstackView::CallstackView(wxWindow *parent,Database *_database)
-:	wxWindow(parent,-1), database(_database), callstackActive(0), currSymbol(NULL), itemSelected(~0)
+:	wxWindow(parent,-1), database(_database), callstackActive(0), currSymbol(NULL), itemSelected(~0u)
 {
 	listCtrl = new wxListCtrl(this,LIST_CTRL,wxDefaultPosition,wxDefaultSize,wxLC_REPORT);
 	setupColumn(COL_NAME,			150,	_T("Name"));
@@ -110,10 +109,10 @@ void CallstackView::OnSelected(wxListEvent& event)
 		const Database::Symbol *symbol = callstacks[callstackActive]->symbols[itemSelected];
 		theMainWin->focusSymbol(symbol);
 	}
-	itemSelected = ~0;
+	itemSelected = ~0u;
 }
 
-void CallstackView::OnSize(wxSizeEvent& event)
+void CallstackView::OnSize(wxSizeEvent& WXUNUSED(event))
 {
 	Layout();
 }
@@ -196,12 +195,12 @@ void CallstackView::updateList()
 
 	const ViewState *viewstate = theMainWin->getViewState();
 
-	for(unsigned i = 0; i < now->symbols.size(); i++)
+	for (size_t i = 0; i < now->symbols.size(); i++)
 	{
 		const Database::Symbol *snow = now->symbols[i];
 		Database::Address addr = now->addresses[i];
 
-		if (i == listCtrl->GetItemCount())
+		if (i == (size_t)listCtrl->GetItemCount())
 			listCtrl->InsertItem(i,snow->procname.c_str());
 		else
 			listCtrl->SetItem(i,COL_NAME,snow->procname.c_str());
@@ -289,7 +288,7 @@ void CallstackView::OnTool(wxCommandEvent &event)
 	}
 }
 
-void CallstackView::OnContextMenu(wxContextMenuEvent& event)
+void CallstackView::OnContextMenu(wxContextMenuEvent& WXUNUSED(event))
 {
 	FunctionMenu(listCtrl, database);
 }
