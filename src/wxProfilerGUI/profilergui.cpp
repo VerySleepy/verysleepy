@@ -76,7 +76,7 @@ std::wstring cmdline_load, cmdline_save, cmdline_run, cmdline_attach;
 long cmdline_timeout = -1;  // -1 means profile until cancelled
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
-wxConfig config(_T(APPNAME) L" " _T(VERSION), _T(VENDOR));
+wxConfig config(_T(APPNAME), _T(VENDOR));
 
 ProfilerGUI::ProfilerGUI()
 {
