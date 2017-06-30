@@ -46,6 +46,7 @@ enum
 	MainWin_Open,
 	MainWin_SaveAs,
 	MainWin_ExportAsCsv,
+	MainWin_ExportAsCallgrind,
 	MainWin_LoadMinidumpSymbols,
 	MainWin_View_Back,
 	MainWin_View_Forward,
@@ -102,6 +103,7 @@ MainWin::MainWin(const wxString& title,
 	menuFile->Append(MainWin_Open, _T("&Open...\tCtrl-O"), _T("Opens an existing profile"));
 	menuFile->Append(MainWin_SaveAs, _T("Save &As...\tCtrl-S"), _T("Saves the profile data to a file"));
 	menuFile->Append(MainWin_ExportAsCsv, _T("&Export as CSV..."), _T("Export the profile data to a CSV file"));
+	menuFile->Append(MainWin_ExportAsCallgrind, _T("&Export as Callgrind..."), _T("Export the profile data to a Callgrind file"));
 	menuFile->AppendSeparator();
 	menuFile->Append(MainWin_LoadMinidumpSymbols,_T("Load symbols from &minidump"), _T("Loads symbols for modules recorded in the minidump included with this capture."))
 		->Enable(database->has_minidump);
@@ -323,6 +325,7 @@ EVT_MENU(MainWin_New,  MainWin::OnNew)
 EVT_MENU(MainWin_Open,  MainWin::OnOpen)
 EVT_MENU(MainWin_SaveAs,  MainWin::OnSaveAs)
 EVT_MENU(MainWin_ExportAsCsv,  MainWin::OnExportAsCsv)
+EVT_MENU(MainWin_ExportAsCallgrind,  MainWin::OnExportAsCallgrind)
 EVT_MENU(MainWin_LoadMinidumpSymbols,  MainWin::OnLoadMinidumpSymbols)
 EVT_MENU(MainWin_View_Back, MainWin::OnBack)
 EVT_UPDATE_UI(MainWin_View_Back, MainWin::OnBackUpdate)
@@ -431,6 +434,134 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 			writeQuote(txt, database->getModuleName(item.symbol->module), '"'); txt << ",";
 			writeQuote(txt, database->getFileName(item.symbol->sourcefile), '"'); txt << ",";
 			txt << database->getAddrInfo(item.symbol->address)->sourceline << "\n";
+		}
+	}
+}
+
+void MainWin::OnExportAsCallgrind(wxCommandEvent& WXUNUSED(event))
+{
+	wxFileDialog dlg(this, "Export File As", "", "callgrind.capture", "Callgrind Files (callgrind.*)|callgrind.*", wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+	if (dlg.ShowModal() != wxID_CANCEL)
+	{
+		wxFileOutputStream file(dlg.GetPath());
+		if (!file.IsOk())
+			{ wxLogSysError("Could not export profile data.\n"); return; }
+
+		wxProgressDialog progressdlg(APPNAME, "Writing callgrind file...", database->getSymbolCount() - 1, theMainWin, wxPD_APP_MODAL|wxPD_AUTO_HIDE);
+
+		// Prepare a set of symbols that are skipped (either due to filtering or collapsing)
+		std::unordered_set<const Database::Symbol*> skippedSymbols;
+		const bool skipCollapse = (config.Read("MainWinCollapseOS", 1) != 0), skipFilter = !viewstate.filtered.empty();
+		if (skipCollapse || skipFilter)
+			for (Database::Symbol::ID n=0;n<database->getSymbolCount();n++)
+			{
+				const Database::Symbol *symbol = database->getSymbol(n);
+				bool isSkipped = (skipCollapse && (symbol->isCollapseFunction || symbol->isCollapseModule))
+				              || (skipFilter   && set_get(viewstate.filtered, symbol->address));
+				if (isSkipped) skippedSymbols.insert(symbol);
+			}
+		const bool skipAny = !skippedSymbols.empty();
+		const Database::Symbol* currentRoot = database->getRoot();
+
+		wxTextOutputStream txt(file, wxEOL_UNIX);
+		txt << "# callgrind format\n";
+		txt << "event: t : Microseconds Spent Total\n";
+		txt << "event: ps : Microseconds Spent Per Second\n";
+		txt << "events: t ps\n";
+
+		double statsDuration = 1.f;
+		for (size_t n=0;n<database->stats.size();n++)
+		{
+			if (database->stats[n].find(_T("Filename: ")) == 0) txt << "cmd: "  << (database->stats[n].c_str() + 8+2) << "\n";
+			if (database->stats[n].find(_T("Date: "    )) == 0) txt << "desc: " << (database->stats[n].c_str() + 4+2) << "\n";
+			if (database->stats[n].find(_T("Duration: ")) == 0) std::wistringstream(database->stats[n].c_str() + 8+2) >> statsDuration;
+		}
+
+		typedef std::pair<unsigned, const Database::Symbol*> LineChildPair;
+		std::map<std::wstring, size_t> mapOb, mapFl, mapFn;
+		std::map<unsigned, double> selfCostLines;
+		std::map<LineChildPair, double> childCost_SampleCounts;
+		std::map<LineChildPair, unsigned> childCost_CallCounts;
+		for (Database::Symbol::ID n=0;n<database->getSymbolCount();n++)
+		{
+			progressdlg.Update(n);
+			const Database::Symbol *symbol = database->getSymbol(n);
+			const bool symbolSkipped = (skipAny && set_get(skippedSymbols, symbol));
+
+			selfCostLines.clear();
+			childCost_SampleCounts.clear();
+			childCost_CallCounts.clear();
+			for each (const Database::CallStack* callstack in database->getCallstacksContaining(symbol))
+			{
+				for (size_t i=0, callstackCount=callstack->addresses.size(), callstackTop=callstackCount-1; i<callstackCount; i++)
+				{
+					const Database::AddrInfo* addrinfo = database->getAddrInfo(callstack->addresses[i]);
+					if (addrinfo->symbol == currentRoot) callstackCount = i + 1; // Stop handling the callstack after the root
+					if (addrinfo->symbol != symbol) continue; // We are only interested in the current symbol
+					if (symbolSkipped)
+					{
+						// Continue on this call if on the top of the callstack or if the caller is skipped as well
+						if (i == callstackTop) continue;
+						if (set_get(skippedSymbols, database->getAddrInfo(callstack->addresses[i + 1])->symbol)) continue;
+					}
+					const Database::AddrInfo* callee = (i ? database->getAddrInfo(callstack->addresses[i - 1]) : NULL);
+					if (!callee || (symbolSkipped && set_get(skippedSymbols, callee->symbol)))
+					{
+						// If at the bottom of stack or both caller and callee are getting skipped, output as self cost
+						selfCostLines[addrinfo->sourceline] += callstack->samplecount;
+					}
+					else if (i < callstackTop || callee->symbol != symbol) // Ignore root recursion
+					{
+						const LineChildPair key(addrinfo->sourceline, callee->symbol);
+						childCost_SampleCounts[key] += callstack->samplecount;
+						childCost_CallCounts[key]++;
+					}
+				}
+			}
+
+			// Don't write this symbol if there is no sample or childcall associated with it (filtered)
+			if (selfCostLines.empty() && childCost_SampleCounts.empty()) continue;
+
+			struct CallgrindHelper // Inline helper functions for writing callgrind output files
+			{
+				static __forceinline std::wstring ConvertFilename(std::wstring str)
+				{
+					// Convert \ path separators to / for QCachegrind
+					for (auto i = str.find('\\'); i != std::wstring::npos; i = str.find('\\', i + 1)) str[i] = '/';
+					return str;
+				}
+				static __forceinline void WriteName(wxTextOutputStream& txt, std::map<std::wstring, size_t>& map, const char* key, const std::wstring& str, bool isFilename = false)
+				{
+					// If string was already seen before, just output the index, otherwise add a new entry to the ID mapping table
+					auto it = map.find(str);
+					if (it == map.end()) txt << key << "=(" << (map[str] = 1 + map.size()) << ") " << (isFilename ? ConvertFilename(str) : str) << "\n";
+					else                 txt << key << "=(" << it->second << ")" << "\n";
+				}
+				static __forceinline void WriteEvents(wxTextOutputStream& txt, unsigned sourceline, double count, double statsDuration)
+				{
+					txt << sourceline << " " // Source code line number
+					    << (unsigned long long)(count*1000000.0+0.499999999) << " " // Microseconds Spent Total
+					    << (unsigned long long)(count*1000000.0/statsDuration+0.499999999) << "\n"; // Microseconds Spent Per Second
+				}
+			};
+
+			txt << "\n";
+			CallgrindHelper::WriteName(txt, mapOb, "ob", database->getModuleName(symbol->module));
+			CallgrindHelper::WriteName(txt, mapFl, "fl", database->getFileName(symbol->sourcefile), true);
+			CallgrindHelper::WriteName(txt, mapFn, "fn", symbol->procname);
+
+			for each (const auto &pair in selfCostLines)
+				CallgrindHelper::WriteEvents(txt, pair.first, pair.second, statsDuration);
+
+			for each (const auto &childcall_samplecount in childCost_SampleCounts)
+			{
+				const LineChildPair& key = childcall_samplecount.first;
+				CallgrindHelper::WriteName(txt, mapOb, "cob", database->getModuleName(key.second->module));
+				CallgrindHelper::WriteName(txt, mapFl, "cfl", database->getFileName(key.second->sourcefile), true);
+				CallgrindHelper::WriteName(txt, mapFn, "cfn", key.second->procname);
+				txt << "calls=" << childCost_CallCounts[key] << " " << database->getAddrInfo(key.second->address)->sourceline << "\n";
+				CallgrindHelper::WriteEvents(txt, key.first, childcall_samplecount.second, statsDuration);
+			}
 		}
 	}
 }
