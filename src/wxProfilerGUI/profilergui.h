@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 profilergui.h
 -------------
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
@@ -141,6 +141,8 @@ private:
 	std::wstring LaunchProfiler(const AttachInfo *info);
 	AttachInfo *RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd);
 	AttachInfo *AttachToProcess(const std::wstring& processId);
+	AttachInfo *AttachToMainThread(const std::wstring& processId);
+	AttachInfo *AttachToMostBusyThread(const std::wstring& processId);
 	static void TryLoadSymbols(AttachInfo* output);
 	void LoadProfileData(const std::wstring &filename);
 	std::wstring ObtainProfileData();

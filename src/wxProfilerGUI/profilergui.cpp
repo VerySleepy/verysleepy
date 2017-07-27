@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 profilergui.cpp
 ---------------
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
@@ -60,6 +60,8 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_SWITCH, "h", "", "Displays help on the command line parameters.",			wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 	{ wxCMD_LINE_OPTION, "r", "", "Runs an executable and profiles it.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "a", "", "Attaches to a process (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "amt", "", "Attaches to a process's main thread (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "ambt", "", "Attaches to a process's most busy thread (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "i", "", "Loads an existing profile from a file.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "t", "", "Stops capturing automatically after N seconds time.",	wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
@@ -72,7 +74,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 };
 
 wxIcon sleepy_icon;
-std::wstring cmdline_load, cmdline_save, cmdline_run, cmdline_attach;
+std::wstring cmdline_load, cmdline_save, cmdline_run, cmdline_attach, cmdline_attach_mt, cmdline_attach_mbt;
 long cmdline_timeout = -1;  // -1 means profile until cancelled
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
@@ -324,6 +326,67 @@ AttachInfo * ProfilerGUI::AttachToProcess(const std::wstring& processId)
 	return attach_info;
 }
 
+AttachInfo * ProfilerGUI::AttachToMainThread(const std::wstring& processId)
+{
+	DWORD processId_dw;
+	try
+	{
+		processId_dw = std::stoi(processId);
+	}
+	catch (const std::exception&)
+	{
+		throw SleepyException("Not valid process id: " + processId);
+	}
+	ProcessInfo process_info = ProcessInfo::FindProcessById(processId_dw);
+	AttachInfo* attach_info = new AttachInfo();
+	attach_info->process_handle = process_info.getProcessHandle();
+
+	if(process_info.threads.empty())
+		throw SleepyException("No valid thread");
+
+	attach_info->thread_handles.push_back(process_info.threads.front().getThreadHandle());
+	attach_info->sym_info = new SymbolInfo();
+
+	TryLoadSymbols(attach_info);
+	return attach_info;
+}
+
+AttachInfo * ProfilerGUI::AttachToMostBusyThread(const std::wstring& processId)
+{
+	DWORD processId_dw;
+	try
+	{
+		processId_dw = std::stoi(processId);
+	}
+	catch (const std::exception&)
+	{
+		throw SleepyException("Not valid process id: " + processId);
+	}
+	ProcessInfo process_info = ProcessInfo::FindProcessById(processId_dw);
+	AttachInfo* attach_info = new AttachInfo();
+	attach_info->process_handle = process_info.getProcessHandle();
+
+	int max = -1;
+	HANDLE most_busy = NULL;
+	for (auto thread_info = process_info.threads.begin(); thread_info != process_info.threads.end(); ++thread_info)
+	{
+		thread_info->recalcUsage(0);
+		if (max < thread_info->totalCpuTimeMs)
+		{
+			max = thread_info->totalCpuTimeMs;
+			most_busy = thread_info->getThreadHandle();
+		}
+	}
+
+	if(most_busy != NULL)
+		attach_info->thread_handles.push_back(most_busy);
+	
+	attach_info->sym_info = new SymbolInfo();
+
+	TryLoadSymbols(attach_info);
+	return attach_info;
+}
+
 void ProfilerGUI::TryLoadSymbols(AttachInfo* output)
 {
 	// Load up the debug info for it.
@@ -509,6 +572,16 @@ bool ProfilerGUI::Run()
 		std::unique_ptr<AttachInfo> info(AttachToProcess(cmdline_attach));
 		filename = LaunchProfiler(info.get());
 	}
+	else if (!cmdline_attach_mt.empty())
+	{
+		std::unique_ptr<AttachInfo> info(AttachToMainThread(cmdline_attach_mt));
+		filename = LaunchProfiler(info.get());
+	}
+	else if (!cmdline_attach_mbt.empty())
+	{
+		std::unique_ptr<AttachInfo> info(AttachToMostBusyThread(cmdline_attach_mbt));
+		filename = LaunchProfiler(info.get());
+	}
 	else if (!cmdline_load.empty())
 		filename = cmdline_load;
 	else
@@ -573,6 +646,10 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		cmdline_run = param.c_str();
 	if (parser.Found("a", &param))
 		cmdline_attach = param.c_str();
+	if (parser.Found("amt", &param))
+		cmdline_attach_mt = param.c_str();
+	if (parser.Found("ambt", &param))
+		cmdline_attach_mbt = param.c_str();
 	if (parser.Found("wine"))
 		prefs.useWineSwitch = true;
 	if (parser.Found("mingw"))
