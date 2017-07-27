@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 mainwin.cpp
 -----------
 File created by ClassTemplate on Sun Mar 13 21:12:40 2005
@@ -491,8 +491,10 @@ void MainWin::OnExportAsCallgrind(wxCommandEvent& WXUNUSED(event))
 			selfCostLines.clear();
 			childCost_SampleCounts.clear();
 			childCost_CallCounts.clear();
-			for each (const Database::CallStack* callstack in database->getCallstacksContaining(symbol))
+			auto callstacks = database->getCallstacksContaining(symbol);
+			for (auto it = callstacks.begin(); it != callstacks.end(); ++it)
 			{
+				const Database::CallStack* callstack = *it;
 				for (size_t i=0, callstackCount=callstack->addresses.size(), callstackTop=callstackCount-1; i<callstackCount; i++)
 				{
 					const Database::AddrInfo* addrinfo = database->getAddrInfo(callstack->addresses[i]);

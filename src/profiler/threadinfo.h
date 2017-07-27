@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 threadinfo.h
 ------------
 File created by ClassTemplate on Sun Mar 20 03:22:37 2005
@@ -51,6 +51,8 @@ public:
 
 	const std::wstring& getLocation() const { return location; }
 	void setLocation(const std::wstring &loc) { location = loc; }
+
+	bool recalcUsage(int sampleTimeDiff);
 
 	FILETIME prevKernelTime, prevUserTime;
 	// DE: 20090325 Threads now have CPU usage

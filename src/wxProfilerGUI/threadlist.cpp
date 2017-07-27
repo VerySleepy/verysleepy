@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 threadList.cpp
 ---------------
 File created by ClassTemplate on Sun Mar 20 17:33:43 2005
@@ -116,18 +116,6 @@ std::vector<const ThreadInfo*> ThreadList::getSelectedThreads(bool all)
 		}
 	}
 	return selectedThreads;
-}
-
-static __int64 getDiff(FILETIME before, FILETIME after)
-{
-	__int64 i0 = (__int64(before.dwHighDateTime) << 32) + before.dwLowDateTime;
-	__int64 i1 = (__int64( after.dwHighDateTime) << 32) +  after.dwLowDateTime;
-	return i1 - i0;
-}
-
-static __int64 getTotal(FILETIME time)
-{
-	return (__int64(time.dwHighDateTime) << 32) + time.dwLowDateTime;
 }
 
 void ThreadList::OnTimer(wxTimerEvent& WXUNUSED(event))
@@ -300,35 +288,14 @@ void ThreadList::updateTimes()
 
 	for(int i=0; i<(int)this->threads.size(); ++i)
 	{
-		this->threads[i].cpuUsage = -1;
-		this->threads[i].totalCpuTimeMs = -1;
-		this->threads[i].setLocation(L"-");
+		if (!this->threads[i].recalcUsage(sampleTimeDiff))
+			continue;
 
 		HANDLE thread_handle = this->threads[i].getThreadHandle();
 		if (thread_handle == NULL)
 			continue;
 
-		FILETIME CreationTime, ExitTime, KernelTime, UserTime;
-
-		if ( GetThreadTimes(
-			thread_handle,
-			&CreationTime,
-			&ExitTime,
-			&KernelTime,
-			&UserTime
-			) )
-		{
-			__int64 kernel_diff = getDiff(this->threads[i].prevKernelTime, KernelTime);
-			__int64 user_diff = getDiff(this->threads[i].prevUserTime, UserTime);
-			this->threads[i].prevKernelTime = KernelTime;
-			this->threads[i].prevUserTime = UserTime;
-
-			if (sampleTimeDiff > 0){
-				this->threads[i].cpuUsage = ((kernel_diff + user_diff) / 10000) * 100 / sampleTimeDiff;
-			}
-			this->threads[i].totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
-		}
-
+		this->threads[i].setLocation(L"-");
 		if (i < MAX_NUM_THREAD_LOCATIONS) {
 			std::wstring loc = getLocation(thread_handle);
 			this->threads[i].setLocation(loc);
