@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 threadinfo.cpp
 --------------
 File created by ClassTemplate on Sun Mar 20 03:22:37 2005
@@ -23,7 +23,17 @@ http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
 #include "threadinfo.h"
 
+static __int64 getDiff(FILETIME before, FILETIME after)
+{
+	__int64 i0 = (__int64(before.dwHighDateTime) << 32) + before.dwLowDateTime;
+	__int64 i1 = (__int64(after.dwHighDateTime) << 32) + after.dwLowDateTime;
+	return i1 - i0;
+}
 
+static __int64 getTotal(FILETIME time)
+{
+	return (__int64(time.dwHighDateTime) << 32) + time.dwLowDateTime;
+}
 
 
 // DE: 20090325 Threads now have CPU usage
@@ -39,4 +49,38 @@ ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
 
 ThreadInfo::~ThreadInfo()
 {
+}
+
+bool ThreadInfo::recalcUsage(int sampleTimeDiff)
+{
+	cpuUsage = -1;
+	totalCpuTimeMs = -1;
+
+	HANDLE thread_handle = getThreadHandle();
+	if (thread_handle == NULL)
+		return false;
+
+	FILETIME CreationTime, ExitTime, KernelTime, UserTime;
+
+	if (!GetThreadTimes(
+		thread_handle,
+		&CreationTime,
+		&ExitTime,
+		&KernelTime,
+		&UserTime
+	))
+		return false;
+	
+	__int64 kernel_diff = getDiff(prevKernelTime, KernelTime);
+	__int64 user_diff = getDiff(prevUserTime, UserTime);
+	prevKernelTime = KernelTime;
+	prevUserTime = UserTime;
+
+	if (sampleTimeDiff > 0) {
+		__int64 total_diff = ((kernel_diff + user_diff) / 10000) * 100;
+		cpuUsage = static_cast<int>(total_diff / sampleTimeDiff);
+	}
+	totalCpuTimeMs = (getTotal(KernelTime) + getTotal(UserTime)) / 10000;
+
+	return true;
 }

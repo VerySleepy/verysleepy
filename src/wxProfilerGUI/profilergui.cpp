@@ -1,4 +1,4 @@
-/*=====================================================================
+﻿/*=====================================================================
 profilergui.cpp
 ---------------
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
@@ -66,6 +66,8 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_SWITCH, "q", "", "Quiet mode (no error messages will be shown).",			wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_SWITCH, "", "wine", "Use Wine DbgHelp.",									wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_SWITCH, "", "mingw", "Use Dr. MinGW DbgHelp.",							wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_SWITCH, "mt", "", "When attaching a process, profiles only main thread.",			wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_SWITCH, "mbt", "", "When attaching a process, profiles only most busy thread.",	wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_PARAM, NULL, NULL, "Loads an existing profile from a file.",				wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL},
 
 	{ wxCMD_LINE_NONE }
@@ -300,6 +302,51 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 	return output.release();
 }
 
+static HANDLE getMostBusyThread(ProcessInfo& process_info)
+{
+	int max = -1;
+	HANDLE mostBusy = NULL;
+	for (auto thread_info = process_info.threads.begin(); thread_info != process_info.threads.end(); ++thread_info)
+	{
+		thread_info->recalcUsage(0);
+		if (max < thread_info->totalCpuTimeMs)
+		{
+			max = thread_info->totalCpuTimeMs;
+			mostBusy = thread_info->getThreadHandle();
+		}
+	}
+
+	return mostBusy;
+}
+
+static std::vector<HANDLE> getThreadsByAttachMode(ProcessInfo& process_info)
+{
+	std::vector<HANDLE> threadHandles;
+
+	if (process_info.threads.empty())
+		return threadHandles;
+
+	switch (prefs.attachMode)
+	{
+	case ATTACH_MAIN_THREAD:
+		threadHandles.push_back(process_info.threads.front().getThreadHandle());
+		return threadHandles;
+
+	case ATTACH_MOST_BUSY_THREAD:
+		if (HANDLE mostBusy = getMostBusyThread(process_info))
+			threadHandles.push_back(mostBusy);
+		return threadHandles;
+
+	default: // all thread
+		threadHandles.reserve(process_info.threads.size());
+		for (auto thread_info = process_info.threads.begin(); thread_info != process_info.threads.end(); ++thread_info)
+		{
+			threadHandles.push_back(thread_info->getThreadHandle());
+		}
+		return threadHandles;
+	}
+}
+
 AttachInfo * ProfilerGUI::AttachToProcess(const std::wstring& processId)
 {
 	DWORD processId_dw;
@@ -314,10 +361,7 @@ AttachInfo * ProfilerGUI::AttachToProcess(const std::wstring& processId)
 	ProcessInfo process_info = ProcessInfo::FindProcessById(processId_dw);
 	AttachInfo* attach_info =new AttachInfo();
 	attach_info->process_handle = process_info.getProcessHandle();
-	for(auto thread_info = process_info.threads.begin(); thread_info!= process_info.threads.end(); ++thread_info)
-	{
-		attach_info->thread_handles.push_back(thread_info->getThreadHandle());
-	}
+	attach_info->thread_handles = getThreadsByAttachMode(process_info);
 	attach_info->sym_info = new SymbolInfo();
 
 	TryLoadSymbols(attach_info);
@@ -577,6 +621,10 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		prefs.useWineSwitch = true;
 	if (parser.Found("mingw"))
 		prefs.useMingwSwitch = true;
+	if (parser.Found("mt", &param))
+		prefs.attachMode = ATTACH_MAIN_THREAD;
+	if (parser.Found("mbt", &param))
+		prefs.attachMode = ATTACH_MOST_BUSY_THREAD;
 
 	return true;
 }
