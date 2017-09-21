@@ -9,7 +9,7 @@ rem Note that this method is not recommended - currently, MSys2 only
 rem packages MinGW with POSIX threads, whereas Dr. MinGW is
 rem recommended to be built with Win32 threads. Using POSIX threads
 rem will result in lower performance and a dependency to
-rem libwinpthread-1.dll (which can banifest in an error message such
+rem libwinpthread-1.dll (which can manifest in an error message such
 rem as "Could not load dbghelpdr.dll: %1 is not a valid Win32
 rem application" in Very Sleepy).
 
