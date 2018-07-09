@@ -103,13 +103,13 @@ public:
 	/// Switch selection to a given symbol.
 	/// Does not repopulate the secondary views.
 	/// Called when clicking on a particular symbol.
-	void focusSymbol(const Database::Symbol *symbol);
+	void focusSymbol(const Database::AddrInfo *addrinfo);
 
 	/// Inspect a given symbol.
 	/// Opens the corresponding symbol properties in all related views.
 	/// Implies focusSymbol(symbol).
 	/// Called when double-clicking on a particular symbol.
-	void inspectSymbol(const Database::Symbol *symbol, bool addtohistory=true);
+	void inspectSymbol(const Database::AddrInfo *addrinfo, bool addtohistory=true);
 
 	/// Called by SourceView to update the status bar.
 	void setSourcePos(const std::wstring& currentfile, int currentline);
@@ -156,7 +156,7 @@ private:
 
 	ViewState viewstate;
 
-	std::deque<Database::Address> history;
+	std::deque<const Database::AddrInfo*> history;
 	size_t historyPos;
 
 	wxGauge *gauge;
@@ -169,7 +169,7 @@ private:
 	/// Called when the symbol strings have changed in one way or another.
 	void symbolsChanged();
 
-	void showSource(const Database::Symbol * symbol);
+	void showSource(const Database::AddrInfo *addrinfo);
 
 	void updateStatusBar();
 };
