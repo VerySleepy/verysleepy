@@ -85,7 +85,7 @@ void symLogCallback(const wchar_t *text)
 ThreadPicker::ThreadPicker()
 :	wxModalFrame(NULL, -1, wxString(APPNAME),
 			 wxDefaultPosition, wxDefaultSize,
-			 wxDEFAULT_FRAME_STYLE)
+			 wxDEFAULT_FRAME_STYLE), attach_info(NULL)
 {
 	SetIcon(sleepy_icon);
 
@@ -314,6 +314,8 @@ ThreadPicker::~ThreadPicker()
 {
 	g_symLog = NULL;
 	delete log;
+	if (attach_info)
+		delete attach_info;
 }
 
 /*
