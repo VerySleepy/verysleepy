@@ -106,8 +106,8 @@ void CallstackView::OnSelected(wxListEvent& event)
 	itemSelected = event.m_itemIndex;
 	if (callstackActive < callstacks.size() && (size_t)itemSelected < callstacks[callstackActive]->symbols.size())
 	{
-		const Database::Symbol *symbol = callstacks[callstackActive]->symbols[itemSelected];
-		theMainWin->focusSymbol(symbol);
+		const Database::AddrInfo *addrinfo = database->getAddrInfo(callstacks[callstackActive]->addresses[itemSelected]);
+		theMainWin->focusSymbol(addrinfo);
 	}
 	itemSelected = ~0u;
 }
@@ -199,6 +199,7 @@ void CallstackView::updateList()
 	{
 		const Database::Symbol *snow = now->symbols[i];
 		Database::Address addr = now->addresses[i];
+		const Database::AddrInfo *addrinfo = database->getAddrInfo(addr);
 
 		if (i == (size_t)listCtrl->GetItemCount())
 			listCtrl->InsertItem(i,snow->procname.c_str());
@@ -217,7 +218,7 @@ void CallstackView::updateList()
 
 		listCtrl->SetItem(i, COL_MODULE    , database->getModuleName(snow->module));
 		listCtrl->SetItem(i, COL_SOURCEFILE, database->getFileName  (snow->sourcefile));
-		listCtrl->SetItem(i, COL_SOURCELINE, wxString::Format("%d", database->getAddrInfo(addr)->sourceline));
+		listCtrl->SetItem(i, COL_SOURCELINE, wxString::Format("%d", addrinfo->sourceline));
 		listCtrl->SetItem(i, COL_ADDRESS   , ::toHexString(addr));
 
 		wxFont font = listCtrl->GetFont();
@@ -232,8 +233,7 @@ void CallstackView::updateList()
 		} else {
 			listCtrl->SetItemState(i, 0, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 		}
-		// On x64, wx will downcast this to 32-bit unless it's a pointer.
-		listCtrl->SetItemPtrData(i, snow->address);
+		listCtrl->SetItemPtrData(i, (wxUIntPtr)addrinfo);
 	}
 
 	while (listCtrl->GetItemCount() > int(now->symbols.size()))

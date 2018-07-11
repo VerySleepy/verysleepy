@@ -121,8 +121,9 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 		long i = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
 		if (i < 0)
 			return;
-		addr = list->GetItemData(i);
-		sym = database->getAddrInfo(addr)->symbol;
+		const Database::AddrInfo *addrinfo = (const Database::AddrInfo *)list->GetItemData(i);
+		sym = addrinfo->symbol;
+		addr = sym->address;
 	}
 
 	for (long item = -1;;)
@@ -133,7 +134,8 @@ void FunctionMenu(wxListCtrl *list, Database *database)
 		if (item == -1)
 			break;
 
-		selection.push_back(list->GetItemData(item));
+		const Database::AddrInfo *itemaddrinfo = (const Database::AddrInfo *)list->GetItemData(item);
+		selection.push_back(itemaddrinfo->symbol->address);
 	}
 
 	if (selection.size() == 0)

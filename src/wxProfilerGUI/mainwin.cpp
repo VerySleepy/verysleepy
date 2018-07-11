@@ -583,7 +583,7 @@ void MainWin::OnLoadMinidumpSymbols(wxCommandEvent& WXUNUSED(event))
 void MainWin::OnBack(wxCommandEvent& WXUNUSED(event))
 {
 	historyPos--;
-	inspectSymbol(database->getAddrInfo(history[historyPos])->symbol, false);
+	inspectSymbol(history[historyPos], false);
 }
 
 void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
@@ -594,7 +594,7 @@ void MainWin::OnBackUpdate(wxUpdateUIEvent& event)
 void MainWin::OnForward(wxCommandEvent& WXUNUSED(event))
 {
 	historyPos++;
-	inspectSymbol(database->getAddrInfo(history[historyPos])->symbol, false);
+	inspectSymbol(history[historyPos], false);
 }
 
 void MainWin::OnForwardUpdate(wxUpdateUIEvent& event)
@@ -703,45 +703,48 @@ void MainWin::reload(bool loadMinidump/*=false*/)
 	}
 }
 
-void MainWin::showSource( const Database::Symbol * symbol )
+void MainWin::showSource( const Database::AddrInfo *addrinfo )
 {
 	if (sourceAndLog->GetSelection() != 0)
 		sourceAndLog->SetSelection(0); // Open source tab
 
+	const Database::Symbol *symbol = (addrinfo ? addrinfo->symbol : NULL);
 	std::vector<double> linecounts = database->getLineCounts(symbol->sourcefile);
 
 	if (symbol->procname == L"KiFastSystemCallRet")
 		sourceview->showFile(L"[hint KiFastSystemCallRet]", 0, std::vector<double>());
 	else
-		sourceview->showFile(database->getFileName(symbol->sourcefile), database->getAddrInfo(symbol->address)->sourceline, linecounts);
+		sourceview->showFile(database->getFileName(symbol->sourcefile), addrinfo->sourceline, linecounts);
 }
 
-void MainWin::focusSymbol(const Database::Symbol *symbol)
+void MainWin::focusSymbol(const Database::AddrInfo *addrinfo)
 {
-	showSource(symbol);
+	const Database::Symbol *symbol = (addrinfo ? addrinfo->symbol : NULL);
+	showSource(addrinfo);
 	proclist->focusSymbol(symbol);
 	callers->focusSymbol(symbol);
 	callees->focusSymbol(symbol);
 	//callStack->focusSymbol(symbol);
 }
 
-void MainWin::inspectSymbol(const Database::Symbol *symbol, bool addtohistory/*=true*/)
+void MainWin::inspectSymbol(const Database::AddrInfo *addrinfo, bool addtohistory/*=true*/)
 {
-	showSource(symbol);
+	const Database::Symbol *symbol = (addrinfo ? addrinfo->symbol : NULL);
+	showSource(addrinfo);
 	proclist->focusSymbol(symbol);
 	callers->showList(database->getCallers(symbol));
 	callees->showList(database->getCallees(symbol));
 	callStack->showCallStack(symbol);
 
-	if (addtohistory && symbol)
+	if (addtohistory && addrinfo)
 	{
 		if (history.empty())
-			history.push_back(symbol->address);
+			history.push_back(addrinfo);
 		else
-		if (history[historyPos] != symbol->address)
+		if (history[historyPos] != addrinfo)
 		{
 			history.resize(historyPos+1);
-			history.push_back(symbol->address);
+			history.push_back(addrinfo);
 			historyPos++;
 		}
 		assert(historyPos==history.size()-1);

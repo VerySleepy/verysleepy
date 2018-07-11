@@ -170,11 +170,11 @@ void ProcList::showList(const Database::List &list)
 void ProcList::displayList()
 {
 	theMainWin->setProgress(L"Saving list state...");
-	std::unordered_map<Database::Address, int> item_state;
+	std::unordered_map<const Database::AddrInfo *, int> item_state;
 	// TODO: use GetNextItem?
 	for (long i=0; i<GetItemCount(); i++)
 		if (int state = GetItemState(i, wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED))
-			item_state[GetItemData(i)] = state;
+			item_state[(const Database::AddrInfo *)GetItemData(i)] = state;
 
 	theMainWin->setProgress(L"Clearing list...");
 	Freeze();
@@ -205,9 +205,9 @@ void ProcList::displayList()
 		if (set_get(viewstate->highlighted, sym->address))
 			item.SetBackgroundColour(wxColor(255,255,0));
 
-		int state = map_get(item_state, sym->address, 0);
-		// On x64, wx will downcast this to 32-bit unless it's a pointer.
-		item.SetData((void *)sym->address);
+		const Database::AddrInfo *addrinfo = database->getAddrInfo(i->address);
+		int state = map_get(item_state, addrinfo, 0);
+		item.SetData((void*)addrinfo);
 		item.SetState(state);
 		item.SetStateMask(wxLIST_STATE_FOCUSED|wxLIST_STATE_SELECTED);
 
@@ -226,7 +226,7 @@ void ProcList::displayList()
 		setColumnValue(c, COL_CALLSPCT,		exclusivepercent);
 		setColumnValue(c, COL_MODULE,		database->getModuleName(sym->module));
 		setColumnValue(c, COL_SOURCEFILE,	database->getFileName  (sym->sourcefile));
-		setColumnValue(c, COL_SOURCELINE,	::toString((int)database->getAddrInfo(i->address)->sourceline));
+		setColumnValue(c, COL_SOURCELINE,	::toString((int)addrinfo->sourceline));
 		setColumnValue(c, COL_ADDRESS,	    ::toHexString(i->address));
 
 		if (state & wxLIST_STATE_FOCUSED)
@@ -269,7 +269,7 @@ void ProcList::focusSymbol(const Database::Symbol *symbol)
 const Database::Symbol * ProcList::getFocusedSymbol()
 {
 	long i = GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_FOCUSED);
-	return i >= 0 ? database->getAddrInfo(GetItemData(i))->symbol : NULL;
+	return i >= 0 ? ((const Database::AddrInfo *)GetItemData(i))->symbol : NULL;
 }
 
 void ProcList::OnSelected(wxListEvent& event)
@@ -280,11 +280,11 @@ void ProcList::OnSelected(wxListEvent& event)
 
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = database->getAddrInfo(GetItemData(event.m_itemIndex))->symbol;
+	const Database::AddrInfo *addrinfo = (const Database::AddrInfo *)GetItemData(event.m_itemIndex);
 	if (isroot)
-		theMainWin->inspectSymbol(symbol);
+		theMainWin->inspectSymbol(addrinfo);
 	else
-		theMainWin->focusSymbol(symbol);
+		theMainWin->focusSymbol(addrinfo);
 
 	updating = false;
 }
@@ -293,7 +293,7 @@ void ProcList::OnActivated(wxListEvent& event)
 {
 	assert(GetWindowStyle() & wxLC_REPORT);
 
-	const Database::Symbol *symbol = database->getAddrInfo(GetItemData(event.m_itemIndex))->symbol;
+	const Database::AddrInfo *addrinfo = (const Database::AddrInfo *)GetItemData(event.m_itemIndex);
 	if (!isroot)
-		theMainWin->inspectSymbol(symbol);
+		theMainWin->inspectSymbol(addrinfo);
 }
