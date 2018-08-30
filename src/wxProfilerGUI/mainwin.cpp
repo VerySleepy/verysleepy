@@ -491,7 +491,8 @@ void MainWin::OnExportAsCallgrind(wxCommandEvent& WXUNUSED(event))
 			selfCostLines.clear();
 			childCost_SampleCounts.clear();
 			childCost_CallCounts.clear();
-			for each (const Database::CallStack* callstack in database->getCallstacksContaining(symbol))
+			auto callstacks = database->getCallstacksContaining(symbol);
+			for each (const Database::CallStack* callstack in callstacks)
 			{
 				for (size_t i=0, callstackCount=callstack->addresses.size(), callstackTop=callstackCount-1; i<callstackCount; i++)
 				{
