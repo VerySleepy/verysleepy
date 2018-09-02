@@ -390,4 +390,3 @@ std::wstring ThreadList::getLocation(HANDLE thread_handle) {
 
 	return L"-";
 }
-

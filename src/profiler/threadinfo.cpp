@@ -35,8 +35,8 @@ static __int64 getTotal(FILETIME time)
 	return (__int64(time.dwHighDateTime) << 32) + time.dwLowDateTime;
 }
 
-typedef HRESULT( WINAPI *Fn )(HANDLE, PWSTR*);
-static Fn GetThreadDescription = reinterpret_cast<Fn>(GetProcAddress( GetModuleHandle( TEXT( "Kernel32.dll" ) ), "GetThreadDescription" ));
+typedef HRESULT( WINAPI *GetThreadDescriptionFunc )(HANDLE, PWSTR*);
+static GetThreadDescriptionFunc GetThreadDescription = reinterpret_cast<GetThreadDescriptionFunc>(GetProcAddress( GetModuleHandle( TEXT( "Kernel32.dll" ) ), "GetThreadDescription" ));
 
 bool hasThreadDescriptionAPI()
 {
