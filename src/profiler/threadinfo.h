@@ -28,6 +28,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <windows.h>
 #include <string>
 
+bool hasThreadDescriptionAPI();
 
 /*=====================================================================
 ThreadInfo
@@ -52,6 +53,7 @@ public:
 	const std::wstring& getLocation() const { return location; }
 	void setLocation(const std::wstring &loc) { location = loc; }
 
+	const std::wstring& getName() const { return name; }
 	bool recalcUsage(int sampleTimeDiff);
 
 	FILETIME prevKernelTime, prevUserTime;
@@ -61,6 +63,7 @@ public:
 
 private:
 	std::wstring location;
+	std::wstring name;
 	DWORD id;
 	HANDLE thread_handle;
 };

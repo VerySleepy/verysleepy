@@ -1,4 +1,4 @@
-﻿/*=====================================================================
+/*=====================================================================
 threadList.cpp
 ---------------
 File created by ClassTemplate on Sun Mar 20 17:33:43 2005
@@ -59,11 +59,20 @@ ThreadList::ThreadList(wxWindow *parent, const wxPoint& pos,
 	InsertColumn(COL_TOTALCPU, itemCol);
 	itemCol.m_text = _T("TID");
 	InsertColumn(COL_ID, itemCol);
+	itemCol.m_text = _T("Thread Name");
+	InsertColumn(COL_NAME, itemCol);
 
 	SetColumnWidth(COL_LOCATION, 220);
 	SetColumnWidth(COL_CPUUSAGE, 80);
 	SetColumnWidth(COL_TOTALCPU, 100);
 	SetColumnWidth(COL_ID, 60);
+
+	// We hide the thread name column if running it on an OS that doesn't
+	// support the API, to avoid wasting screen space.
+	if (hasThreadDescriptionAPI())
+		SetColumnWidth(COL_NAME, 150);
+	else
+		SetColumnWidth(COL_NAME, 0);
 
 	sort_column = COL_CPUUSAGE;
 	sort_dir = SORT_DOWN;
@@ -155,6 +164,14 @@ struct IdDescPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) 
 	return a.getID() > b.getID();
 } };
 
+struct NameAscPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
+	return a.getName() < b.getName();
+} };
+
+struct NameDescPred { bool operator () (const ThreadInfo &a, const ThreadInfo &b) {
+	return a.getName() > b.getName();
+} };
+
 void ThreadList::sortByLocation()
 {
 	if (sort_dir == SORT_UP)
@@ -187,6 +204,14 @@ void ThreadList::sortByID()
 		std::stable_sort(threads.begin(), threads.end(), IdDescPred());
 }
 
+void ThreadList::sortByName()
+{
+	if (sort_dir == SORT_UP)
+		std::stable_sort(threads.begin(), threads.end(), NameAscPred());
+	else
+		std::stable_sort(threads.begin(), threads.end(), NameDescPred());
+}
+
 void ThreadList::OnSort(wxListEvent& event)
 {
 	SetSortImage(sort_column, SORT_NONE);
@@ -212,6 +237,7 @@ void ThreadList::updateSorting()
 		case COL_CPUUSAGE:	sortByCpuUsage(); break;
 		case COL_TOTALCPU:	sortByTotalCpuTime(); break;
 		case COL_ID:		sortByID(); break;
+		case COL_NAME:		sortByName(); break;
 	}
 	fillList();
 }
@@ -245,6 +271,8 @@ void ThreadList::fillList()
 
 		sprintf(str, "%d", threads[i].getID());
 		this->SetItem(i, COL_ID, str);
+
+		this->SetItem(i, COL_NAME, threads[i].getName());
 	}
 	Thaw();
 }
@@ -362,3 +390,4 @@ std::wstring ThreadList::getLocation(HANDLE thread_handle) {
 
 	return L"-";
 }
+

@@ -62,6 +62,7 @@ public:
 	void sortByCpuUsage();
 	void sortByTotalCpuTime();
 	void sortByID();
+	void sortByName();
 
 	std::vector<const ThreadInfo*> getSelectedThreads(bool all=false);
 private:
@@ -72,6 +73,7 @@ private:
 		COL_CPUUSAGE,
 		COL_TOTALCPU,
 		COL_ID,
+		COL_NAME,
 		NUM_COLUMNS
 	};
 
@@ -89,6 +91,7 @@ private:
 	void fillList();
 	int getNumDisplayedThreads();
 	std::wstring getLocation(HANDLE thread_handle);
+	std::wstring getName(HANDLE thread_handle);
 };
 
 
