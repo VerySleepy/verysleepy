@@ -424,6 +424,14 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 		if(!file.IsOk())
 			wxLogSysError("Could not export profile data.\n");
 		wxTextOutputStream txt(file);
+		txt << L"Name,";
+		txt << L"Exclusive secs,";
+		txt << L"Inclusive secs,";
+		txt << L"% Exclusive,";
+		txt << L"% Inclusive,";
+		txt << L"Module,";
+		txt << L"Source File,";
+		txt << L"Source Line\n";
 		for each (const Database::Item &item in database->getMainList().items)
 		{
 			writeQuote(txt, item.symbol->procname, '"'); txt << ",";
