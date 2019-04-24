@@ -90,7 +90,7 @@ OptionsDlg::OptionsDlg()
 	wxStaticBoxSizer *symdirsizer = new wxStaticBoxSizer(wxVERTICAL, this, "Symbol search path");
 	wxStaticBoxSizer *symsrvsizer = new wxStaticBoxSizer(wxVERTICAL, this, "Symbol server");
 
-	symPaths = new wxListBox(this, Options_SymPath, wxDefaultPosition, wxSize(-1, 75), 0, NULL, wxLB_SINGLE | wxLB_NEEDED_SB);
+	symPaths = new wxListBox(this, Options_SymPath, wxDefaultPosition, wxSize(0, 75), 0, NULL, wxLB_SINGLE | wxLB_NEEDED_SB | wxLB_HSCROLL);
 
 	wxBoxSizer *symPathSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *symPathButtonSizer = new wxBoxSizer(wxVERTICAL);
