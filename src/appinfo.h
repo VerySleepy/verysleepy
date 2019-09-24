@@ -10,7 +10,7 @@
 
 #define VENDOR  "codersnotes.com"
 
-#define APPURL  "http://www.codersnotes.com/sleepy/sleepy"
+#define APPURL  "http://www.codersnotes.com/sleepy/"
 #define GITURL  "https://github.com/VerySleepy/verysleepy"
 
 // Update this whenever backwards-incompatible changes
