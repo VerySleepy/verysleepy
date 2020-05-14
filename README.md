@@ -108,4 +108,4 @@ Alternatively, you can build Dr. MinGW using the `thirdparty/drmingw_build_mingw
 
 If you'd like to contribute a patch, please [open a pull request](https://github.com/VerySleepy/verysleepy/pulls). I'll try to review and merge it as soon as my time will allow.
 
-Bug reports and feature requests are welcome as well - please file them as [GitHub issues](https://github.com/VerySleepy/verysleepy/issues).
+Bug reports and feature requests are welcome as well -- please file them as [GitHub issues](https://github.com/VerySleepy/verysleepy/issues).
