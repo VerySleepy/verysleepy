@@ -90,7 +90,7 @@ OptionsDlg::OptionsDlg()
 	wxStaticBoxSizer *symdirsizer = new wxStaticBoxSizer(wxVERTICAL, this, "Symbol search path");
 	wxStaticBoxSizer *symsrvsizer = new wxStaticBoxSizer(wxVERTICAL, this, "Symbol server");
 
-	symPaths = new wxListBox(this, Options_SymPath, wxDefaultPosition, wxSize(0, 75), 0, NULL, wxLB_SINGLE | wxLB_NEEDED_SB | wxLB_HSCROLL);
+	symPaths = new wxListBox(this, Options_SymPath, wxDefaultPosition, FromDIP(wxSize(0, 75)), 0, NULL, wxLB_SINGLE | wxLB_NEEDED_SB | wxLB_HSCROLL);
 
 	wxBoxSizer *symPathSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *symPathButtonSizer = new wxBoxSizer(wxVERTICAL);
@@ -108,16 +108,16 @@ OptionsDlg::OptionsDlg()
 			symPathButtons[n].id,
 			wxEmptyString,
 			wxDefaultPosition,
-			wxSize(20, 20),
+			FromDIP(wxSize(20, 20)),
 			wxBU_EXACTFIT);
-		b->SetBitmap(LoadPngResource(symPathButtons[n].icon));
+		b->SetBitmap(LoadPngResource(symPathButtons[n].icon, this));
 		b->SetToolTip(symPathButtons[n].tip);
 		symPathButtonSizer->Add(b, 1);
 	}
 	UpdateSymPathButtons();
 
-	symPathSizer->Add(symPaths, 100, wxEXPAND);
-	symPathSizer->Add(symPathButtonSizer, 1, wxSHRINK);
+	symPathSizer->Add(symPaths, FromDIP(100), wxEXPAND);
+	symPathSizer->Add(symPathButtonSizer, FromDIP(1), wxSHRINK);
 
 	useSymServer = new wxCheckBox(this, Options_UseSymServer, "Use symbol server");
 	symCacheDir = new wxDirPickerCtrl(this, -1, prefs.symCacheDir, "Select a directory to store local symbols in:",
@@ -151,7 +151,7 @@ OptionsDlg::OptionsDlg()
 	saveMinidumpTime = new wxTextCtrl(
 		this, -1,
 		wxEmptyString, wxDefaultPosition,
-		wxSize(40, -1),
+		wxSize(FromDIP(40), -1),
 		0,
 		wxIntegerValidator<int>(&saveMinidumpTimeValue));
 	saveMinidumpTime->SetToolTip(
@@ -159,7 +159,7 @@ OptionsDlg::OptionsDlg()
 		"may not work as expected, as not all DLLs may be loaded yet.\n"
 		"You can set a delay after which a minidump will be saved.");
 	saveMinidumpTime->Enable(prefs.saveMinidump >= 0);
-	saveMinidumpSizer->Add(saveMinidumpTime, 0, wxTOP, -3);
+	saveMinidumpSizer->Add(saveMinidumpTime, 0, wxTOP, FromDIP(-3));
 	saveMinidumpSizer->Add(new wxStaticText(this, -1, " seconds"));
 
 	symPaths->Append(wxSplit(prefs.symSearchPath, ';', 0));
@@ -168,18 +168,18 @@ OptionsDlg::OptionsDlg()
 	symServer->Enable(prefs.useSymServer);
 	saveMinidump->SetValue(prefs.saveMinidump >= 0);
 
-	symdirsizer->Add(symPathSizer, 0, wxALL|wxEXPAND, 5);
+	symdirsizer->Add(symPathSizer, 0, wxALL|wxEXPAND, FromDIP(5));
 
-	symsrvsizer->Add(useSymServer, 0, wxALL, 5);
-	symsrvsizer->Add(new wxStaticText(this, -1, "Local cache directory:"), 0, wxLEFT|wxTOP, 5);
-	symsrvsizer->Add(symCacheDir, 0, wxALL|wxEXPAND, 5);
-	symsrvsizer->Add(new wxStaticText(this, -1, "Symbol server location:"), 0, wxLEFT|wxTOP, 5);
-	symsrvsizer->Add(symServer, 0, wxALL|wxEXPAND, 5);
+	symsrvsizer->Add(useSymServer, 0, wxALL, FromDIP(5));
+	symsrvsizer->Add(new wxStaticText(this, -1, "Local cache directory:"), 0, wxLEFT|wxTOP, FromDIP(5));
+	symsrvsizer->Add(symCacheDir, 0, wxALL|wxEXPAND, FromDIP(5));
+	symsrvsizer->Add(new wxStaticText(this, -1, "Symbol server location:"), 0, wxLEFT|wxTOP, FromDIP(5));
+	symsrvsizer->Add(symServer, 0, wxALL|wxEXPAND, FromDIP(5));
 
-	symsizer->Add(symdirsizer, 0, wxALL|wxEXPAND, 5);
-	symsizer->Add(symsrvsizer, 0, wxALL|wxEXPAND, 5);
-	symsizer->Add(minGwDbgHelpSizer, 0, wxALL, 5);
-	symsizer->Add(saveMinidumpSizer, 0, wxALL, 5);
+	symsizer->Add(symdirsizer, 0, wxALL|wxEXPAND, FromDIP(5));
+	symsizer->Add(symsrvsizer, 0, wxALL|wxEXPAND, FromDIP(5));
+	symsizer->Add(minGwDbgHelpSizer, 0, wxALL, FromDIP(5));
+	symsizer->Add(saveMinidumpSizer, 0, wxALL, FromDIP(5));
 
 	wxStaticBoxSizer *throttlesizer = new wxStaticBoxSizer(wxVERTICAL, this, "Sample rate control");
 	throttle = new wxPercentSlider(this, Options_Throttle, prefs.throttle, 1, 100, wxDefaultPosition, wxDefaultSize,
@@ -189,19 +189,19 @@ OptionsDlg::OptionsDlg()
 		"Adjusts the sample rate speed. Useful for doing longer captures\n"
 		"where you wish to reduce the profiler overhead.\n"
 		"Higher values increase accuracy; lower values result in better\n"
-		"performance."), 0, wxALL, 5);
-	throttlesizer->Add(throttle, 0, wxEXPAND|wxLEFT|wxTOP, 5);
+		"performance."), 0, wxALL, FromDIP(5));
+	throttlesizer->Add(throttle, 0, wxEXPAND|wxLEFT|wxTOP, FromDIP(5));
 
 	topsizer->Add(symsizer, 0, wxEXPAND|wxALL, 0);
-	topsizer->AddSpacer(5);
-	topsizer->Add(throttlesizer, 0, wxEXPAND|wxALL, 0);
-	rootsizer->Add(topsizer, 1, wxEXPAND|wxLEFT|wxTOP|wxRIGHT, 10);
-	rootsizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, 10);
+	topsizer->AddSpacer(FromDIP(5));
+	topsizer->Add(throttlesizer, 0, wxEXPAND|wxALL, FromDIP(0));
+	rootsizer->Add(topsizer, 1, wxEXPAND|wxLEFT|wxTOP|wxRIGHT, FromDIP(10));
+	rootsizer->Add(CreateButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxALL, FromDIP(10));
 	SetSizer(rootsizer);
 	rootsizer->SetSizeHints(this);
 	SetAutoLayout(TRUE);
 
-	SetSize(wxSize(400, -1));
+	SetSize(FromDIP(wxSize(400, -1)));
 	Centre();
 }
 

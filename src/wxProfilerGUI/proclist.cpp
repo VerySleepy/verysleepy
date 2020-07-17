@@ -57,20 +57,20 @@ ProcList::ProcList(wxWindow *parent, bool isroot, Database *database)
 
 	if (isroot)
 	{
-		setupColumn(COL_NAME,			300,	SORT_UP,	_T("Name"));
-		setupColumn(COL_EXCLUSIVE,		-1,		SORT_DOWN,	_T("Exclusive"));
-		setupColumn(COL_INCLUSIVE,		-1,		SORT_DOWN,	_T("Inclusive"));
-		setupColumn(COL_EXCLUSIVEPCT,	-1,		SORT_DOWN,	_T("% Exclusive"));
-		setupColumn(COL_INCLUSIVEPCT,	-1,		SORT_DOWN,	_T("% Inclusive"));
+		setupColumn(COL_NAME,			360,	SORT_UP,	_T("Name"));
+		setupColumn(COL_EXCLUSIVE,		70,		SORT_DOWN,	_T("Exclusive"));
+		setupColumn(COL_INCLUSIVE,		70,		SORT_DOWN,	_T("Inclusive"));
+		setupColumn(COL_EXCLUSIVEPCT,	70,		SORT_DOWN,	_T("% Exclusive"));
+		setupColumn(COL_INCLUSIVEPCT,	70,		SORT_DOWN,	_T("% Inclusive"));
 	} else {
-		setupColumn(COL_NAME,			150,	SORT_UP,	_T("Name"));
-		setupColumn(COL_SAMPLES,		-1,		SORT_DOWN,	_T("Samples"));
-		setupColumn(COL_CALLSPCT,		-1,		SORT_DOWN,	_T("% Calls"));
+		setupColumn(COL_NAME,			170,	SORT_UP,	_T("Name"));
+		setupColumn(COL_SAMPLES,		70,		SORT_DOWN,	_T("Samples"));
+		setupColumn(COL_CALLSPCT,		70,		SORT_DOWN,	_T("% Calls"));
 	}
-	setupColumn(COL_MODULE,			-1,		SORT_UP,	_T("Module"));
-	setupColumn(COL_SOURCEFILE,		245,	SORT_UP,	_T("Source File"));
-	setupColumn(COL_SOURCELINE,		-1,		SORT_UP,	_T("Source Line"));
-	setupColumn(COL_ADDRESS,		-1,		SORT_UP,	_T("Address"));
+	setupColumn(COL_MODULE,			70,		SORT_UP,	_T("Module"));
+	setupColumn(COL_SOURCEFILE,		270,	SORT_UP,	_T("Source File"));
+	setupColumn(COL_SOURCELINE,		40,		SORT_UP,	_T("Source Line"));
+	setupColumn(COL_ADDRESS,		100,	SORT_UP,	_T("Address"));
 
 	if (isroot)
 		sort_column = COL_EXCLUSIVE;
@@ -91,14 +91,13 @@ void ProcList::setupColumn(ColumnType id, int width, SortType defsort, const wxS
 	int index = GetColumnCount();
 
 	columns[id].name = name;
-	columns[id].width = width;
 	columns[id].listctrl_column = index;
 	columns[id].default_sort = defsort;
 
 	wxListItem itemCol;
 	itemCol.SetText(name);
 	if (width >= 0)
-		itemCol.SetWidth(width);
+		itemCol.SetWidth(FromDIP(width));
 	InsertColumn(index, itemCol);
 }
 

@@ -1,4 +1,4 @@
-﻿/*=====================================================================
+/*=====================================================================
 profilergui.h
 -------------
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
@@ -63,7 +63,7 @@ struct AttachInfo
 	int limit_profile_time;
 };
 
-wxBitmap LoadPngResource(const wchar_t *szName);
+wxBitmap LoadPngResource(const wchar_t *szName, const wxWindowBase* w);
 
 class Prefs
 {

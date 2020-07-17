@@ -62,15 +62,15 @@ ThreadList::ThreadList(wxWindow *parent, const wxPoint& pos,
 	itemCol.m_text = _T("Thread Name");
 	InsertColumn(COL_NAME, itemCol);
 
-	SetColumnWidth(COL_LOCATION, 220);
-	SetColumnWidth(COL_CPUUSAGE, 80);
-	SetColumnWidth(COL_TOTALCPU, 100);
-	SetColumnWidth(COL_ID, 60);
+	SetColumnWidth(COL_LOCATION, FromDIP(270));
+	SetColumnWidth(COL_CPUUSAGE, FromDIP(50));
+	SetColumnWidth(COL_TOTALCPU, FromDIP(70));
+	SetColumnWidth(COL_ID, FromDIP(50));
 
 	// We hide the thread name column if running it on an OS that doesn't
 	// support the API, to avoid wasting screen space.
 	if (hasThreadDescriptionAPI())
-		SetColumnWidth(COL_NAME, 150);
+		SetColumnWidth(COL_NAME, FromDIP(150));
 	else
 		SetColumnWidth(COL_NAME, 0);
 

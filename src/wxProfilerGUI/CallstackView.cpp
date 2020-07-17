@@ -25,6 +25,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <algorithm>
 #include <wx/aui/auibar.h>
 #include <wx/filedlg.h>
+#include <wx/dcclient.h>
 #include "contextmenu.h"
 #include "mainwin.h"
 #include "../utils/stringutils.h"
@@ -79,16 +80,16 @@ CallstackView::CallstackView(wxWindow *parent,Database *_database)
 :	wxWindow(parent,-1), database(_database), callstackActive(0), currSymbol(NULL), itemSelected(~0u)
 {
 	listCtrl = new wxListCtrl(this,LIST_CTRL,wxDefaultPosition,wxDefaultSize,wxLC_REPORT);
-	setupColumn(COL_NAME,			150,	_T("Name"));
-	setupColumn(COL_MODULE,			-1,		_T("Module"));
-	setupColumn(COL_SOURCEFILE,		245,	_T("Source File"));
-	setupColumn(COL_SOURCELINE,		-1,		_T("Source Line"));
-	setupColumn(COL_ADDRESS,		-1,		_T("Address"));
+	setupColumn(COL_NAME,			170,	_T("Name"));
+	setupColumn(COL_MODULE,			70,		_T("Module"));
+	setupColumn(COL_SOURCEFILE,		270,	_T("Source File"));
+	setupColumn(COL_SOURCELINE,		40,		_T("Source Line"));
+	setupColumn(COL_ADDRESS,		100,	_T("Address"));
 
 	toolBar = new wxAuiToolBar(this,-1);
-	toolBar->AddTool(TOOL_PREV,"-",LoadPngResource(L"button_prev"),_T("Previous"));
-	toolBar->AddTool(TOOL_NEXT,"+",LoadPngResource(L"button_next"),_T("Next"));
-	toolBar->AddTool(TOOL_EXPORT_CSV,"CSV",LoadPngResource(L"button_exportcsv"),_T("Export as CSV"));
+	toolBar->AddTool(TOOL_PREV,"-",LoadPngResource(L"button_prev", this),_T("Previous"));
+	toolBar->AddTool(TOOL_NEXT,"+",LoadPngResource(L"button_next", this),_T("Next"));
+	toolBar->AddTool(TOOL_EXPORT_CSV,"CSV",LoadPngResource(L"button_exportcsv", this),_T("Export as CSV"));
 	toolRange = new wxStaticTextTransparent(toolBar,-1);
 	toolBar->AddControl(toolRange);
 
@@ -122,7 +123,7 @@ void CallstackView::setupColumn(ColumnType index, int width, const wxString &nam
 	wxListItem itemCol;
 	itemCol.SetText(name);
 	if (width >= 0)
-		itemCol.SetWidth(width);
+		itemCol.SetWidth(FromDIP(width));
 	listCtrl->InsertColumn(index, itemCol);
 }
 

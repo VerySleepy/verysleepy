@@ -44,30 +44,30 @@ AboutDlg::AboutDlg()
 	wxSizer *sizerIconAndTitle = new wxBoxSizer(wxHORIZONTAL);
 	wxIcon icon = wxAboutDialogInfo().GetIcon();
 	if ( icon.Ok() )
-		sizerIconAndTitle->Add(new wxStaticBitmap(this, wxID_ANY, icon), 0, wxRIGHT, 20);
+		sizerIconAndTitle->Add(new wxStaticBitmap(this, wxID_ANY, icon), 0, wxRIGHT, FromDIP(20));
 
 	wxSizer *sizerTitle = new wxBoxSizer(wxVERTICAL);
 	{
 		wxStaticText *label = new wxStaticText(this, wxID_ANY, nameAndVersion);
 		wxFont font(*wxNORMAL_FONT);
-		font.SetPointSize(font.GetPointSize() + 3);
+		font.SetPointSize(font.GetPointSize() + FromDIP(3));
 		font.SetWeight(wxFONTWEIGHT_BOLD);
 		label->SetFont(font);
 
-		sizerTitle->Add(label, 0, wxBOTTOM, 4);
+		sizerTitle->Add(label, 0, wxBOTTOM, FromDIP(4));
 	}
 	{
 		wxStaticText *label = new wxStaticText(this, wxID_ANY, _T("Open-source CPU profiler"));
 		label->SetFont(*wxITALIC_FONT);
 
-		sizerTitle->Add(label, 0, wxBOTTOM, 4);
+		sizerTitle->Add(label, 0, wxBOTTOM, FromDIP(4));
 	}
 	sizerTitle->Add(new wxStaticLine(this), wxSizerFlags().Expand());
 
 	sizerIconAndTitle->Add(sizerTitle, 1, wxEXPAND);
 
 	m_sizerText->Add(sizerIconAndTitle, 1, wxEXPAND);
-	m_sizerText->AddSpacer(10);
+	m_sizerText->AddSpacer(FromDIP(10));
 
 //	AddText(_T(APPNAME) L":");
 //	AddDev("Your Name Here", "http://example.com/", "maintainer");
@@ -105,7 +105,7 @@ AboutDlg::AboutDlg()
 	}
 
 	wxSizer *sizerTop = new wxBoxSizer(wxVERTICAL);
-	sizerTop->Add(m_sizerText, 1, wxEXPAND|wxALL, 10);
+	sizerTop->Add(m_sizerText, 1, wxEXPAND|wxALL, FromDIP(10));
 	SetSizerAndFit(sizerTop);
 
 	CentreOnScreen();
