@@ -165,6 +165,16 @@ void CallstackView::showCallStack(const Database::Symbol *symbol)
 	updateList();
 }
 
+void CallstackView::reset()
+{
+	callstacks.clear();
+	callstackActive = 0;
+	callstackStats.clear();
+	currSymbol = NULL;
+	itemSelected = ~0u;
+	listCtrl->DeleteAllItems();
+}
+
 void CallstackView::updateTools()
 {
 	toolBar->EnableTool(TOOL_PREV,callstackActive != 0);

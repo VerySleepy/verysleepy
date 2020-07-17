@@ -51,6 +51,7 @@ public:
 	void OnUpdateUI(wxUpdateUIEvent& event);
 
 	void showFile(std::wstring path, int linenum, const std::vector<double> &linecounts);
+	void reset();
 
 	const std::wstring& getCurrentFile() const { return currentfile; }
 private:

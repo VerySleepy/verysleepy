@@ -624,9 +624,7 @@ void MainWin::OnResetToRootUpdate(wxUpdateUIEvent& event)
 
 void MainWin::OnResetFilters(wxCommandEvent& WXUNUSED(event))
 {
-	filters->GetProperty("procname"  )->SetValueFromString("");
-	filters->GetProperty("module"    )->SetValueFromString("");
-	filters->GetProperty("sourcefile")->SetValueFromString("");
+	resetFilters();
 	applyFilters();
 	refresh();
 }
@@ -767,6 +765,13 @@ void MainWin::reset()
 	history.clear();
 	historyPos = 0;
 
+	proclist->DeleteAllItems();
+	callers->DeleteAllItems();
+	callees->DeleteAllItems();
+	callStack->reset();
+	sourceview->reset();
+
+	resetFilters();
 	symbolsChanged();
 	refresh();
 }
@@ -821,6 +826,13 @@ void MainWin::applyFilters()
 
 		set_set(viewstate.filtered, symbol->address, filtered);
 	}
+}
+
+void MainWin::resetFilters()
+{
+	filters->GetProperty("procname")->SetValueFromString("");
+	filters->GetProperty("module")->SetValueFromString("");
+	filters->GetProperty("sourcefile")->SetValueFromString("");
 }
 
 void MainWin::setFilter(const wxString &name, const wxString &value)
