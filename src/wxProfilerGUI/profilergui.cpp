@@ -423,7 +423,12 @@ std::wstring ProfilerGUI::ObtainProfileData()
 			return threadpicker->open_filename;
 
 		case ThreadPicker::ATTACH:
-			return LaunchProfiler(threadpicker->attach_info);
+			{
+				std::unique_ptr<AttachInfo> ai(threadpicker->attach_info);
+				threadpicker->attach_info = NULL;
+				threadpicker.reset();
+				return LaunchProfiler(ai.get());
+			}
 
 		case ThreadPicker::RUN:
 			// Create the window before we create the process,
@@ -444,6 +449,7 @@ std::wstring ProfilerGUI::ObtainProfileData()
 			}
 
 			wxScopeGuard sgTerm = wxMakeGuard(TerminateProcess, info->process_handle, 0); wxUnusedVar(sgTerm);
+			threadpicker.reset();
 			return LaunchProfiler(info.get());
 		}
 	}
