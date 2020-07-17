@@ -165,6 +165,7 @@ private:
 
 	/// Apply the filter settings in the wxPropertyGrid to viewstate.
 	void applyFilters();
+	void resetFilters();
 
 	/// Called when the symbol strings have changed in one way or another.
 	void symbolsChanged();

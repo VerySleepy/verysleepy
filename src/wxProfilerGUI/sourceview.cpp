@@ -70,8 +70,7 @@ SourceView::SourceView(wxWindow *parent, MainWin* mainwin_)
 	SetUseTabs (false);
 	SetTabWidth(8);
 
-	setPlainMode();
-	updateText ("Select a procedure from the list above.");
+	reset();
 }
 
 SourceView::~SourceView()
@@ -88,6 +87,7 @@ void SourceView::updateText(const wxString& text)
 void SourceView::setPlainMode()
 {
 	SetLexer (wxSTC_LEX_NULL);
+	StyleClearAll();
 
 	SetMarginWidth (0, 0);
 	SetMarginWidth (1, 0);
@@ -214,6 +214,12 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 
 	MarkerDefine(1, wxSTC_MARK_BACKGROUND, wxNullColour, *wxYELLOW);
 	MarkerAdd(proclinenum-1, 1);
+}
+void SourceView::reset()
+{
+	currentfile.clear();
+	setPlainMode();
+	updateText("Select a procedure from the list above.");
 }
 
 void SourceView::OnPaint(wxPaintEvent& event)
