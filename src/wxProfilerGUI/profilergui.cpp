@@ -538,7 +538,8 @@ bool ProfilerGUI::Run()
 	// Otherwise, wxWidgets will create a default logger on request,
 	// but only by the request of the main thread.
 	// Log messages for other threads will be discarded.
-	wxLog::SetActiveTarget(new wxLogGui);
+	// note : logger was already created inside ProcessIdle that was called before Run, need to delete it
+	delete wxLog::SetActiveTarget(new wxLogGui);
 
 	std::wstring filename;
 

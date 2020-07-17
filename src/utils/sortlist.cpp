@@ -106,7 +106,7 @@ void wxSortedListCtrl::InitSort()
 	images->Add(wxBitmap(sort_up_xpm), wxColor(255,0,0));
 	images->Add(wxBitmap(sort_down_xpm), wxColor(255,0,0));
 
-	SetImageList(images, wxIMAGE_LIST_SMALL);
+	AssignImageList(images, wxIMAGE_LIST_SMALL);
 }
 
 void wxSortedListCtrl::SetSortImage(int col, SortType type)

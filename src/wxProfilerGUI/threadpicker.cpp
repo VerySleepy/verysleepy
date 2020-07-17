@@ -314,6 +314,7 @@ ThreadPicker::~ThreadPicker()
 {
 	g_symLog = NULL;
 	delete log;
+	delete time_validator;
 	if (attach_info)
 		delete attach_info;
 }
