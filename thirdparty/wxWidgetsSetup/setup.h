@@ -1236,7 +1236,7 @@
 
 // wxBusyInfo displays window with message when app is busy. Works in same way
 // as wxBusyCursor
-#define wxUSE_BUSYINFO      1
+#define wxUSE_BUSYINFO      0
 
 // Use single/multiple choice dialogs.
 //
