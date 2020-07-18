@@ -316,6 +316,35 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">thirdparty\wxWidgets\include;thirdparty\wxWidgets\include\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_adv.vcxproj">
+      <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_aui.vcxproj">
+      <Project>{a16d3832-0f42-57ce-8f48-50e06649ade8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_base.vcxproj">
+      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_core.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_propgrid.vcxproj">
+      <Project>{97fdab45-9c58-5bc5-a2f4-ee42739ebc63}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_stc.vcxproj">
+      <Project>{23e1c437-a951-5943-8639-a17f3cf2e606}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_wxpng.vcxproj">
+      <Project>{8acc122a-ca6a-5aa6-9c97-9cdd2e533db0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_wxscintilla.vcxproj">
+      <Project>{74827ebd-93dc-5110-ba95-3f2ab029b6b0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="thirdparty\wxWidgets\build\msw\wx_wxzlib.vcxproj">
+      <Project>{8b867186-a0b5-5479-b824-e176edd27c40}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
