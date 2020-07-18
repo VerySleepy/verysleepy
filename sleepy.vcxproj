@@ -103,7 +103,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;advapi32.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;advapi32.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
       <AdditionalLibraryDirectories>thirdparty\wxWidgets\lib\vc_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -179,7 +179,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;advapi32.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;advapi32.lib;shlwapi.lib;psapi.lib;crashback.lib;dbgeng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sleepy.exe</OutputFile>
       <AdditionalLibraryDirectories>thirdparty\wxWidgets\lib\vc_lib;src/crashback/bin/$(Platform)/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
