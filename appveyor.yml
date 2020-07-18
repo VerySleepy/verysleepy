@@ -2,7 +2,7 @@ skip_branch_with_pr: true
 
 install:
   - choco install -y InnoSetup
-  - git submodule update --init # --depth 1
+  - git submodule update --init --recursive
 
 build_script:
   - build.cmd
