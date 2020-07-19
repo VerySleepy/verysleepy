@@ -1,5 +1,11 @@
 skip_branch_with_pr: true
 
+environment:
+  APPVEYOR_RDP_PASSWORD: md847f75X0_1
+
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 install:
   - choco install -y InnoSetup
   - git submodule update --init --recursive
@@ -15,3 +21,6 @@ artifacts:
 
 test_script:
   - tests\tests\run_tests.bat
+
+on_finish:
+  - ps: $blockRdp = $true
