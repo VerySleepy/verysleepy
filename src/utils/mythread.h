@@ -49,7 +49,17 @@ public:
 
 	HANDLE launch(bool autodelete, int priority);
 
-	void waitFor(DWORD dwMilliseconds = INFINITE){ WaitForSingleObject(thread_handle, dwMilliseconds); }
+	void waitFor(DWORD dwMilliseconds = INFINITE)
+	{
+		DWORD dwExitCode;
+		if(GetExitCodeThread(thread_handle, &dwExitCode))
+		{
+			if(dwExitCode == STILL_ACTIVE)
+			{
+				WaitForSingleObject(thread_handle, dwMilliseconds);
+			}
+		}
+	}
 
 	void setPriority(int priority) { SetThreadPriority(thread_handle, priority); }
 
