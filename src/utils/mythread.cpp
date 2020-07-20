@@ -27,9 +27,11 @@ http://www.gnu.org/copyleft/gpl.html.
 
 MyThread::~MyThread()
 {
+#ifndef NDEBUG
 	DWORD dwExitCode;
 	BOOL res = GetExitCodeThread(thread_handle, &dwExitCode);
 	assert(res != 0 && dwExitCode != STILL_ACTIVE);
+#endif//NDEBUG
 	CloseHandle(thread_handle);
 }
 
