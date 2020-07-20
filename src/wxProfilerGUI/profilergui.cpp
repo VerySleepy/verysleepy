@@ -182,7 +182,7 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 		if (!captureWin)
 			CreateProgressWindow();
 
-		profilerthread->launch(false, THREAD_PRIORITY_TIME_CRITICAL);
+		profilerthread->launch(THREAD_PRIORITY_TIME_CRITICAL);
 
 		wxStopWatch stopwatch;
 		stopwatch.Start();
@@ -221,13 +221,14 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 		DestroyProgressWindow();
 	}
 
-	profilerthread->commit_suicide = true;
+	profilerthread->commitSuicide();
 	wxLog::FlushActive();
 
 	if (aborted)
 	{
 		profilerthread->cancel();
-		profilerthread->waitFor();
+		profilerthread->join();
+		delete profilerthread;
 		return std::wstring();
 	}
 
@@ -246,7 +247,7 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 				profilerthread->cancel();
 			profilerthread->waitFor(100);
 		}
-		profilerthread->waitFor();
+		profilerthread->join();
 	}
 
 	bool failed = profilerthread->getFailed();
