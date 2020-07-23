@@ -126,13 +126,13 @@ ThreadPicker::ThreadPicker()
 	wxPanel *panel = new wxPanel(this);
 	rootsizer->Add(panel, 1, wxEXPAND | wxALL);
 
-	wxButton *ok_button = new wxButton(panel, wxID_OK, "Profile &Selected", wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT);
-	ok_button->SetBitmap(LoadPngResource(L"button_profilesel"));
+	wxButton *ok_button = new wxButton(panel, wxID_OK, "Profile &Selected", wxDefaultPosition, wxDefaultSize);
+	ok_button->SetBitmap(LoadPngResource(L"button_profilesel", this));
 	ok_button->SetBitmapPosition(wxRIGHT);
 	ok_button->SetBitmapMargins(-1,-1);
 	ok_button->SetToolTip("Begins profiling selected threads.");
-	wxButton *all_button = new wxButton(panel, wxID_SELECTALL,"Profile &All", wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT);
-	all_button->SetBitmap(LoadPngResource(L"button_profileall"));
+	wxButton *all_button = new wxButton(panel, wxID_SELECTALL,"Profile &All", wxDefaultPosition, wxDefaultSize);
+	all_button->SetBitmap(LoadPngResource(L"button_profileall", this));
 	all_button->SetBitmapPosition(wxRIGHT);
 	all_button->SetBitmapMargins(-1,-1);
 	all_button->Disable();
@@ -144,7 +144,7 @@ ThreadPicker::ThreadPicker()
 	time_validator = new wxIntegerValidator<int>(&time_value);
 	time_validator->SetMin(0);
 	time_check = new wxCheckBox(panel, ProcWin_TimeCheck, "Profile for set time (s)");
-	time_ctrl = new wxTextCtrl(panel, ProcWin_TimeCtrl, "100", wxDefaultPosition, wxSize(60,20), 0, *time_validator );
+	time_ctrl = new wxTextCtrl(panel, ProcWin_TimeCtrl, "100", wxDefaultPosition, FromDIP(wxSize(60,20)), 0, *time_validator );
 	time_ctrl->Disable();
 	time_ctrl->SetToolTip("When enabled, this will limit the profile to run for a set time in seconds.");
 	time_validator->SetWindow(time_ctrl);
@@ -153,46 +153,46 @@ ThreadPicker::ThreadPicker()
 	threadlist = new ThreadList(panel, wxDefaultPosition, wxDefaultSize, ok_button, all_button);
 	processlist = new ProcessList(panel, wxDefaultPosition, wxDefaultSize, threadlist);
 
-	leftsizer->Add(new wxStaticText(panel, -1, "Select a process to profile:"), 0, wxTOP, 5);
-	leftsizer->Add(processlist, 1, wxEXPAND | wxTOP, 3);
+	leftsizer->Add(new wxStaticText(panel, -1, "Select a process to profile:"), 0, wxTOP, FromDIP(5));
+	leftsizer->Add(processlist, 1, wxEXPAND | wxTOP, FromDIP(3));
 
 	// DE: 20090325 title for thread list
-	rightsizer->Add(new wxStaticText(panel, -1, "Select thread(s) to profile: (CTRL-click for multiple)"), 0, wxTOP, 5);
-	rightsizer->Add(threadlist, 1, wxEXPAND | wxTOP, 3);
+	rightsizer->Add(new wxStaticText(panel, -1, "Select thread(s) to profile: (CTRL-click for multiple)"), 0, wxTOP, FromDIP(5));
+	rightsizer->Add(threadlist, 1, wxEXPAND | wxTOP, FromDIP(3));
 
-	wxButton *refreshButton = new wxButton(panel, ProcWin_Refresh, "Refresh", wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT);
-	refreshButton->SetBitmap(LoadPngResource(L"button_refresh"));
+	wxButton *refreshButton = new wxButton(panel, ProcWin_Refresh, "Refresh", wxDefaultPosition, wxDefaultSize);
+	refreshButton->SetBitmap(LoadPngResource(L"button_refresh", this));
 	refreshButton->SetBitmapPosition(wxRIGHT);
 	refreshButton->SetBitmapMargins(-1,-1);
 	refreshButton->SetToolTip("Refreshes the list of processes and threads.");
 
-	wxButton *downloadButton = new wxButton(panel, ProcWin_Download, "Download", wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT);
-	downloadButton->SetBitmap(LoadPngResource(L"button_download"));
+	wxButton *downloadButton = new wxButton(panel, ProcWin_Download, "Download", wxDefaultPosition, wxDefaultSize);
+	downloadButton->SetBitmap(LoadPngResource(L"button_download", this));
 	downloadButton->SetBitmapPosition(wxRIGHT);
 	downloadButton->SetBitmapMargins(-1,-1);
 	downloadButton->SetToolTip("Downloads symbols from a remote symbol server.");
 
 	wxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
-	buttons->Add(refreshButton,										0, wxALIGN_LEFT  | wxRIGHT,					5);
+	buttons->Add(refreshButton,										0, wxALIGN_LEFT  | wxRIGHT,					FromDIP(5));
 	buttons->Add(downloadButton,									0, wxALIGN_LEFT,							0);
 	buttons->AddStretchSpacer();
 	buttons->Add(time_check,										0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL,	0);
 	buttons->Add(time_ctrl,											0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL,	0);
 	buttons->AddStretchSpacer();
-	buttons->Add(all_button,										0, wxALIGN_RIGHT,							0);
-	buttons->Add(ok_button,											0, wxALIGN_RIGHT | wxLEFT,					5);
+	buttons->Add(all_button,										0, 0,										0);
+	buttons->Add(ok_button,											0, wxLEFT,									FromDIP(5));
 
-	bottomsizer->Add(buttons, 0, wxLEFT|wxRIGHT|wxEXPAND, 10);
-	bottomsizer->AddSpacer(8);
+	bottomsizer->Add(buttons, 0, wxLEFT|wxRIGHT|wxEXPAND, FromDIP(10));
+	bottomsizer->AddSpacer(FromDIP(8));
 
 	log = new LogView(panel);
-	bottomsizer->Add(log, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 10);
+	bottomsizer->Add(log, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, FromDIP(10));
 
-	topsizer->Add(leftsizer, 1, wxEXPAND | wxLEFT, 10);
-	topsizer->AddSpacer(10);
-	topsizer->Add(rightsizer, 1, wxEXPAND | wxRIGHT, 10);
+	topsizer->Add(leftsizer, 1, wxEXPAND | wxLEFT, FromDIP(10));
+	topsizer->AddSpacer(FromDIP(10));
+	topsizer->Add(rightsizer, 1, wxEXPAND | wxRIGHT, FromDIP(10));
 	dlgsizer->Add(topsizer, 1, wxEXPAND);
-	dlgsizer->AddSpacer(8);
+	dlgsizer->AddSpacer(FromDIP(8));
 	dlgsizer->Add(bottomsizer, 0, wxEXPAND);
 
 	panel->SetSizer(dlgsizer);
@@ -202,7 +202,9 @@ ThreadPicker::ThreadPicker()
 	rootsizer->SetSizeHints(this);
 	SetAutoLayout(TRUE);
 
-	SetSize(wxSize(800, 500));
+	wxSize size = wxGetDisplaySize();
+	size.Scale(0.8f, 0.8f);
+	SetSize(size);
 	Centre();
 
 	g_symLog = symLogCallback;

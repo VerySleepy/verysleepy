@@ -23,9 +23,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #ifndef __MYTHREAD_H_666_
 #define __MYTHREAD_H_666_
 
-
 #include <windows.h>
-//#include "mutex.h"
 
 /*=====================================================================
 MyThread
@@ -35,44 +33,19 @@ Thanks to someone from the COTD on flipcode for the code this is based on
 class MyThread
 {
 public:
-	/*=====================================================================
-	MyThread
-	--------
-	=====================================================================*/
-	MyThread();
-
+	MyThread() : thread_handle(NULL) {}
 	virtual ~MyThread();
 
-
 	virtual void run() = 0;
-
-
-	HANDLE launch(bool autodelete, int priority);
-
-	void waitFor(DWORD dwMilliseconds = INFINITE){ WaitForSingleObject(thread_handle, dwMilliseconds); }
-
+	HANDLE launch(int priority);
+	void waitFor(DWORD dwMilliseconds) { WaitForSingleObject(thread_handle, dwMilliseconds); }
+	void join() { WaitForSingleObject(thread_handle, INFINITE); }
 	void setPriority(int priority) { SetThreadPriority(thread_handle, priority); }
 
-	void killThread();
-
-	bool commit_suicide;
-
-	static int getNumAliveThreads();
-
 private:
-	static void _cdecl threadFunction(void* the_thread);
+	static unsigned __stdcall threadFunction(void* the_thread);
 
 	HANDLE thread_handle;
-	bool autodelete;
-
-
-	static void incrNumAliveThreads();
-	static void decrNumAliveThreads();
-
-	//static Mutex alivecount_mutex;
-	static int num_alive_threads;
 };
-
-
 
 #endif //__MYTHREAD_H_666_
