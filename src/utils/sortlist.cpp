@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 http://www.gnu.org/copyleft/gpl.html.
 =====================================================================*/
 #include "sortlist.h"
-#include <wx/dataview.h>
+#include <wx/imaglist.h>
 
 /* XPM */
 static char *sort_none_xpm[] = {
@@ -101,11 +101,12 @@ static char *sort_down_xpm[] = {
 void wxSortedListCtrl::InitSort()
 {
 	wxImageList *images = new wxImageList;
-	images->Create(16, 16);
-	images->Add(wxBitmap(sort_none_xpm), wxColor(255,0,0));
-	images->Add(wxBitmap(sort_up_xpm), wxColor(255,0,0));
-	images->Add(wxBitmap(sort_down_xpm), wxColor(255,0,0));
-
+	wxImage sort_none_img(sort_none_xpm);
+	wxSize size = FromDIP(sort_none_img.GetSize());
+	images->Create(size.x, size.y, true, 3);
+	images->Add(sort_none_img.Rescale(size.x, size.y),			wxColor(255,0,0));
+	images->Add(wxImage(sort_up_xpm).Rescale(size.x, size.y),	wxColor(255,0,0));
+	images->Add(wxImage(sort_down_xpm).Rescale(size.x, size.y),	wxColor(255,0,0));
 	SetImageList(images, wxIMAGE_LIST_SMALL);
 }
 

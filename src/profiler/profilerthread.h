@@ -73,6 +73,7 @@ public:
 	const std::wstring &getFilename() const { return filename; }
 	void setPaused(bool paused_) { paused = paused_; }
 	void cancel() { cancelled = true; }
+	void commitSuicide() { commit_suicide = true; }
 
 	void sample(const SAMPLE_TYPE timeSpent);//for internal use.
 private:
@@ -102,6 +103,7 @@ private:
 	bool paused;
 	bool failed;
 	bool cancelled;
+	bool commit_suicide;
 	HANDLE target_process;
 	std::wstring filename;
 	std::wstring minidump;

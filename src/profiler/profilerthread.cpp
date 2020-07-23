@@ -55,6 +55,7 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 	failed = false;
 	paused = false;
 	cancelled = false;
+	commit_suicide = false;
 	symbolsPermille = 0;
 	numThreadsRunning = (int)target_threads.size();
 	status = L"Initializing";

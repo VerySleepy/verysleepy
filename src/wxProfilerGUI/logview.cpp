@@ -129,7 +129,7 @@ EVT_IDLE(LogView::OnIdle)
 END_EVENT_TABLE()
 
 LogView::LogView(wxWindow *parent)
-:	wxTextCtrl(parent, 0, "", wxDefaultPosition, wxSize(100,100), wxTE_MULTILINE|wxTE_READONLY)
+:	wxTextCtrl(parent, 0, "", wxDefaultPosition, parent->FromDIP(wxSize(100,100)), wxTE_MULTILINE|wxTE_READONLY)
 {
 	log = new LogViewLog(this);
 	previous_log = wxLog::SetActiveTarget(log);

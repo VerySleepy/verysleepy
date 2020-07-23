@@ -53,6 +53,10 @@ ProcessList::ProcessList(wxWindow *parent, const wxPoint& pos,
 	itemCol.m_text = _T("Process");
 	itemCol.m_image = -1;
 	InsertColumn(COL_NAME, itemCol);
+#ifdef _WIN64
+	itemCol.m_text = _T("Type");
+	InsertColumn(COL_TYPE, itemCol);
+#endif
 	itemCol.m_text = _T("CPU");
 	InsertColumn(COL_CPUUSAGE, itemCol);
 	itemCol.m_text = _T("Total CPU");
@@ -60,16 +64,13 @@ ProcessList::ProcessList(wxWindow *parent, const wxPoint& pos,
 	itemCol.m_text = _T("PID");
 	InsertColumn(COL_PID, itemCol);
 
-	SetColumnWidth(COL_NAME, 220);
-	SetColumnWidth(COL_CPUUSAGE, 80);
-	SetColumnWidth(COL_TOTALCPU, 100);
-	SetColumnWidth(COL_PID, 60);
-
+	SetColumnWidth(COL_NAME, FromDIP(270));
 #ifdef _WIN64
-	itemCol.m_text = _T("Type");
-	InsertColumn(COL_TYPE, itemCol);
-	SetColumnWidth(COL_TYPE, 45);
+	SetColumnWidth(COL_TYPE, FromDIP(45));
 #endif
+	SetColumnWidth(COL_CPUUSAGE, FromDIP(50));
+	SetColumnWidth(COL_TOTALCPU, FromDIP(70));
+	SetColumnWidth(COL_PID, FromDIP(50));
 
 	sort_column = COL_CPUUSAGE;
 	sort_dir = SORT_DOWN;

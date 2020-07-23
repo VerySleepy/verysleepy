@@ -74,9 +74,11 @@ MainWin::MainWin(const wxString& title,
 	wxString str;
 	long style = wxDEFAULT_FRAME_STYLE;
 
-	wxPoint pos(50, 50);
 	wxSize size = wxGetDisplaySize();
+	wxSize size_rest = size * 0.125f;
 	size.Scale(0.75f, 0.75f);
+
+	wxPoint pos(size_rest.x, size_rest.y);
 
 	if (config.Read("MainWinMaximized", 0L))
 		style |= wxMAXIMIZE;
@@ -543,14 +545,25 @@ void MainWin::OnExportAsCallgrind(wxCommandEvent& WXUNUSED(event))
 				{
 					// If string was already seen before, just output the index, otherwise add a new entry to the ID mapping table
 					auto it = map.find(str);
-					if (it == map.end()) txt << key << "=(" << (map[str] = 1 + map.size()) << ") " << (isFilename ? ConvertFilename(str) : str) << "\n";
-					else                 txt << key << "=(" << it->second << ")" << "\n";
+					if(it == map.end())
+					{
+						txt << key << "=(";
+						txt.Write64(map[str] = 1 + map.size());
+						txt << ") " << (isFilename ? ConvertFilename(str) : str) << "\n";
+					}
+					else
+					{
+						txt << key << "=(";
+						txt.Write64(it->second);
+						txt << ")" << "\n";
+					}
 				}
 				static __forceinline void WriteEvents(wxTextOutputStream& txt, unsigned sourceline, double count, double statsDuration)
 				{
-					txt << sourceline << " " // Source code line number
-					    << (unsigned long long)(count*1000000.0+0.499999999) << " " // Microseconds Spent Total
-					    << (unsigned long long)(count*1000000.0/statsDuration+0.499999999) << "\n"; // Microseconds Spent Per Second
+					txt << sourceline << " "; // Source code line number
+					txt.Write64(count*1000000.0+0.499999999); // Microseconds Spent Total
+					txt.Write64(count*1000000.0/statsDuration+0.499999999); // Microseconds Spent Per Second
+					txt << "\n";
 				}
 			};
 
@@ -656,7 +669,7 @@ void MainWin::OnStats(wxCommandEvent& WXUNUSED(event))
 	wxTextCtrl *text = new wxTextCtrl(&dlg, wxID_ANY, string, wxDefaultPosition, wxDefaultSize,
 		wxBORDER_NONE|wxTE_READONLY|wxTE_MULTILINE|wxTE_NO_VSCROLL);
 	text->SetBackgroundColour(dlg.GetBackgroundColour());
-	sizer->Add(text, wxSizerFlags().Expand().Proportion(1).Border(wxALL, 10));
+	sizer->Add(text, wxSizerFlags().Expand().Proportion(1).Border(wxALL, FromDIP(10)));
 
 	wxSizer *sizerBtns = dlg.CreateButtonSizer(wxOK);
 	if ( sizerBtns )
@@ -665,7 +678,7 @@ void MainWin::OnStats(wxCommandEvent& WXUNUSED(event))
 	}
 
 	dlg.SetSizerAndFit(sizer);
-	dlg.SetSize(300, 200);
+	dlg.SetSize(FromDIP(wxSize(500, 200)));
 	dlg.CentreOnScreen();
 	dlg.ShowModal();
 }
@@ -848,7 +861,7 @@ void MainWin::setProgress(const wchar_t *text, int max)
 
 			wxRect gaugeRect;
 			statusBar->GetFieldRect(1, gaugeRect);
-			static const int margin = 2;
+			int margin = FromDIP(2);
 			gauge->SetPosition(wxPoint(gaugeRect.x+margin, gaugeRect.y+margin));
 			gauge->SetSize(wxSize(gaugeRect.width-2*margin, gaugeRect.height-2*margin));
 		}

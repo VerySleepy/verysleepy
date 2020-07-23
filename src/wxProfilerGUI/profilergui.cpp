@@ -1,4 +1,4 @@
-﻿/*=====================================================================
+/*=====================================================================
 profilergui.cpp
 ---------------
 File created by ClassTemplate on Sun Mar 13 18:16:34 2005
@@ -110,12 +110,15 @@ wxAppTraits *ProfilerGUI::CreateTraits()
 	return new ProfilerAppTraits;
 }
 
-wxBitmap LoadPngResource(const wchar_t *szName)
+wxBitmap LoadPngResource(const wchar_t *szName, const wxWindowBase* w)
 {
 	HRSRC hResource = FindResource(NULL,szName,L"PNG");
 	void *resource = LockResource(LoadResource(NULL,hResource));
 	wxMemoryInputStream is(resource,SizeofResource(NULL,hResource));
-	return wxBitmap(wxImage(is,wxBITMAP_TYPE_ANY,-1),-1);
+	wxImage image(is, wxBITMAP_TYPE_ANY, -1);
+	wxSize size = w->FromDIP(image.GetSize());
+	image.Rescale(size.x, size.y);
+	return wxBitmap(image);
 }
 
 void CleanupTempFiles()
@@ -179,7 +182,7 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 		if (!captureWin)
 			CreateProgressWindow();
 
-		profilerthread->launch(false, THREAD_PRIORITY_TIME_CRITICAL);
+		profilerthread->launch(THREAD_PRIORITY_TIME_CRITICAL);
 
 		wxStopWatch stopwatch;
 		stopwatch.Start();
@@ -218,13 +221,14 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 		DestroyProgressWindow();
 	}
 
-	profilerthread->commit_suicide = true;
+	profilerthread->commitSuicide();
 	wxLog::FlushActive();
 
 	if (aborted)
 	{
 		profilerthread->cancel();
-		profilerthread->waitFor();
+		profilerthread->join();
+		delete profilerthread;
 		return std::wstring();
 	}
 
@@ -243,7 +247,7 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 				profilerthread->cancel();
 			profilerthread->waitFor(100);
 		}
-		profilerthread->waitFor();
+		profilerthread->join();
 	}
 
 	bool failed = profilerthread->getFailed();

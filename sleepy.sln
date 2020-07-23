@@ -28,47 +28,47 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wxWidgets", "wxWidgets", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxWidgetsSetup", "thirdparty\wxWidgetsSetup\wxWidgetsSetup.vcxproj", "{941F452F-6510-4BF2-AE25-9EE32FEFD51D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "thirdparty\wxWidgets\build\msw\wx_vc10_base.vcxproj", "{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "thirdparty\wxWidgets\build\msw\wx_base.vcxproj", "{3FCC50C2-81E9-5DB2-B8D8-2129427568B1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxpng", "thirdparty\wxWidgets\build\msw\wx_vc10_wxpng.vcxproj", "{8ACC122A-CA6A-5AA6-9C97-9CDD2E533DB0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxpng", "thirdparty\wxWidgets\build\msw\wx_wxpng.vcxproj", "{8ACC122A-CA6A-5AA6-9C97-9CDD2E533DB0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxzlib", "thirdparty\wxWidgets\build\msw\wx_vc10_wxzlib.vcxproj", "{8B867186-A0B5-5479-B824-E176EDD27C40}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxzlib", "thirdparty\wxWidgets\build\msw\wx_wxzlib.vcxproj", "{8B867186-A0B5-5479-B824-E176EDD27C40}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "thirdparty\wxWidgets\build\msw\wx_vc10_core.vcxproj", "{6744DAD8-9C70-574A-BFF2-9F8DDDB24A75}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "thirdparty\wxWidgets\build\msw\wx_core.vcxproj", "{6744DAD8-9C70-574A-BFF2-9F8DDDB24A75}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adv", "thirdparty\wxWidgets\build\msw\wx_vc10_adv.vcxproj", "{24C45343-FD20-5C92-81C1-35A2AE841E79}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adv", "thirdparty\wxWidgets\build\msw\wx_adv.vcxproj", "{24C45343-FD20-5C92-81C1-35A2AE841E79}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aui", "thirdparty\wxWidgets\build\msw\wx_vc10_aui.vcxproj", "{A16D3832-0F42-57CE-8F48-50E06649ADE8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aui", "thirdparty\wxWidgets\build\msw\wx_aui.vcxproj", "{A16D3832-0F42-57CE-8F48-50E06649ADE8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "propgrid", "thirdparty\wxWidgets\build\msw\wx_vc10_propgrid.vcxproj", "{97FDAB45-9C58-5BC5-A2F4-EE42739EBC63}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "propgrid", "thirdparty\wxWidgets\build\msw\wx_propgrid.vcxproj", "{97FDAB45-9C58-5BC5-A2F4-EE42739EBC63}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stc", "thirdparty\wxWidgets\build\msw\wx_vc10_stc.vcxproj", "{23E1C437-A951-5943-8639-A17F3CF2E606}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stc", "thirdparty\wxWidgets\build\msw\wx_stc.vcxproj", "{23E1C437-A951-5943-8639-A17F3CF2E606}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxscintilla", "thirdparty\wxWidgets\build\msw\wx_vc10_wxscintilla.vcxproj", "{74827EBD-93DC-5110-BA95-3F2AB029B6B0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxscintilla", "thirdparty\wxWidgets\build\msw\wx_wxscintilla.vcxproj", "{74827EBD-93DC-5110-BA95-3F2AB029B6B0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{941F452F-6510-4BF2-AE25-9EE32FEFD51D} = {941F452F-6510-4BF2-AE25-9EE32FEFD51D}
 	EndProjectSection

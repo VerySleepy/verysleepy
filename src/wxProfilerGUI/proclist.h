@@ -73,7 +73,6 @@ private:
 	struct Column
 	{
 		wxString name;
-		int width;
 		int listctrl_column;
 		SortType default_sort;
 	};

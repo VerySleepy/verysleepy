@@ -85,32 +85,31 @@ CaptureWin::CaptureWin()
 	wxBoxSizer *rootsizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer *panelsizer = new wxBoxSizer(wxVERTICAL);
 
-	rootsizer->SetMinSize(400, 0);
+	rootsizer->SetMinSize(FromDIP(400), 0);
 
 	wxPanel *panel = new wxPanel(this);
 
 	progressText = new wxStaticText( panel, -1, "Waiting..." );
-	progressBar = new wxGauge( panel, -1, 0, wxDefaultPosition, wxSize(100,18) );
+	progressBar = new wxGauge( panel, -1, 0, wxDefaultPosition, FromDIP(wxSize(100, 18)));
 	progressBar->SetRange(MAX_RANGE);
 
-	wxBitmap pause = LoadPngResource(L"button_pause");
+	wxBitmap pause = LoadPngResource(L"button_pause", this);
 	pauseButton = new wxBitmapToggleButton(
-		panel, CaptureWin_Pause, pause, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBU_EXACTFIT );
+		panel, CaptureWin_Pause, pause, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
 
 	wxButton *okButton = new wxButton(panel, wxID_OK, "&Stop");
 	okButton->SetToolTip("Stop profiling and display collected results.");
 	wxButton *cancelButton = new wxButton(panel, wxID_CANCEL, "&Abort");
 	cancelButton->SetToolTip("Stop profiling, discard collected results, and exit.");
 
-	int border = ConvertDialogToPixels(wxSize(2, 0)).x;
 	wxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
-	buttons->Add(pauseButton,				0, wxALIGN_LEFT,					border);
+	buttons->Add(pauseButton,				0, wxALIGN_LEFT,	FromDIP(5));
 	buttons->AddStretchSpacer();
-	buttons->Add(okButton,					0, wxALIGN_RIGHT | wxLEFT|wxRIGHT,	border);
-	buttons->Add(cancelButton,				0, wxALIGN_RIGHT | wxLEFT,			border);
+	buttons->Add(okButton,					0, wxLEFT|wxRIGHT,	FromDIP(5));
+	buttons->Add(cancelButton,				0, wxLEFT,			FromDIP(5));
 
-	panelsizer->Add(progressText, 0, wxBOTTOM, 3);
-	panelsizer->Add(progressBar, 0, wxBOTTOM|wxEXPAND, 10);
+	panelsizer->Add(progressText, 0, wxBOTTOM, FromDIP(5));
+	panelsizer->Add(progressBar, 0, wxBOTTOM|wxEXPAND, FromDIP(10));
 	panelsizer->Add(buttons, 0, wxEXPAND);
 
 	okButton->SetDefault();
@@ -118,7 +117,7 @@ CaptureWin::CaptureWin()
 	panel->SetSizer(panelsizer);
 	panel->SetAutoLayout(TRUE);
 
-	rootsizer->Add(panel, 1, wxEXPAND | wxALL, 10);
+	rootsizer->Add(panel, 1, wxEXPAND | wxALL, FromDIP(10));
 	SetSizer(rootsizer);
 	rootsizer->SetSizeHints(this);
 	SetAutoLayout(TRUE);
@@ -172,6 +171,8 @@ bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numTh
 				// RM: 20130614 Run forever, until cancelled
 				sprintf(tmp, "%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
 				progressBar->Pulse();
+				if(win7taskBar)
+					win7taskBar->SetProgressState(GetHandle(), TBPF_INDETERMINATE);
 			}
 			else
 			{
@@ -197,10 +198,10 @@ void CaptureWin::OnPause(wxCommandEvent& event)
 	if (paused)
 	{
 		stopwatch.Pause();
-		pauseButton->SetBitmapLabel(LoadPngResource(L"button_go"));
+		pauseButton->SetBitmapLabel(LoadPngResource(L"button_go", this));
 	} else {
 		stopwatch.Resume();
-		pauseButton->SetBitmapLabel(LoadPngResource(L"button_pause"));
+		pauseButton->SetBitmapLabel(LoadPngResource(L"button_pause", this));
 	}
 
 	SetTitle(paused ? _T(APPNAME) L" - paused" : _T(APPNAME) L" - profiling");

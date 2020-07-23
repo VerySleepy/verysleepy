@@ -40,37 +40,36 @@ LaunchDlg::LaunchDlg(wxWindow *parent)
 	wxBoxSizer *rootsizer = new wxBoxSizer( wxVERTICAL );
 	wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
 
-	topsizer->Add(new wxStaticText(this, -1, "Enter a command to execute, with any additional arguments."), 0, wxBOTTOM, 5);
+	topsizer->Add(new wxStaticText(this, -1, "Enter a command to execute, with any additional arguments."), 0, wxBOTTOM, FromDIP(5));
 
-	m_cmdctl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(500, 22));
-	wxButton *cmdpick = new wxButton(this, ID_CMD_CHOOSE, "...", wxDefaultPosition, wxSize(22, 22));
+	m_cmdctl = new wxTextCtrl(this, -1, "", wxDefaultPosition, FromDIP(wxSize(500, 22)));
+	wxButton *cmdpick = new wxButton(this, ID_CMD_CHOOSE, "...", wxDefaultPosition, FromDIP(wxSize(22, 22)));
 	wxBoxSizer *rowsizer = new wxBoxSizer( wxHORIZONTAL );
-	rowsizer->Add(m_cmdctl, 0, wxRIGHT, 4);
+	rowsizer->Add(m_cmdctl, 0, wxRIGHT, FromDIP(5));
 	rowsizer->Add(cmdpick);
 
 	topsizer->Add(rowsizer, 0, wxEXPAND);
-	topsizer->AddSpacer(10);
+	topsizer->AddSpacer(FromDIP(10));
 
 
-	topsizer->Add(new wxStaticText(this, -1, "Working directory."), 0, wxBOTTOM, 5);
+	topsizer->Add(new wxStaticText(this, -1, "Working directory."), 0, wxBOTTOM, FromDIP(5));
 	rowsizer = new wxBoxSizer( wxHORIZONTAL );
-	m_cwdctl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(500, 22));
-	rowsizer->Add(m_cwdctl, 0, wxRIGHT, 4);
-	rowsizer->Add(new wxButton(this, ID_CWD_CHOOSE, "...", wxDefaultPosition, wxSize(22, 22)));
+	m_cwdctl = new wxTextCtrl(this, -1, "", wxDefaultPosition, FromDIP(wxSize(500, 22)));
+	rowsizer->Add(m_cwdctl, 0, wxRIGHT, FromDIP(4));
+	rowsizer->Add(new wxButton(this, ID_CWD_CHOOSE, "...", wxDefaultPosition, FromDIP(wxSize(22, 22))));
 
 	topsizer->Add(rowsizer, 0, wxEXPAND);
 
 
-	int border = ConvertDialogToPixels(wxSize(2, 0)).x;
 	wxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
 	buttons->AddStretchSpacer();
 	wxButton *ok = new wxButton(this, wxID_OK, "&Launch");
 	wxButton *cancel = new wxButton(this, wxID_CANCEL);
-	buttons->Add(ok,		0, wxALIGN_RIGHT | wxLEFT|wxRIGHT,	border);
-	buttons->Add(cancel,	0, wxALIGN_RIGHT | wxLEFT,			border);
-	topsizer->Add(buttons, 0, wxEXPAND|wxTOP, 10);
+	buttons->Add(ok,		0, wxLEFT|wxRIGHT,	FromDIP(5));
+	buttons->Add(cancel,	0, wxLEFT,			FromDIP(5));
+	topsizer->Add(buttons,	0, wxEXPAND|wxTOP,	FromDIP(10));
 
-	rootsizer->Add(topsizer, 0, wxEXPAND|wxALL, 10);
+	rootsizer->Add(topsizer, 0, wxEXPAND|wxALL, FromDIP(10));
 
 	SetAutoLayout( true );
 	SetSizer( rootsizer );
