@@ -107,7 +107,7 @@ void wxSortedListCtrl::InitSort()
 	images->Add(sort_none_img.Rescale(size.x, size.y),			wxColor(255,0,0));
 	images->Add(wxImage(sort_up_xpm).Rescale(size.x, size.y),	wxColor(255,0,0));
 	images->Add(wxImage(sort_down_xpm).Rescale(size.x, size.y),	wxColor(255,0,0));
-	SetImageList(images, wxIMAGE_LIST_SMALL);
+	AssignImageList(images, wxIMAGE_LIST_SMALL);
 }
 
 void wxSortedListCtrl::SetSortImage(int col, SortType type)
