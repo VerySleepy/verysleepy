@@ -562,6 +562,7 @@ void MainWin::OnExportAsCallgrind(wxCommandEvent& WXUNUSED(event))
 				{
 					txt << sourceline << " "; // Source code line number
 					txt.Write64(count*1000000.0+0.499999999); // Microseconds Spent Total
+					txt << " ";
 					txt.Write64(count*1000000.0/statsDuration+0.499999999); // Microseconds Spent Per Second
 					txt << "\n";
 				}
