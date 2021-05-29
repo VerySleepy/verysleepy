@@ -100,7 +100,7 @@ Changes before this repository's creation can be found on [the project's website
 
 Third party dependencies are registered using git submodules, so you will need to either clone with the `--recursive` flag, or run `git submodule update --init` after cloning.
 
-The `build.cmd` batch file will attempt to build Very Sleepy and its dependencies. 
+The `build.cmd` batch file will attempt to build Very Sleepy and its dependencies.
 
 Alternatively, you can build Dr. MinGW using the `thirdparty/drmingw_build_mingw.cmd` batch file, then use the Visual Studio solution file (`sleepy.sln`) to build everything else.
 
