@@ -273,6 +273,7 @@
     <ClCompile Include="src\wxProfilerGUI\sourceview.cpp" />
     <ClCompile Include="src\wxProfilerGUI\threadlist.cpp" />
     <ClCompile Include="src\wxProfilerGUI\threadpicker.cpp" />
+    <ClCompile Include="src\wxProfilerGUI\threadsview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\appinfo.h" />
@@ -305,6 +306,7 @@
     <ClInclude Include="src\wxProfilerGUI\sourceview.h" />
     <ClInclude Include="src\wxProfilerGUI\threadlist.h" />
     <ClInclude Include="src\wxProfilerGUI\threadpicker.h" />
+    <ClInclude Include="src\wxProfilerGUI\threadsview.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="keywords.txt" />

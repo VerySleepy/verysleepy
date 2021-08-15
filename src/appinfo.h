@@ -15,4 +15,4 @@
 
 // Update this whenever backwards-incompatible changes
 // are made to the profiling results file format.
-#define FORMAT_VERSION "0.90"
+#define FORMAT_VERSION "0.91"

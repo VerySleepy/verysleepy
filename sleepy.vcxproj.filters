@@ -96,6 +96,9 @@
     <ClCompile Include="src\wxProfilerGUI\aboutdlg.cpp">
       <Filter>wxProfilerGUI</Filter>
     </ClCompile>
+    <ClCompile Include="src\wxProfilerGUI\threadsview.cpp">
+      <Filter>wxProfilerGUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\profiler\processinfo.h">
@@ -184,6 +187,9 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src\wxProfilerGUI\aboutdlg.h">
+      <Filter>wxProfilerGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wxProfilerGUI\threadsview.h">
       <Filter>wxProfilerGUI</Filter>
     </ClInclude>
   </ItemGroup>

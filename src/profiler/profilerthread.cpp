@@ -25,6 +25,7 @@ http://www.gnu.org/copyleft/gpl.html..
 
 #include "../wxprofilergui/profilergui.h"
 #include "profilerthread.h"
+#include "threadinfo.h"
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/txtstrm.h>
@@ -40,15 +41,19 @@ http://www.gnu.org/copyleft/gpl.html..
 
 // DE: 20090325: Profiler has a list of threads to profile
 // RM: 20130614: Profiler time can now be limited (-1 = until cancelled)
-ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_)
+ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<std::pair<HANDLE, DWORD>>& target_threads, SymbolInfo *sym_info_)
 :	profilers(),
 	target_process(target_process_),
 	sym_info(sym_info_)
 {
 	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
 	profilers.reserve(target_threads.size());
-	for (auto it = target_threads.begin(); it != target_threads.end(); ++it)
-		profilers.push_back(Profiler(target_process_, *it, callstacks, flatcounts));
+	for (auto it = target_threads.begin(); it != target_threads.end(); ++it) {
+		HANDLE thread_h = it->first;
+		DWORD thread_id = it->second;
+		profilers.push_back(Profiler(target_process_, thread_h, thread_id, callstacks));
+		thread_names[thread_id] = getThreadDescriptorName(thread_h);
+	}
 
 	numsamplessofar = 0;
 	done = false;
@@ -211,14 +216,7 @@ void ProfilerThread::saveData()
 	beginProgress(L"Summarizing results");
 
 	std::map<PROFILER_ADDR, bool> used_addresses;
-	SAMPLE_TYPE totalCounts = 0;
-
-	for (auto i = flatcounts.begin(); i != flatcounts.end(); ++i)
-	{
-		PROFILER_ADDR addr = i->first;
-		used_addresses[addr] = true;
-		totalCounts += i->second;
-	}
+	std::map<DWORD, bool> used_thread_ids;
 
 	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
 	{
@@ -226,6 +224,7 @@ void ProfilerThread::saveData()
 		for (size_t n=0;n<callstack.depth;n++)
 		{
 			used_addresses[callstack.addr[n]] = true;
+			used_thread_ids[callstack.thread_id] = true;
 		}
 	}
 
@@ -256,35 +255,39 @@ void ProfilerThread::saveData()
 	}
 
 	//------------------------------------------------------------------------
-	beginProgress(L"Saving IP counts", flatcounts.size());
-	zip.PutNextEntry(_T("IPCounts.txt"));
+	beginProgress(L"Saving callstacks", callstacks.size());
+	zip.PutNextEntry(_T("Callstacks.txt"));
 
-	txt << totalCounts << "\n";
-
-	for (auto i = flatcounts.begin(); i != flatcounts.end(); ++i)
+	for (auto i = callstacks.begin(); i != callstacks.end();)
 	{
-		PROFILER_ADDR addr = i->first;
-		SAMPLE_TYPE count = i->second;
+		const CallStack &callstack = i->first;
 
-		txt << ::toHexString(addr) << " " << count << "\n";
+		// write callstack addresses
+		for( size_t d=0;d<callstack.depth;d++ )
+			txt << " " << ::toHexString(callstack.addr[d]);
+		txt << "\n";
+
+		// write pairs of thread_id and count for each identical callstack
+		do
+		{
+			txt << " " << (unsigned)i->first.thread_id;
+			txt << " " << i->second;
+			++i;
+		}
+		while ( i != callstacks.end() && !callstack.isBefore(i->first, false) );
+		txt << "\n";
 
 		if (updateProgress())
 			return;
 	}
 
 	//------------------------------------------------------------------------
-	beginProgress(L"Saving callstacks", callstacks.size());
-	zip.PutNextEntry(_T("Callstacks.txt"));
+	beginProgress(L"Saving threads", used_thread_ids.size());
+	zip.PutNextEntry(_T("Threads.txt"));
 
-	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
+	for (auto &tid : used_thread_ids)
 	{
-		const CallStack &callstack = i->first;
-		SAMPLE_TYPE count = i->second;
-
-		txt << count;
-		for( size_t d=0;d<callstack.depth;d++ )
-			txt << " " << ::toHexString(callstack.addr[d]);
-		txt << "\n";
+		txt << (unsigned)tid.first << " " << thread_names[tid.first] << "\n";
 
 		if (updateProgress())
 			return;

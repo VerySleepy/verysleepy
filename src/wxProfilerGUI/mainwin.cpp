@@ -156,6 +156,7 @@ MainWin::MainWin(const wxString& title,
 	proclist = new ProcList(this       , true , database);
 	callers  = new ProcList(splitWindow, false, database);
 	callees  = new ProcList(splitWindow, false, database);
+	threadSamples = new ThreadSamplesView(splitWindow, database);
 
 	callStack = new CallstackView(this, database);
 
@@ -176,14 +177,19 @@ MainWin::MainWin(const wxString& title,
 		.BestSize(clientSize.GetWidth() * 2/3, clientSize.GetHeight() * 1/3)
 		);
 
+	wxWindow *splitFilters = new wxWindow(this, -1);
+
 	// Set up the filters (search) view
-	filters = new wxPropertyGrid(this, MainWin_Filters);
+	filters = new wxPropertyGrid(splitFilters, MainWin_Filters);
 
 	filters->Append( new wxPropertyCategory("Main") );
 
 	filters->Append( new wxStringProperty( "Function Name", "procname", "" ) );
 	filters->Append( new wxStringProperty( "Module", "module", "" ) );
 	filters->Append( new wxStringProperty( "Source File", "sourcefile", "" ) );
+
+	threads = new ThreadsView(splitFilters, database);
+	updateThreads();
 
 	sourceAndLog->AddPage(sourceview,wxT("Source"));
 	log = new LogView(sourceAndLog);
@@ -194,7 +200,8 @@ MainWin::MainWin(const wxString& title,
 
 	callViews->AddPage(splitWindow,wxT("Averages"));
 	callViews->AddPage(callStack,wxT("Call Stacks"));
-	callViews->AddPage(filters,wxT("Filters"));
+	callViews->AddPage(splitFilters,wxT("Filters"));
+	//callViews->AddPage(threads, wxT("Threads"));
 	aui->AddPane(callViews,wxAuiPaneInfo()
 		.Name(wxT("CallInfo"))
 		.CaptionVisible(false)
@@ -223,12 +230,39 @@ MainWin::MainWin(const wxString& title,
 		.PaneBorder(false)
 		);
 
+	auiTab1->AddPane(threadSamples, wxAuiPaneInfo()
+		.Name("ThreadSamples")
+		.Caption(wxT("Per Thread Samples"))
+		.CloseButton(false)
+		.Center()
+		.PaneBorder(false)
+	);
+
+	auiFilter = new wxAuiManager(splitFilters, wxAUI_MGR_RECTANGLE_HINT);
+	auiFilter->AddPane(filters, wxAuiPaneInfo()
+		.Name(wxT("FilterProperties"))
+		.CaptionVisible(false)
+		.CloseButton(false)
+		.Top()
+		.BestSize(wxDefaultCoord, filters->GetBestHeight(wxDefaultCoord))
+		.PaneBorder(false)
+	);
+
+	auiFilter->AddPane(threads, wxAuiPaneInfo()
+		.Name("FilterThreads")
+		.Caption(wxT("Threads"))
+		.CloseButton(false)
+		.Center()
+		.PaneBorder(false)
+	);
+
 	aui->Update();
 	auiTab1->Update();
+	auiFilter->Update();
 
 	// Calculate a string with the content of the AUI.
 	// If we add or remove elements, the config will reset.
-	contentString = aui->SavePerspective()+"|"+auiTab1->SavePerspective();
+	contentString = aui->SavePerspective() + "|" + auiTab1->SavePerspective() + "|" + auiFilter->SavePerspective();
 
 	if(config.Read("MainWinContent") == contentString) {
 		if (config.Read("MainWinLayout", &str) ) {
@@ -236,6 +270,9 @@ MainWin::MainWin(const wxString& title,
 		}
 		if (config.Read("MainWinBookTab1Layout", &str) ) {
 			auiTab1->LoadPerspective(str);
+		}
+		if (config.Read("MainWinFilterLayout", &str)) {
+			auiFilter->LoadPerspective(str);
 		}
 		callViews->SetSelection(config.Read("MainWinBookTab",callViews->GetSelection()));
 	}
@@ -309,9 +346,11 @@ void MainWin::buildFilterAutocomplete()
 
 MainWin::~MainWin()
 {
+	auiFilter->UnInit();
 	auiTab1->UnInit();
 	aui->UnInit();
 	delete database;
+	delete auiFilter;
 	delete auiTab1;
 	delete aui;
 }
@@ -358,6 +397,7 @@ void MainWin::OnClose(wxCloseEvent& WXUNUSED(event))
 	config.Write("MainWinH", GetScreenRect().height);
 	config.Write("MainWinBookTab",callViews->GetSelection());
 	config.Write("MainWinBookTab1Layout",auiTab1->SavePerspective());
+	config.Write("MainWinFilterLayout", auiFilter->SavePerspective());
 	config.Write("MainWinContent",contentString);
 	config.Write("MainWinCollapseOS",collapseOSCalls->IsChecked());
 
@@ -434,13 +474,14 @@ void MainWin::OnExportAsCsv(wxCommandEvent& WXUNUSED(event))
 		txt << L"Module,";
 		txt << L"Source File,";
 		txt << L"Source Line\n";
+		double totalCount = database->getMainList().totalcount;
 		for each (const Database::Item &item in database->getMainList().items)
 		{
 			writeQuote(txt, item.symbol->procname, '"'); txt << ",";
 			txt << item.exclusive << ",";
 			txt << item.inclusive << ",";
-			txt << (item.exclusive*100.0f/database->getMainList().totalcount) << ",";
-			txt << (item.inclusive*100.0f/database->getMainList().totalcount) << ",";
+			txt << (item.exclusive *100.0f/totalCount) << ",";
+			txt << (item.inclusive *100.0f/totalCount) << ",";
 			writeQuote(txt, database->getModuleName(item.symbol->module), '"'); txt << ",";
 			writeQuote(txt, database->getFileName(item.symbol->sourcefile), '"'); txt << ",";
 			txt << database->getAddrInfo(item.symbol->address)->sourceline << "\n";
@@ -519,12 +560,12 @@ void MainWin::OnExportAsCallgrind(wxCommandEvent& WXUNUSED(event))
 					if (!callee || (symbolSkipped && set_get(skippedSymbols, callee->symbol)))
 					{
 						// If at the bottom of stack or both caller and callee are getting skipped, output as self cost
-						selfCostLines[addrinfo->sourceline] += callstack->samplecount;
+						selfCostLines[addrinfo->sourceline] += database->getFilteredSampleCount(callstack->samples);
 					}
 					else if (i < callstackTop || callee->symbol != symbol) // Ignore root recursion
 					{
 						const LineChildPair key(addrinfo->sourceline, callee->symbol);
-						childCost_SampleCounts[key] += callstack->samplecount;
+						childCost_SampleCounts[key] += database->getFilteredSampleCount(callstack->samples);
 						childCost_CallCounts[key]++;
 					}
 				}
@@ -598,6 +639,7 @@ void MainWin::OnLoadMinidumpSymbols(wxCommandEvent& WXUNUSED(event))
 	// Thus, we need to call reload with loadMinidump==true only once
 	// (as opposed to remembering whether we want to see minidump symbols).
 	reload(true);
+	updateThreads();
 
 	symbolsChanged();
 	refresh();
@@ -646,6 +688,7 @@ void MainWin::OnResetFilters(wxCommandEvent& WXUNUSED(event))
 void MainWin::OnCollapseOS(wxCommandEvent& WXUNUSED(event))
 {
 	reload();
+	updateThreads();
 	refresh();
 }
 
@@ -755,6 +798,7 @@ void MainWin::inspectSymbol(const Database::AddrInfo *addrinfo, bool addtohistor
 	proclist->focusSymbol(symbol);
 	callers->showList(database->getCallers(symbol));
 	callees->showList(database->getCallees(symbol));
+	threadSamples->showList(database->getSymbolSamples(symbol));
 	callStack->showCallStack(symbol);
 
 	if (addtohistory && addrinfo)
@@ -772,6 +816,12 @@ void MainWin::inspectSymbol(const Database::AddrInfo *addrinfo, bool addtohistor
 	}
 }
 
+void MainWin::focusThread(Database::ThreadID tid)
+{
+	threads->SetFocus();
+	threads->focusThread(tid);
+}
+
 void MainWin::reset()
 {
 	viewstate.highlighted.clear();
@@ -782,6 +832,7 @@ void MainWin::reset()
 	proclist->DeleteAllItems();
 	callers->DeleteAllItems();
 	callees->DeleteAllItems();
+	threadSamples->reset();
 	callStack->reset();
 	sourceview->reset();
 
@@ -802,6 +853,7 @@ void MainWin::refresh()
 	proclist->showList(database->getMainList());
 	callers->showList(database->getCallers(symbol));
 	callees->showList(database->getCallees(symbol));
+	threadSamples->showList(database->getSymbolSamples(symbol));
 	callStack->showCallStack(symbol);
 }
 
@@ -847,6 +899,7 @@ void MainWin::resetFilters()
 	filters->GetProperty("procname")->SetValueFromString("");
 	filters->GetProperty("module")->SetValueFromString("");
 	filters->GetProperty("sourcefile")->SetValueFromString("");
+	threads->clearSelectedThreads();
 }
 
 void MainWin::setFilter(const wxString &name, const wxString &value)
@@ -860,6 +913,19 @@ void MainWin::setHighlight(const std::vector<Database::Address> &addresses, bool
 {
 	for each (Database::Address address in addresses)
 		set_set(viewstate.highlighted, address, set);
+	refresh();
+}
+
+void MainWin::updateThreads()
+{
+	threads->updateList();
+}
+
+void MainWin::refreshSelectedThreads()
+{
+	std::vector<Database::ThreadID> newFilterThreads = threads->getSelectedThreads();
+	database->setFilterThreads(newFilterThreads);
+	symbolsChanged();
 	refresh();
 }
 

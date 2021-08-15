@@ -1,4 +1,4 @@
-﻿/*=====================================================================
+/*=====================================================================
 threadinfo.cpp
 --------------
 File created by ClassTemplate on Sun Mar 20 03:22:37 2005
@@ -36,12 +36,30 @@ static __int64 getTotal(FILETIME time)
 }
 
 typedef HRESULT( WINAPI *GetThreadDescriptionFunc )(HANDLE, PWSTR*);
-static GetThreadDescriptionFunc GetThreadDescription = reinterpret_cast<GetThreadDescriptionFunc>(GetProcAddress( GetModuleHandle( TEXT( "Kernel32.dll" ) ), "GetThreadDescription" ));
+static GetThreadDescriptionFunc GetThreadDescription_ = reinterpret_cast<GetThreadDescriptionFunc>(GetProcAddress( GetModuleHandle( TEXT( "Kernel32.dll" ) ), "GetThreadDescription" ));
 
 bool hasThreadDescriptionAPI()
 {
 	// Helper function to let main window decide whether to hide this column
-	return GetThreadDescription != NULL;
+	return GetThreadDescription_ != NULL;
+}
+
+std::wstring getThreadDescriptorName(HANDLE thread_handle)
+{
+	std::wstring name = L"-";
+
+	// Try to use the new thread naming API from Win10 Creators update onwards if we have it
+	if (GetThreadDescription_) {
+		PWSTR data;
+		HRESULT hr = GetThreadDescription_(thread_handle, &data);
+		if (SUCCEEDED(hr)) {
+			if (wcslen(data) > 0)
+				name = data;
+			LocalFree(data);
+		}
+	}
+
+	return name;
 }
 
 // DE: 20090325 Threads now have CPU usage
@@ -52,18 +70,7 @@ ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
 	prevUserTime.dwHighDateTime = prevUserTime.dwLowDateTime = 0;
 	cpuUsage = -1;
 
-	name = L"-";
-
-	// Try to use the new thread naming API from Win10 Creators update onwards if we have it
-	if (GetThreadDescription) {
-		PWSTR data;
-		HRESULT hr = GetThreadDescription(thread_handle, &data);
-		if (SUCCEEDED( hr )) {
-			if (wcslen(data) > 0)
-				name = data;
-			LocalFree(data);
-		}
-	}
+	name = getThreadDescriptorName(thread_handle);
 }
 
 ThreadInfo::~ThreadInfo()
@@ -103,3 +110,4 @@ bool ThreadInfo::recalcUsage(int sampleTimeDiff)
 
 	return true;
 }
+

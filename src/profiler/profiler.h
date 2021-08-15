@@ -50,14 +50,15 @@ class CallStack
 {
 public:
 	size_t depth;
+	DWORD thread_id;
 	PROFILER_ADDR addr[MAX_CALLSTACK_LEVELS];
 
-	bool operator < (const CallStack &other) const
+	bool isBefore(const CallStack &other, bool considerThreadId) const
 	{
 		if (depth != other.depth)
 			return (depth < other.depth);
 
-		for (size_t n=0;n<depth;n++)
+		for (size_t n = 0; n < depth; n++)
 		{
 			if (addr[n] < other.addr[n])
 				return true;
@@ -65,7 +66,15 @@ public:
 				return false;
 		}
 
+		if (considerThreadId)
+			return thread_id < other.thread_id;
+
 		return false;
+	}
+
+	bool operator < (const CallStack &other) const
+	{
+		return isBefore(other, true);
 	}
 };
 
@@ -93,9 +102,9 @@ public:
 	--------
 
 	=====================================================================*/
-	// DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
-	Profiler(HANDLE target_process, HANDLE target_thread,
-		std::map<CallStack, SAMPLE_TYPE>& callstacks, std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts);
+	// DE: 20090325: Profiler no longer owns callstack since it is shared between multipler profilers
+	Profiler(HANDLE target_process, HANDLE target_thread, DWORD target_thread_id,
+		std::map<CallStack, SAMPLE_TYPE>& callstacks);
 
 	// DE: 20090325: Need copy constructor since it is put in a std::vector
 	Profiler(const Profiler& iOther);
@@ -105,8 +114,7 @@ public:
 	~Profiler();
 
 	// DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
-	std::map<CallStack, SAMPLE_TYPE>& callstacks;
-	std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts;
+	std::map<CallStack, SAMPLE_TYPE> *callstacks;
 	const bool is64BitProcess;
 
 	bool sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo);//throws ProfilerExcep
@@ -117,6 +125,7 @@ public:
 	HANDLE getTarget(){ return target_thread; }
 private:
 	HANDLE target_process, target_thread;
+	DWORD target_thread_id;
 };
 
 

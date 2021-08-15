@@ -29,6 +29,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "sourceview.h"
 #include "CallstackView.h"
 #include "logview.h"
+#include "threadsview.h"
 
 #include <wx/propgrid/propgrid.h>
 #include <deque>
@@ -111,6 +112,8 @@ public:
 	/// Called when double-clicking on a particular symbol.
 	void inspectSymbol(const Database::AddrInfo *addrinfo, bool addtohistory=true);
 
+	void focusThread(Database::ThreadID tid);
+
 	/// Called by SourceView to update the status bar.
 	void setSourcePos(const std::wstring& currentfile, int currentline);
 
@@ -118,6 +121,8 @@ public:
 
 	void setFilter(const wxString &name, const wxString &value);
 	void setHighlight(const std::vector<Database::Address> &addresses, bool set);
+
+	void refreshSelectedThreads();
 
 	/// Non-modal (status bar) progress display
 	void setProgress(const wchar_t *text, int max=0);
@@ -131,6 +136,7 @@ private:
 	ProcList* proclist;
 	ProcList* callers;
 	ProcList* callees;
+	ThreadSamplesView *threadSamples;
 	CallstackView* callStack;
 	SourceView* sourceview;
 	LogView* log;
@@ -145,12 +151,15 @@ private:
 
 	wxAuiManager *aui;
 	wxAuiManager *auiTab1;
+	wxAuiManager *auiFilter;
 	wxString contentString;
 
 	wxAuiNotebook *callViews;
 	wxAuiNotebook *sourceAndLog;
 
 	wxPropertyGrid *filters;
+
+	ThreadsView *threads;
 
 	wxMenuItem *collapseOSCalls;
 
@@ -166,6 +175,8 @@ private:
 	/// Apply the filter settings in the wxPropertyGrid to viewstate.
 	void applyFilters();
 	void resetFilters();
+
+	void updateThreads();
 
 	/// Called when the symbol strings have changed in one way or another.
 	void symbolsChanged();

@@ -58,7 +58,7 @@ struct AttachInfo
 	~AttachInfo();
 
 	HANDLE process_handle;
-	std::vector<HANDLE> thread_handles;
+	std::vector<std::pair<HANDLE, DWORD>> thread_handles;
 	SymbolInfo *sym_info;
 	int limit_profile_time;
 };

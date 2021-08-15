@@ -300,32 +300,32 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 
 	std::unique_ptr<AttachInfo> output(new AttachInfo);
 	output->process_handle = pi.hProcess;
-	output->thread_handles.push_back(pi.hThread);
+	output->thread_handles.push_back(std::make_pair(pi.hThread, pi.dwThreadId));
 	output->sym_info = new SymbolInfo;
 	TryLoadSymbols(output.get());
 	return output.release();
 }
 
-static HANDLE getMostBusyThread(ProcessInfo& process_info)
+static std::pair<HANDLE, DWORD> getMostBusyThread(ProcessInfo& process_info)
 {
 	int max = -1;
-	HANDLE mostBusy = NULL;
+	std::pair<HANDLE, DWORD> mostBusy(NULL, 0);
 	for (auto thread_info = process_info.threads.begin(); thread_info != process_info.threads.end(); ++thread_info)
 	{
 		thread_info->recalcUsage(0);
 		if (max < thread_info->totalCpuTimeMs)
 		{
 			max = thread_info->totalCpuTimeMs;
-			mostBusy = thread_info->getThreadHandle();
+			mostBusy = std::make_pair(thread_info->getThreadHandle(), thread_info->getID());
 		}
 	}
 
 	return mostBusy;
 }
 
-static std::vector<HANDLE> getThreadsByAttachMode(ProcessInfo& process_info)
+static std::vector<std::pair<HANDLE, DWORD>> getThreadsByAttachMode(ProcessInfo& process_info)
 {
-	std::vector<HANDLE> threadHandles;
+	std::vector<std::pair<HANDLE, DWORD>> threadHandles;
 
 	if (process_info.threads.empty())
 		return threadHandles;
@@ -333,19 +333,22 @@ static std::vector<HANDLE> getThreadsByAttachMode(ProcessInfo& process_info)
 	switch (prefs.attachMode)
 	{
 	case ATTACH_MAIN_THREAD:
-		threadHandles.push_back(process_info.threads.front().getThreadHandle());
+		threadHandles.push_back(std::make_pair(process_info.threads.front().getThreadHandle(), process_info.threads.front().getID()));
 		return threadHandles;
 
 	case ATTACH_MOST_BUSY_THREAD:
-		if (HANDLE mostBusy = getMostBusyThread(process_info))
+	{
+		std::pair<HANDLE, DWORD> mostBusy = getMostBusyThread(process_info);
+		if (mostBusy.first)
 			threadHandles.push_back(mostBusy);
 		return threadHandles;
+	}
 
 	default: // all thread
 		threadHandles.reserve(process_info.threads.size());
 		for (auto thread_info = process_info.threads.begin(); thread_info != process_info.threads.end(); ++thread_info)
 		{
-			threadHandles.push_back(thread_info->getThreadHandle());
+			threadHandles.push_back(std::make_pair(thread_info->getThreadHandle(), thread_info->getID()));
 		}
 		return threadHandles;
 	}

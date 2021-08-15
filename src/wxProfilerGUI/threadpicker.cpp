@@ -398,8 +398,9 @@ void ThreadPicker::AttachToProcess(bool allThreads)
 			const ThreadInfo* threadInfo(*it);
 
 			HANDLE threadHandle = threadInfo->getThreadHandle();
+			DWORD threadID = threadInfo->getID();
 			wenforce(threadHandle, "Attaching to selected thread");
-			attach_info->thread_handles.push_back(threadHandle);
+			attach_info->thread_handles.push_back(std::make_pair(threadHandle, threadID));
 		}
 		catch (SleepyException &e)
 		{

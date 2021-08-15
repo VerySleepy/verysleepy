@@ -46,6 +46,7 @@ public:
 	typedef unsigned long long Address;
 	typedef size_t FileID;
 	typedef size_t ModuleID;
+	typedef unsigned ThreadID;
 
 	/// Represents one function (as it appears in function lists).
 	struct Symbol
@@ -69,18 +70,24 @@ public:
 		bool isCollapseModule;
 	};
 
+	/// IP count info from a thread
+	struct SampleInfo
+	{
+		ThreadID threadid;
+		double count;
+	};
+
 	/// Represents one address we encountered during profiling
 	struct AddrInfo
 	{
-		AddrInfo() : symbol(NULL), sourceline(0), count(0), percentage(0) {}
+		AddrInfo() : symbol(NULL), sourceline(0) {}
 
 		// Symbol info
 		const Symbol *symbol;
 		unsigned      sourceline;
 
 		// IP counts
-		double count;
-		float  percentage;
+		std::vector<SampleInfo> samples;
 	};
 
 	struct Item
@@ -102,6 +109,13 @@ public:
 		double totalcount;
 	};
 
+	struct SymbolSamples
+	{
+		Symbol const *symbol;
+		std::vector<SampleInfo> exclusive, inclusive;
+		double totalcount;
+	};
+
 	struct CallStack
 	{
 		std::vector<Address> addresses;
@@ -109,7 +123,7 @@ public:
 		// symbols[i] == addrsymbols[addresses[i]]. For convenience/performance.
 		std::vector<const Symbol *> symbols;
 
-		double samplecount;
+		std::vector<SampleInfo> samples;
 	};
 
 	Database();
@@ -134,6 +148,7 @@ public:
 	const List &getMainList() const { return mainList; }
 	List getCallers(const Symbol *symbol) const;
 	List getCallees(const Symbol *symbol) const;
+	SymbolSamples getSymbolSamples(const Symbol *symbol) const;
 	std::vector<const CallStack*> getCallstacksContaining(const Symbol *symbol) const;
 	std::vector<double> getLineCounts(FileID sourcefile);
 
@@ -142,6 +157,13 @@ public:
 	std::wstring getProfilePath() const { return profilepath; }
 
 	bool has_minidump;
+
+	double getFilteredSampleCount(std::vector<SampleInfo> const &samples) const;
+
+	std::unordered_map<ThreadID, std::wstring> const &getThreadNames() const { return threadNames; }
+
+	std::vector<ThreadID> const &getFilterThreads() { return filterThreads; }
+	void setFilterThreads(std::vector<ThreadID> const &threads);
 
 private:
 	/// Symbol::ID -> Symbol*
@@ -158,14 +180,17 @@ private:
 	/// Address -> module/procname/sourcefile/sourceline
 	std::unordered_map<Address, AddrInfo> addrinfo;
 
+	std::unordered_map<ThreadID, std::wstring> threadNames;
+
 	std::vector<CallStack> callstacks;
 	List mainList;
 	std::wstring profilepath;
 	const Symbol *currentRoot;
+	std::vector<ThreadID> filterThreads;
 
 	void loadSymbols(wxInputStream &file);
 	void loadCallstacks(wxInputStream &file,bool collapseKernelCalls);
-	void loadIpCounts(wxInputStream &file);
+	void loadThreads(wxInputStream &file);
 	void loadStats(wxInputStream &file);
 	void loadMinidump(wxInputStream &file);
 	void scanMainList();

@@ -132,8 +132,16 @@ void ProcList::OnContextMenu(wxContextMenuEvent& WXUNUSED(event))
 }
 
 struct NamePred       { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->procname   < b.symbol->procname  ; } };
-struct ExclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) { return a.exclusive          < b.exclusive         ; } };
-struct InclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) { return a.inclusive          < b.inclusive         ; } };
+struct ExclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) {
+	if (a.exclusive != b.exclusive)
+		return a.exclusive < b.exclusive;
+	return a.inclusive < b.inclusive;
+} };
+struct InclusivePred  { bool operator () (const Database::Item &a, const Database::Item &b) {
+	if (a.inclusive != b.inclusive)
+		return a.inclusive < b.inclusive;
+	return a.exclusive < b.exclusive;
+} };
 struct ModulePred     { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->module     < b.symbol->module    ; } };
 struct SourceFilePred { bool operator () (const Database::Item &a, const Database::Item &b) { return a.symbol->sourcefile < b.symbol->sourcefile; } };
 struct AddressPred    { bool operator () (const Database::Item &a, const Database::Item &b) { return a.address            < b.address           ; } };
@@ -159,9 +167,9 @@ void ProcList::sortList()
 }
 
 
-void ProcList::showList(const Database::List &list)
+void ProcList::showList(const Database::List &list_)
 {
-	this->list = list;
+	this->list = list_;
 	sortList();
 	displayList();
 }
@@ -197,8 +205,7 @@ void ProcList::displayList()
 
 		if (sym->isCollapseFunction || sym->isCollapseModule)
 			item.SetTextColour(wxColor(0,128,0));
-		else
-		if (i->inclusive == 0 && i->exclusive == 0)
+		else if (i->inclusive == 0 && i->exclusive == 0)
 			item.SetTextColour(wxColor(128, 128, 128));
 
 		if (set_get(viewstate->highlighted, sym->address))

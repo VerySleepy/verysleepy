@@ -1,4 +1,4 @@
-﻿/*=====================================================================
+/*=====================================================================
 threadinfo.h
 ------------
 File created by ClassTemplate on Sun Mar 20 03:22:37 2005
@@ -29,6 +29,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <string>
 
 bool hasThreadDescriptionAPI();
+std::wstring getThreadDescriptorName(HANDLE thread_handle);
 
 /*=====================================================================
 ThreadInfo
