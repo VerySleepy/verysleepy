@@ -49,12 +49,12 @@ typedef CONTEXT CONTEXT32;
 
 // DE: 20090325: Profiler no longer owns callstack and flatcounts since it is shared between multipler profilers
 
-Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_,
-				   std::map<CallStack, SAMPLE_TYPE>& callstacks_, std::map<PROFILER_ADDR, SAMPLE_TYPE>& flatcounts_)
+Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_, DWORD target_thread_id_,
+				   std::map<CallStack, SAMPLE_TYPE>& callstacks_)
 :	target_process(target_process_),
 	target_thread(target_thread_),
-	callstacks(callstacks_),
-	flatcounts(flatcounts_),
+	target_thread_id(target_thread_id_),
+	callstacks(&callstacks_),
 	is64BitProcess(Is64BitProcess(target_process_))
 {
 }
@@ -64,8 +64,8 @@ Profiler::Profiler(HANDLE target_process_, HANDLE target_thread_,
 Profiler::Profiler(const Profiler& iOther)
 :	target_process(iOther.target_process),
 	target_thread(iOther.target_thread),
+	target_thread_id(iOther.target_thread_id),
 	callstacks(iOther.callstacks),
-	flatcounts(iOther.flatcounts),
 	is64BitProcess(iOther.is64BitProcess)
 {
 }
@@ -76,8 +76,8 @@ Profiler& Profiler::operator=(const Profiler& iOther)
 {
 	target_process = iOther.target_process;
 	target_thread = iOther.target_thread;
+	target_thread_id = iOther.target_thread_id;
 	callstacks = iOther.callstacks;
-	flatcounts = iOther.flatcounts;
 
 	return *this;
 }
@@ -155,6 +155,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 
 	CallStack stack;
 	stack.depth = 0;
+	stack.thread_id = target_thread_id;
 
 	STACKFRAME64 frame;
 	PROFILER_ADDR ip, sp, bp;
@@ -313,8 +314,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 	//may hit a lock held by the suspended thread.
 	if (stack.depth > 0)
 	{
-		flatcounts[stack.addr[0]]+=timeSpent;
-		callstacks[stack]+=timeSpent;
+		(*callstacks)[stack]+=timeSpent;
 	}
 	return true;
 }

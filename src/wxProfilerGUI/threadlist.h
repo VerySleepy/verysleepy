@@ -90,8 +90,7 @@ private:
 
 	void fillList();
 	int getNumDisplayedThreads();
-	std::wstring getLocation(HANDLE thread_handle);
-	std::wstring getName(HANDLE thread_handle);
+	std::wstring getLocation(HANDLE thread_handle, DWORD thread_id);
 };
 
 

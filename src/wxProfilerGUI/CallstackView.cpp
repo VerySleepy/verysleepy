@@ -131,11 +131,6 @@ CallstackView::~CallstackView(void)
 {
 }
 
-bool SortCalls(const Database::CallStack*a,const Database::CallStack*b)
-{
-	return a->samplecount > b->samplecount;
-}
-
 void CallstackView::showCallStack(const Database::Symbol *symbol)
 {
 	updateTools();
@@ -153,7 +148,9 @@ void CallstackView::showCallStack(const Database::Symbol *symbol)
 	}
 
 	callstacks = database->getCallstacksContaining(symbol);
-	std::sort(callstacks.begin(),callstacks.end(),SortCalls);
+	std::sort(callstacks.begin(), callstacks.end(), [this](const Database::CallStack *a, const Database::CallStack *b) {
+		return database->getFilteredSampleCount(a->samples) > database->getFilteredSampleCount(b->samples);
+	});
 
 	callstackActive = 0;
 
@@ -193,8 +190,9 @@ void CallstackView::updateList()
 		now = callstacks[callstackActive];
 	if(now) {
 		double totalcount = database->getMainList().totalcount;
+		double nowCount = database->getFilteredSampleCount(now->samples);
 		callstackStats = wxString::Format("Call stack %d of %d | Accounted for %0.2fs (%0.2f%%)",
-			(int)(callstackActive+1),(int)callstacks.size(),now->samplecount,now->samplecount*100/totalcount);
+			(int)(callstackActive+1),(int)callstacks.size(),nowCount,nowCount*100/totalcount);
 	} else {
 		callstackStats = wxString("");
 	}

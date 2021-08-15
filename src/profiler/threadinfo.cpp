@@ -44,15 +44,9 @@ bool hasThreadDescriptionAPI()
 	return GetThreadDescription_ != NULL;
 }
 
-// DE: 20090325 Threads now have CPU usage
-ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
-:	id(id_), thread_handle(thread_handle_)
+std::wstring getThreadDescriptorName(HANDLE thread_handle)
 {
-	prevKernelTime.dwHighDateTime = prevKernelTime.dwLowDateTime = 0;
-	prevUserTime.dwHighDateTime = prevUserTime.dwLowDateTime = 0;
-	cpuUsage = -1;
-
-	name = L"-";
+	std::wstring name = L"-";
 
 	// Try to use the new thread naming API from Win10 Creators update onwards if we have it
 	if (GetThreadDescription_) {
@@ -64,6 +58,19 @@ ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
 			LocalFree(data);
 		}
 	}
+
+	return name;
+}
+
+// DE: 20090325 Threads now have CPU usage
+ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
+:	id(id_), thread_handle(thread_handle_)
+{
+	prevKernelTime.dwHighDateTime = prevKernelTime.dwLowDateTime = 0;
+	prevUserTime.dwHighDateTime = prevUserTime.dwLowDateTime = 0;
+	cpuUsage = -1;
+
+	name = getThreadDescriptorName(thread_handle);
 }
 
 ThreadInfo::~ThreadInfo()
