@@ -6,7 +6,7 @@
 // These should be updated only in the commits
 // tagging a new version.
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 91
+#define VERSION_MINOR 92
 
 #define VENDOR  "codersnotes.com"
 
