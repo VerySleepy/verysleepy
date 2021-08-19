@@ -45,6 +45,20 @@ For the latest development version, you can download [the latest AppVeyor artifa
     * Improved handling of processes with many threads ([#38](https://github.com/VerySleepy/verysleepy/pull/38))
 * Contributed by [Bernhard Schelling](https://github.com/schellingb):
     * Added Callgrind format file export feature ([#46](https://github.com/VerySleepy/verysleepy/pull/46))
+    * Fixed symbols (PDB files) not being unloaded after detaching ([#57](https://github.com/VerySleepy/verysleepy/pull/57))
+    * Improved jumping to source lines from list views ([#58](https://github.com/VerySleepy/verysleepy/pull/58))
+* Contributed by [rammerchoi](https://github.com/RammerChoi):
+    * Added command-line switch '/mt' and '/mbt' ([#48](https://github.com/VerySleepy/verysleepy/pull/48))
+* Contributed by [Graeme Kelly](https://github.com/graemekelly):
+    * Added display of thread names on threads lists ([#60](https://github.com/VerySleepy/verysleepy/pull/60))
+    * Added column headers to exported CSV files ([#62](https://github.com/VerySleepy/verysleepy/pull/62))
+* Contributed by [Yujiang Wang](https://github.com/AlanIWBFT):
+    * Fixed missing buttons for very long paths ([#65](https://github.com/VerySleepy/verysleepy/pull/65))
+    * Updated DbgHelp to 10.0.17763.1 ([#65](https://github.com/VerySleepy/verysleepy/pull/65))
+* Contributed by [djdron](https://github.com/djdron):
+    * Improved HDPI support ([#74](https://github.com/VerySleepy/verysleepy/pull/74))
+    * Fixed some memory leaks ([#75](https://github.com/VerySleepy/verysleepy/pull/75))
+    * Updated Dr.MinGW ([#77](https://github.com/VerySleepy/verysleepy/pull/77))
 
 ##### Version 0.90 (2014-12-23):
 
