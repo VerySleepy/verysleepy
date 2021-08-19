@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "crashback.h"
+#include "../client/crashback.h"
 
 int *x = NULL;
 

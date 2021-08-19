@@ -2,7 +2,7 @@
 #include <new.h>
 #include <intrin.h>
 #include <stdio.h>
-#include "crashreport.h"
+#include "../crashreport/crashreport.h"
 
 HANDLE cbLock = NULL;
 CbReport *cbReportData = NULL;

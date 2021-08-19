@@ -18,9 +18,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sleepy", "sleepy.vcxproj", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CrashBack", "CrashBack", "{0657711C-079B-4F66-A217-C1D91E9392A5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "src\crashback\src\crashback.vcxproj", "{5ED48520-0F0D-4519-B4FE-E438C4EF02D0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "src\crashback\client\crashback.vcxproj", "{5ED48520-0F0D-4519-B4FE-E438C4EF02D0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crashreport", "src\crashback\src\crashreport.vcxproj", "{583D5F0A-7047-48BA-BE65-80B775513463}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crashreport", "src\crashback\crashreport\crashreport.vcxproj", "{583D5F0A-7047-48BA-BE65-80B775513463}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "badapp", "src\crashback\badapp\badapp.vcxproj", "{CABE9C82-1809-4876-BB4B-CCE40398769F}"
 EndProject
