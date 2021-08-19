@@ -1,4 +1,5 @@
 skip_branch_with_pr: true
+skip_tags: true
 
 install:
   - choco install -y InnoSetup
@@ -15,3 +16,17 @@ artifacts:
 
 test_script:
   - tests\tests\run_tests.bat
+
+deploy:
+  provider: GitHub
+  tag: appveyor
+  release: appveyor
+  description: 'Latest build from AppVeyor CI'
+  auth_token:
+    secure: qqtZWL+oz2DPdI31/TicJ9/SKk+GP18zlWMNbZ21WA49P+MnNksyKAplu0PyeYQo
+  artifact: setup.exe, symbols.7z
+  draft: false
+  prerelease: true
+  force_update: true
+  on:
+    branch: master
