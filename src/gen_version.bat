@@ -34,18 +34,14 @@ rem Generate minor version numbers using the commit count and dirty flag
 rem from the git-describe output. These are only used in file versions,
 rem will be 0 for official releases, and are usually not visible to users.
 
-for /f "tokens=2,4 delims=-" %%a in ("%VERSION%") do (
-	if [%%a] == [dirty] (
-		echo #define VERSION_PATCH 0 >> version.h.tmp
-		echo #define VERSION_DIRTY 1 >> version.h.tmp
-	) else (
-		if     [%%a] == [] echo #define VERSION_PATCH 0   >> version.h.tmp
-		if not [%%a] == [] echo #define VERSION_PATCH %%a >> version.h.tmp
+set PATCH=0
+for /f "tokens=2 delims=-" %%a in ("%VERSION%") do if not [%%a] == [dirty] set PATCH=%%a
 
-		if     [%%b] == [] echo #define VERSION_DIRTY 0   >> version.h.tmp
-		if not [%%b] == [] echo #define VERSION_DIRTY 1   >> version.h.tmp
-	)
-)
+set DIRTY=0
+if "%VERSION:~-6%" == "-dirty" set DIRTY=1
+
+echo #define VERSION_PATCH %PATCH% >> version.h.tmp
+echo #define VERSION_DIRTY %DIRTY% >> version.h.tmp
 
 rem Only update version.h if it changed, to avoid recompiling every time.
 
