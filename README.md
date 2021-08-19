@@ -25,7 +25,7 @@ For the latest development version, you can download [the latest AppVeyor artifa
 
 ### History
 
-##### Version 0.91 (under development):
+##### Version 0.91 (2021-08-19):
 
 * Rename project back to Very Sleepy (this fork repository is now the official repository)
 * Use [Dr. MinGW](https://github.com/jrfonseca/drmingw) to resolve MinGW symbols by default
