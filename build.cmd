@@ -20,6 +20,7 @@ if exist .git\modules\thirdparty\wxWidgets\info\exclude if not exist .git\module
 	echo /build/msw/vc_mswu/>>     .git\modules\thirdparty\wxWidgets\info\exclude
 	echo /build/msw/vc_x64_mswu/>> .git\modules\thirdparty\wxWidgets\info\exclude
 	echo /include/wx/msw/setup.h>> .git\modules\thirdparty\wxWidgets\info\exclude
+	echo /include/wx/setup.h>>     .git\modules\thirdparty\wxWidgets\info\exclude
 	echo /lib/vc_lib/>>            .git\modules\thirdparty\wxWidgets\info\exclude
 	echo /lib/vc_x64_lib/>>        .git\modules\thirdparty\wxWidgets\info\exclude
 
