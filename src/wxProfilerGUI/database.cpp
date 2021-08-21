@@ -572,6 +572,7 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 				double iSampleCount = getFilteredSampleCount(i.samples);
 				counts[caller] += iSampleCount;
 				list.totalcount += iSampleCount;
+				break; // Stop walking the stack to avoid getting funny numbers for recursive functions
 			}
 		}
 	}
@@ -608,6 +609,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 				const Symbol *callee = i->symbols[n-1];
 				counts[callee] += callstackCost;
 				list.totalcount += callstackCost;
+				break; // Stop walking the stack to avoid getting funny numbers for recursive functions
 			}
 			if (i->symbols[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
 		}
@@ -644,6 +646,7 @@ Database::SymbolSamples Database::getSymbolSamples(const Symbol *symbol) const
 				if (n == 0)
 					addSamplesInfo(samples.exclusive, i->samples, filterThreads);
 				addSamplesInfo(samples.inclusive, i->samples, filterThreads);
+				break; // Stop walking the stack to avoid getting funny numbers for recursive functions
 			}
 			if (i->symbols[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
 		}
