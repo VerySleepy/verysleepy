@@ -148,16 +148,23 @@ void CallstackView::showCallStack(const Database::Symbol *symbol)
 	}
 
 	callstacks = database->getCallstacksContaining(symbol);
-	std::sort(callstacks.begin(), callstacks.end(), [this](const Database::CallStack *a, const Database::CallStack *b) {
-		return database->getFilteredSampleCount(a->samples) > database->getFilteredSampleCount(b->samples);
+	std::vector<std::pair<const Database::CallStack *, double>> callstackCosts(callstacks.size());
+	for (size_t i = 0; i < callstackCosts.size(); ++i)
+	{
+		callstackCosts[i].first = callstacks[i];
+		callstackCosts[i].second = database->getFilteredSampleCount(callstacks[i]->samples);
+	}
+
+	std::sort(callstackCosts.begin(), callstackCosts.end(), [this](std::pair<const Database::CallStack *, double> const &a, std::pair<const Database::CallStack *, double> const &b) {
+		return a.second > b.second;
 	});
 
 	callstackActive = 0;
 
 	for(size_t i=0;i<callstacks.size();i++)  {
+		callstacks[i] = callstackCosts[i].first;
 		if(callstacks[i] == pCallStackSelected) {
 			callstackActive = i;
-			break;
 		}
 	}
 	updateList();
