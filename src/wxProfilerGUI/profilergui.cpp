@@ -337,9 +337,12 @@ static std::vector<HANDLE> getThreadsByAttachMode(ProcessInfo& process_info)
 		return threadHandles;
 
 	case ATTACH_MOST_BUSY_THREAD:
-		if (HANDLE mostBusy = getMostBusyThread(process_info))
+	{
+		HANDLE mostBusy = getMostBusyThread(process_info);
+		if (mostBusy)
 			threadHandles.push_back(mostBusy);
 		return threadHandles;
+	}
 
 	default: // all thread
 		threadHandles.reserve(process_info.threads.size());
