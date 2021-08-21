@@ -184,10 +184,10 @@ void SourceView::showFile(std::wstring path, int proclinenum, const std::vector<
 	}
 
 	std::wstring displaytext;
-	wchar_t line[1024];
-	while(fgetws(line,countof(line),file))
+	wchar_t lineBuf[1024];
+	while(fgetws(lineBuf,countof(lineBuf),file))
 	{
-		displaytext += line;
+		displaytext += lineBuf;
 	}
 
 	fclose(file);

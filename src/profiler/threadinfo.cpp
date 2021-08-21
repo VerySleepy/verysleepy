@@ -36,12 +36,12 @@ static __int64 getTotal(FILETIME time)
 }
 
 typedef HRESULT( WINAPI *GetThreadDescriptionFunc )(HANDLE, PWSTR*);
-static GetThreadDescriptionFunc GetThreadDescription = reinterpret_cast<GetThreadDescriptionFunc>(GetProcAddress( GetModuleHandle( TEXT( "Kernel32.dll" ) ), "GetThreadDescription" ));
+static GetThreadDescriptionFunc GetThreadDescription_ = reinterpret_cast<GetThreadDescriptionFunc>(GetProcAddress( GetModuleHandle( TEXT( "Kernel32.dll" ) ), "GetThreadDescription" ));
 
 bool hasThreadDescriptionAPI()
 {
 	// Helper function to let main window decide whether to hide this column
-	return GetThreadDescription != NULL;
+	return GetThreadDescription_ != NULL;
 }
 
 // DE: 20090325 Threads now have CPU usage
@@ -55,10 +55,10 @@ ThreadInfo::ThreadInfo(DWORD id_, HANDLE thread_handle_)
 	name = L"-";
 
 	// Try to use the new thread naming API from Win10 Creators update onwards if we have it
-	if (GetThreadDescription) {
+	if (GetThreadDescription_) {
 		PWSTR data;
-		HRESULT hr = GetThreadDescription(thread_handle, &data);
-		if (SUCCEEDED( hr )) {
+		HRESULT hr = GetThreadDescription_(thread_handle, &data);
+		if (SUCCEEDED(hr)) {
 			if (wcslen(data) > 0)
 				name = data;
 			LocalFree(data);
@@ -75,14 +75,14 @@ bool ThreadInfo::recalcUsage(int sampleTimeDiff)
 	cpuUsage = -1;
 	totalCpuTimeMs = -1;
 
-	HANDLE thread_handle = getThreadHandle();
-	if (thread_handle == NULL)
+	HANDLE thread_handle_ = getThreadHandle();
+	if (thread_handle_ == NULL)
 		return false;
 
 	FILETIME CreationTime, ExitTime, KernelTime, UserTime;
 
 	if (!GetThreadTimes(
-		thread_handle,
+		thread_handle_,
 		&CreationTime,
 		&ExitTime,
 		&KernelTime,

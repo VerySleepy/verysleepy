@@ -159,9 +159,9 @@ void ProcList::sortList()
 }
 
 
-void ProcList::showList(const Database::List &list)
+void ProcList::showList(const Database::List &list_)
 {
-	this->list = list;
+	this->list = list_;
 	sortList();
 	displayList();
 }

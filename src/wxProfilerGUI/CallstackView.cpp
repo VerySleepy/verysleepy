@@ -52,9 +52,9 @@ public:
 		dc.DrawText(label, 0,0);
 	}
 
-	void SetLabel(const wxString& label)
+	void SetLabel(const wxString& label_)
 	{
-		this->label = label;
+		this->label = label_;
 	}
 
 	void OnEraseBackground(wxEraseEvent& WXUNUSED(event))
