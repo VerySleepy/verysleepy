@@ -926,6 +926,7 @@ void MainWin::refreshSelectedThreads()
 	std::vector<Database::ThreadID> newFilterThreads = threads->getSelectedThreads();
 	database->setFilterThreads(newFilterThreads);
 	symbolsChanged();
+	callStack->reset();
 	refresh();
 }
 
