@@ -29,6 +29,8 @@ For the latest development version, you can download [the latest AppVeyor artifa
 
 * Do not include time while paused in sample durations
 * Add command-line switch `/d` to wait before starting profiler
+* Contributed by [aaalexandrov](https://github.com/aaalexandrov):
+    * Add sample filtering by thread ([#86](https://github.com/VerySleepy/verysleepy/pull/86))
 
 ##### Version 0.91 (2021-08-19):
 
