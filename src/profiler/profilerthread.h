@@ -68,6 +68,7 @@ public:
 	bool getDone() const { return done; }
 	bool getFailed() const { return failed; }
 	const wchar_t* getStatus() const { return status; }
+	SAMPLE_TYPE getDuration() const { return duration; }
 	int getSampleProgress() const { return numsamplessofar; }
 	void getSymbolsProgress(int *permille, std::wstring *stage) const { *permille = symbolsPermille; *stage = symbolsStage; }
 	const std::wstring &getFilename() const { return filename; }

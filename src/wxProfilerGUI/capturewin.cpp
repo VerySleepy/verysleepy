@@ -151,42 +151,27 @@ WXLRESULT CaptureWin::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lPara
 	}
 }
 
-bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numThreads, int timeout)
+bool CaptureWin::UpdateProgress(const wchar_t *status, double progress)
 {
-	if (!paused)
+	progressText->SetLabel(status);
+
+	if (progress != progress) // NAN
 	{
-		double elapsed = stopwatch.Time() / 1000.0f;
-
-		if (status)
-		{
-			progressText->SetLabel(status);
-			progressBar->Pulse();
-		}
+		if (paused)
+			progressBar->SetValue(0);
 		else
-		{
-			char tmp[256];
-			int n=0;
-			if( timeout == -1 )
-			{
-				// RM: 20130614 Run forever, until cancelled
-				sprintf(tmp, "%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
-				progressBar->Pulse();
-				if(win7taskBar)
-					win7taskBar->SetProgressState(GetHandle(), TBPF_INDETERMINATE);
-			}
-			else
-			{
-				// RM: 20130614 Run for set time
-				sprintf(tmp, "%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, timeout, numThreads);
-				n = elapsed / timeout * MAX_RANGE;
-				progressBar->SetValue(n);
-
-				if (win7taskBar)
-					win7taskBar->SetProgressValue(GetHandle(), n, MAX_RANGE);
-			}
-
-			progressText->SetLabel(tmp);
-		}
+			progressBar->Pulse();
+		if (win7taskBar)
+			win7taskBar->SetProgressState(GetHandle(), TBPF_INDETERMINATE);
+	}
+	else
+	{
+		if (progress < 0) progress = 0;
+		if (progress > 1) progress = 1;
+		int n = progress * MAX_RANGE;
+		progressBar->SetValue(n);
+		if (win7taskBar)
+			win7taskBar->SetProgressValue(GetHandle(), n, MAX_RANGE);
 	}
 
 	return !stopped;
@@ -195,29 +180,17 @@ bool CaptureWin::UpdateProgress(const wchar_t *status, int numSamples, int numTh
 void CaptureWin::OnPause(wxCommandEvent& event)
 {
 	paused = event.IsChecked();
-	if (paused)
-	{
-		stopwatch.Pause();
-		pauseButton->SetBitmapLabel(LoadPngResource(L"button_go", this));
-	} else {
-		stopwatch.Resume();
-		pauseButton->SetBitmapLabel(LoadPngResource(L"button_pause", this));
-	}
-
+	pauseButton->SetBitmapLabel(LoadPngResource(paused ? L"button_go" : L"button_pause", this));
 	SetTitle(paused ? _T(APPNAME) L" - paused" : _T(APPNAME) L" - profiling");
 
 	if (win7taskBar)
-	{
 		win7taskBar->SetProgressState(GetHandle(), paused ? TBPF_PAUSED : TBPF_NORMAL);
-	}
 }
 
 void CaptureWin::OnOk(wxCommandEvent& WXUNUSED(event))
 {
 	if (win7taskBar)
-	{
 		win7taskBar->SetProgressState(GetHandle(), TBPF_NOPROGRESS);
-	}
 
 	stopped = true;
 }
@@ -225,9 +198,7 @@ void CaptureWin::OnOk(wxCommandEvent& WXUNUSED(event))
 void CaptureWin::OnCancel(wxCommandEvent& WXUNUSED(event))
 {
 	if (win7taskBar)
-	{
 		win7taskBar->SetProgressState(GetHandle(), TBPF_NOPROGRESS);
-	}
 
 	cancelled = true;
 	stopped = true;

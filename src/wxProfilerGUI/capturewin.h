@@ -31,7 +31,7 @@ public:
 	CaptureWin();
 	virtual ~CaptureWin();
 
-	bool UpdateProgress(const wchar_t *status, int numSamples, int numThreads, int timeout);
+	bool UpdateProgress(const wchar_t *status, double progress);
 
 	bool Paused() { return paused; }
 	bool Cancelled() { return cancelled; }
@@ -46,7 +46,6 @@ private:
 	bool cancelled, stopped, paused;
 	wxGauge *progressBar;
 	wxStaticText *progressText;
-	wxStopWatch stopwatch;
 	class wxBitmapToggleButton *pauseButton;
 	struct ITaskbarList3 *win7taskBar;
 

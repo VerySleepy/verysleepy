@@ -42,6 +42,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "aboutdlg.h"
 #include "../utils/except.h"
 #include "../appinfo.h"
+#include <limits>
 
 // DE: 20090325 Linking fails in debug target under visual studio 2005
 // RJM: works for me :-/
@@ -203,16 +204,35 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 			if (timer.fired)
 			{
 				timer.fired = false;
-				if (!captureWin->UpdateProgress(profilerthread->getStatus(), profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning(), info->limit_profile_time))
+
+				const wchar_t *status = profilerthread->getStatus();
+				int numSamples = profilerthread->getSampleProgress();
+				int numThreads = profilerthread->getNumThreadsRunning();
+				int timeout = info->limit_profile_time;
+				double elapsed = profilerthread->getDuration();
+
+				wchar_t tmp[256];
+				if (!status)
+				{
+					if (timeout == -1)
+						swprintf(tmp, L"%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
+					else
+						swprintf(tmp, L"%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, timeout, numThreads);
+					status = tmp;
+				}
+
+				double progress = timeout == -1 ? std::numeric_limits<double>::quiet_NaN() : (elapsed / timeout);
+
+				if (!captureWin->UpdateProgress(status, progress))
+					break;
+
+				if (progress >= 1)
 					break;
 			}
 
 			profilerthread->setPaused(captureWin->Paused());
 
 			if (profilerthread->getNumThreadsRunning() <= 0)
-				break;
-
-			if (info->limit_profile_time >= 0 && stopwatch.Time() >= info->limit_profile_time*1000)
 				break;
 
 			WaitMessage(); // in lieu of a wxWaitForEvent
