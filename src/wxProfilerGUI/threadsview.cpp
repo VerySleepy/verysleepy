@@ -278,54 +278,22 @@ void ThreadSamplesView::showList(Database::SymbolSamples const &symbolSamples)
 {
 	totalCount = symbolSamples.totalcount;
 
-	auto incSamples = symbolSamples.inclusive.begin();
-	auto exSamples = symbolSamples.exclusive.begin();
-
-	auto compareSampleTid = [](std::pair<Database::ThreadID, double> const &si, Database::ThreadID t) { return si.first < t; };
-
 	threads.clear();
 
-	std::vector<Database::ThreadID> allThreads;
-	std::vector<Database::ThreadID> const *filterThreads = &database->getFilterThreads();
-	if (filterThreads->empty())
-	{
-		for (auto tn : database->getThreadNames())
-		{
-			allThreads.push_back(tn.first);
-		}
-		std::sort(allThreads.begin(), allThreads.end());
-		filterThreads = &allThreads;
-	}
-
-	for (Database::ThreadID tid : *filterThreads)
+	// here we assume inclusive samples are a superset of exclusive samples
+	for (auto &incSample : symbolSamples.inclusive)
 	{
 		ThreadRow row;
 
-		incSamples = std::lower_bound(incSamples, symbolSamples.inclusive.end(), tid, compareSampleTid);
-		if (incSamples != symbolSamples.inclusive.end() && incSamples->first == tid)
-		{
-			row.inclusive = incSamples->second;
-		}
-		else
-		{
-			row.inclusive = 0;
-		}
+		row.tid = incSample.first;
+		row.name = database->getThreadNames().at(row.tid);
+		row.inclusive = incSample.second;
 
-		exSamples = std::lower_bound(exSamples, symbolSamples.exclusive.end(), tid, compareSampleTid);
-		if (exSamples != symbolSamples.exclusive.end() && exSamples->first == tid)
-		{
-			row.exclusive = exSamples->second;
-		}
+		auto exSample = symbolSamples.exclusive.find(row.tid);
+		if (exSample != symbolSamples.exclusive.end())
+			row.exclusive = exSample->second;
 		else
-		{
 			row.exclusive = 0;
-		}
-
-		if (row.inclusive == 0 && row.exclusive == 0)
-			continue;
-
-		row.tid = tid;
-		row.name = database->getThreadNames().at(tid);
 
 		threads.push_back(row);
 	}

@@ -249,6 +249,21 @@ static void addSamplesInfo(std::map<Database::ThreadID, double> &dst, std::map<D
 		dst[s.first] += s.second;
 }
 
+static void addSamplesInfo(std::map<Database::ThreadID, double> &dst, std::map<Database::ThreadID, double> const &src, std::vector<Database::ThreadID> const &filterThreads)
+{
+	if (filterThreads.empty())
+		addSamplesInfo(dst, src);
+	else
+	{
+		for (Database::ThreadID tid : filterThreads)
+		{
+			auto it = src.find(tid);
+			if (it != src.end())
+				dst[tid] += it->second;
+		}
+	}
+}
+
 static double getSampleCount(std::map<Database::ThreadID, double> const &samples, std::vector<Database::ThreadID> const &filterThreads)
 {
 	double count = 0;
@@ -259,14 +274,11 @@ static double getSampleCount(std::map<Database::ThreadID, double> const &samples
 	}
 	else
 	{
-		auto s = samples.begin();
 		for (auto tid : filterThreads)
 		{
-			s = std::lower_bound(s, samples.end(), tid, [](std::pair<Database::ThreadID, double> const &si, Database::ThreadID t) { return si.first < t; });
-			if (s == samples.end())
-				break;
-			if (s->first == tid)
-				count += s->second;
+			auto it = samples.find(tid);
+			if (it != samples.end())
+				count += it->second;
 		}
 	}
 	return count;
@@ -451,8 +463,14 @@ void Database::setRoot(const Database::Symbol *root)
 
 bool Database::includeCallstack(const CallStack &callstack) const
 {
-	if (currentRoot)
-		return std::find(callstack.symbols.begin(), callstack.symbols.end(), currentRoot) != callstack.symbols.end();
+	if (currentRoot && std::find(callstack.symbols.begin(), callstack.symbols.end(), currentRoot) == callstack.symbols.end())
+		return false;
+	if (filterThreads.size())
+	{
+		double count = getFilteredSampleCount(callstack.samples);
+		if (count == 0)
+			return false;
+	}
 	return true;
 }
 
@@ -624,8 +642,8 @@ Database::SymbolSamples Database::getSymbolSamples(const Symbol *symbol) const
 			if (i->symbols[n] == symbol)
 			{
 				if (n == 0)
-					addSamplesInfo(samples.exclusive, i->samples);
-				addSamplesInfo(samples.inclusive, i->samples);
+					addSamplesInfo(samples.exclusive, i->samples, filterThreads);
+				addSamplesInfo(samples.inclusive, i->samples, filterThreads);
 			}
 			if (i->symbols[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
 		}
