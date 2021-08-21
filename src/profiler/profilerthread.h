@@ -94,7 +94,7 @@ private:
 
 	// DE: 20090325 one Profiler instance per thread to profile
 	std::vector<Profiler> profilers;
-	double duration;
+	SAMPLE_TYPE duration;
 	//int numsamples;
 	const wchar_t* status;
 	int numsamplessofar;

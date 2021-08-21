@@ -57,6 +57,7 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 	cancelled = false;
 	commit_suicide = false;
 	symbolsPermille = 0;
+	duration = 0;
 	numThreadsRunning = (int)target_threads.size();
 	status = L"Initializing";
 
@@ -76,6 +77,8 @@ void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 	//      to re-schedule, and if we did them in sequence, it'll always schedule the first one.
 	//      This starves the other N-1 threads. For lack of a better option, using a shuffle
 	//      at least re-schedules them evenly.
+
+	duration += timeSpent;
 
 	const size_t count = profilers.size();
 	if ( count == 0)
@@ -309,8 +312,6 @@ void ProfilerThread::run()
 {
 	wxLog::EnableLogging();
 
-	startTick = GetTickCount();
-
 	status = NULL;
 	try
 	{
@@ -336,10 +337,6 @@ void ProfilerThread::run()
 		return;
 
 	setPriority(THREAD_PRIORITY_NORMAL);
-
-	DWORD endTick = GetTickCount();
-	int diff = endTick - startTick;
-	duration = diff / 1000.0;
 
 	saveData();
 
