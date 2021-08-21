@@ -243,40 +243,30 @@ void Database::loadSymbols(wxInputStream &file)
 	progressdlg.Update(kMaxProgress, "Tidying things up...");
 }
 
-static void addSampleInfo(std::vector<Database::SampleInfo> &samples, Database::SampleInfo const &info)
-{
-	auto it = std::lower_bound(samples.begin(), samples.end(), info, [](Database::SampleInfo const &i0, Database::SampleInfo const &i1) { return i0.threadid < i1.threadid; });
-	if (it == samples.end() || it->threadid != info.threadid) {
-		samples.insert(it, info);
-	} else {
-		it->count += info.count;
-	}
-}
-
-static void addSamplesInfo(std::vector<Database::SampleInfo> &dst, std::vector<Database::SampleInfo> const &src)
+static void addSamplesInfo(std::map<Database::ThreadID, double> &dst, std::map<Database::ThreadID, double> const &src)
 {
 	for (auto &s : src)
-		addSampleInfo(dst, s);
+		dst[s.first] += s.second;
 }
 
-static double getSampleCount(std::vector<Database::SampleInfo> const &samples, std::vector<Database::ThreadID> const &filterThreads)
+static double getSampleCount(std::map<Database::ThreadID, double> const &samples, std::vector<Database::ThreadID> const &filterThreads)
 {
 	double count = 0;
 	if (filterThreads.empty())
 	{
 		for (auto &sample : samples)
-			count += sample.count;
+			count += sample.second;
 	}
 	else
 	{
-		std::vector<Database::SampleInfo>::const_iterator s = samples.begin();
+		auto s = samples.begin();
 		for (auto tid : filterThreads)
 		{
-			s = std::lower_bound(s, samples.end(), tid, [](Database::SampleInfo const &si, Database::ThreadID t) { return si.threadid < t; });
+			s = std::lower_bound(s, samples.end(), tid, [](std::pair<Database::ThreadID, double> const &si, Database::ThreadID t) { return si.first < t; });
 			if (s == samples.end())
 				break;
-			if (s->threadid == tid)
-				count += s->count;
+			if (s->first == tid)
+				count += s->second;
 		}
 	}
 	return count;
@@ -329,14 +319,15 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 		std::wistringstream streamSamples(lineSamples.c_str().AsWChar());
 		while (true)
 		{
-			SampleInfo sample;
-			if (!(streamSamples >> sample.threadid))
+			ThreadID tid;
+			double count;
+			if (!(streamSamples >> tid))
 				break;
 
-			if (!(streamSamples >> sample.count))
+			if (!(streamSamples >> count))
 				break;
 
-			callstack.samples.push_back(sample);
+			callstack.samples.insert(std::make_pair(tid, count));
 		}
 
 		if (topAddrInfo)
@@ -674,7 +665,7 @@ std::vector<double> Database::getLineCounts(FileID sourcefile)
 		{
 			unsigned sourceline = pair.second.sourceline;
 			if (linecounts.size() <= size_t(sourceline))
-				linecounts.resize(sourceline+1);
+				linecounts.resize(size_t(sourceline)+1);
 			double count = getSampleCount(pair.second.samples, filterThreads);
 			linecounts[sourceline] += count;
 		}
@@ -682,7 +673,7 @@ std::vector<double> Database::getLineCounts(FileID sourcefile)
 	return linecounts;
 }
 
-double Database::getFilteredSampleCount(std::vector<SampleInfo> const &samples) const
+double Database::getFilteredSampleCount(std::map<ThreadID, double> const &samples) const
 {
 	return getSampleCount(samples, filterThreads);
 }

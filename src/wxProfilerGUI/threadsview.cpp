@@ -281,10 +281,9 @@ void ThreadSamplesView::showList(Database::SymbolSamples const &symbolSamples)
 	auto incSamples = symbolSamples.inclusive.begin();
 	auto exSamples = symbolSamples.exclusive.begin();
 
-	auto compareSampleTid = [](Database::SampleInfo const &si, Database::ThreadID t) { return si.threadid < t; };
+	auto compareSampleTid = [](std::pair<Database::ThreadID, double> const &si, Database::ThreadID t) { return si.first < t; };
 
 	threads.clear();
-
 
 	std::vector<Database::ThreadID> allThreads;
 	std::vector<Database::ThreadID> const *filterThreads = &database->getFilterThreads();
@@ -303,9 +302,9 @@ void ThreadSamplesView::showList(Database::SymbolSamples const &symbolSamples)
 		ThreadRow row;
 
 		incSamples = std::lower_bound(incSamples, symbolSamples.inclusive.end(), tid, compareSampleTid);
-		if (incSamples != symbolSamples.inclusive.end() && incSamples->threadid == tid)
+		if (incSamples != symbolSamples.inclusive.end() && incSamples->first == tid)
 		{
-			row.inclusive = incSamples->count;
+			row.inclusive = incSamples->second;
 		}
 		else
 		{
@@ -313,9 +312,9 @@ void ThreadSamplesView::showList(Database::SymbolSamples const &symbolSamples)
 		}
 
 		exSamples = std::lower_bound(exSamples, symbolSamples.exclusive.end(), tid, compareSampleTid);
-		if (exSamples != symbolSamples.exclusive.end() && exSamples->threadid == tid)
+		if (exSamples != symbolSamples.exclusive.end() && exSamples->first == tid)
 		{
-			row.exclusive = exSamples->count;
+			row.exclusive = exSamples->second;
 		}
 		else
 		{

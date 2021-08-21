@@ -70,13 +70,6 @@ public:
 		bool isCollapseModule;
 	};
 
-	/// IP count info from a thread
-	struct SampleInfo
-	{
-		ThreadID threadid;
-		double count;
-	};
-
 	/// Represents one address we encountered during profiling
 	struct AddrInfo
 	{
@@ -86,8 +79,8 @@ public:
 		const Symbol *symbol;
 		unsigned      sourceline;
 
-		// IP counts
-		std::vector<SampleInfo> samples;
+		// Per thread IP counts
+		std::map<ThreadID, double> samples;
 	};
 
 	struct Item
@@ -112,7 +105,7 @@ public:
 	struct SymbolSamples
 	{
 		Symbol const *symbol;
-		std::vector<SampleInfo> exclusive, inclusive;
+		std::map<ThreadID, double> exclusive, inclusive;
 		double totalcount;
 	};
 
@@ -123,7 +116,7 @@ public:
 		// symbols[i] == addrsymbols[addresses[i]]. For convenience/performance.
 		std::vector<const Symbol *> symbols;
 
-		std::vector<SampleInfo> samples;
+		std::map<ThreadID, double> samples;
 	};
 
 	Database();
@@ -158,7 +151,7 @@ public:
 
 	bool has_minidump;
 
-	double getFilteredSampleCount(std::vector<SampleInfo> const &samples) const;
+	double getFilteredSampleCount(std::map<ThreadID, double> const &samples) const;
 
 	std::unordered_map<ThreadID, std::wstring> const &getThreadNames() const { return threadNames; }
 
