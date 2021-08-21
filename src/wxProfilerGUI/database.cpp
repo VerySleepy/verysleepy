@@ -148,7 +148,7 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 
 			 if (name == "Symbols.txt")		loadSymbols(zip);
 		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
-		else if (name == "IPCounts.txt")	loadIpCounts(zip);
+		else if (name == "Threads.txt")     loadThreads(zip);
 		else if (name == "Stats.txt")		loadStats(zip);
 		else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
 		else if (name.Left(8) == "Version ") {}
@@ -243,6 +243,47 @@ void Database::loadSymbols(wxInputStream &file)
 	progressdlg.Update(kMaxProgress, "Tidying things up...");
 }
 
+static void addSamplesInfo(std::map<Database::ThreadID, double> &dst, std::map<Database::ThreadID, double> const &src)
+{
+	for (auto &s : src)
+		dst[s.first] += s.second;
+}
+
+static void addSamplesInfo(std::map<Database::ThreadID, double> &dst, std::map<Database::ThreadID, double> const &src, std::vector<Database::ThreadID> const &filterThreads)
+{
+	if (filterThreads.empty())
+		addSamplesInfo(dst, src);
+	else
+	{
+		for (Database::ThreadID tid : filterThreads)
+		{
+			auto it = src.find(tid);
+			if (it != src.end())
+				dst[tid] += it->second;
+		}
+	}
+}
+
+static double getSampleCount(std::map<Database::ThreadID, double> const &samples, std::vector<Database::ThreadID> const &filterThreads)
+{
+	double count = 0;
+	if (filterThreads.empty())
+	{
+		for (auto &sample : samples)
+			count += sample.second;
+	}
+	else
+	{
+		for (auto tid : filterThreads)
+		{
+			auto it = samples.find(tid);
+			if (it != samples.end())
+				count += it->second;
+		}
+	}
+	return count;
+}
+
 // read callstacks
 void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 {
@@ -255,27 +296,55 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 
 	while (!file.Eof())
 	{
-		wxString line = str.ReadLine();
-		if (line.IsEmpty())
+		wxString lineAddr = str.ReadLine();
+		wxString lineSamples = str.ReadLine();
+		if (lineAddr.IsEmpty() || lineSamples.IsEmpty())
 			break;
 
-		std::wistringstream stream(line.c_str().AsWChar());
+		std::wistringstream streamAddr(lineAddr.c_str().AsWChar());
 
 		CallStack callstack;
-		stream >> callstack.samplecount;
+		AddrInfo *topAddrInfo = NULL;
 
+		int depth = 0;
 		while (true)
 		{
 			std::wstring addrstr;
-			stream >> addrstr;
+			streamAddr >> addrstr;
 			if (addrstr.empty())
 				break;
 			Address addr = hexStringTo64UInt(addrstr);
+
+			if (depth == 0)
+			{
+				// AA: 20210821: Reconstruct data that used to be in IPCounts.txt
+				topAddrInfo = &addrinfo.at(addr);
+			}
 
 			if (collapseKernelCalls && addrinfo.at(addr).symbol->isCollapseFunction)
 				callstack.addresses.clear();
 
 			callstack.addresses.push_back(addr);
+			++depth;
+		}
+
+		std::wistringstream streamSamples(lineSamples.c_str().AsWChar());
+		while (true)
+		{
+			ThreadID tid;
+			double count;
+			if (!(streamSamples >> tid))
+				break;
+
+			if (!(streamSamples >> count))
+				break;
+
+			callstack.samples.insert(std::make_pair(tid, count));
+		}
+
+		if (topAddrInfo)
+		{
+			addSamplesInfo(topAddrInfo->samples, callstack.samples);
 		}
 
 		if (collapseKernelCalls)
@@ -330,7 +399,7 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 
 			auto& item = callstacks[i];
 			if (!filtered.empty() && filtered.back().addresses == item.addresses)
-				filtered.back().samplecount += item.samplecount;
+				addSamplesInfo(filtered.back().samples, item.samples);
 			else
 				filtered.emplace_back(std::move(item));
 		}
@@ -339,14 +408,16 @@ void Database::loadCallstacks(wxInputStream &file,bool collapseKernelCalls)
 	}
 }
 
-void Database::loadIpCounts(wxInputStream &file)
+void Database::loadThreads(wxInputStream &file)
 {
-	double totalcount = 0;
 	wxTextInputStream str(file);
 
-	str >> totalcount;
+	size_t filesize = file.GetSize();
+	wxProgressDialog progressdlg(APPNAME, "Loading threads...",
+		kMaxProgress, theMainWin,
+		wxPD_APP_MODAL | wxPD_AUTO_HIDE);
 
-	while(!file.Eof())
+	while (!file.Eof())
 	{
 		wxString line = str.ReadLine();
 		if (line.IsEmpty())
@@ -354,16 +425,17 @@ void Database::loadIpCounts(wxInputStream &file)
 
 		std::wistringstream stream(line.c_str().AsWChar());
 
-		std::wstring addrstr;
-		double count;
+		ThreadID tid;
+		stream >> tid;
 
-		stream >> addrstr;
-		stream >> count;
+		std::wstring thread_name;
+		stream >> thread_name;
 
-		Address addr = hexStringTo64UInt(addrstr);
-		AddrInfo *info = &addrinfo.at(addr);
-		info->count += count;
-		info->percentage += 100.0f * ((float)count / (float)totalcount);
+		threadNames[tid] = thread_name;
+
+		wxFileOffset offset = file.TellI();
+		if (offset != wxInvalidOffset && offset != (wxFileOffset)filesize)
+			progressdlg.Update(kMaxProgress * offset / filesize);
 	}
 }
 
@@ -391,8 +463,14 @@ void Database::setRoot(const Database::Symbol *root)
 
 bool Database::includeCallstack(const CallStack &callstack) const
 {
-	if (currentRoot)
-		return std::find(callstack.symbols.begin(), callstack.symbols.end(), currentRoot) != callstack.symbols.end();
+	if (currentRoot && std::find(callstack.symbols.begin(), callstack.symbols.end(), currentRoot) == callstack.symbols.end())
+		return false;
+	if (filterThreads.size())
+	{
+		double count = getFilteredSampleCount(callstack.samples);
+		if (count == 0)
+			return false;
+	}
 	return true;
 }
 
@@ -418,7 +496,8 @@ void Database::scanMainList()
 		if (!includeCallstack(i))
 			continue;
 
-		exclusive[i.symbols[0]->id] += i.samplecount;
+		double iSampleCount = getFilteredSampleCount(i.samples);
+		exclusive[i.symbols[0]->id] += iSampleCount;
 		std::vector<bool> seen(symbols.size());
 		for (size_t n = 0; n < i.symbols.size(); ++n)
 		{
@@ -428,12 +507,12 @@ void Database::scanMainList()
 			// using recursive functions.
 			if (!seen[id])
 			{
-				inclusive[id] += i.samplecount;
+				inclusive[id] += iSampleCount;
 				seen[id] = true;
 			}
 			if (id == currentRootID) break;       // Stop handling the call stack if we encounter the root
 		}
-		mainList.totalcount += i.samplecount;
+		mainList.totalcount += iSampleCount;
 
 		progressdlg.Update(progress++);
 	}
@@ -490,8 +569,10 @@ Database::List Database::getCallers(const Database::Symbol *symbol) const
 			{
 				Address caller = i.addresses[n+1];
 
-				counts[caller] += i.samplecount;
-				list.totalcount += i.samplecount;
+				double iSampleCount = getFilteredSampleCount(i.samples);
+				counts[caller] += iSampleCount;
+				list.totalcount += iSampleCount;
+				break; // Stop walking the stack to avoid getting funny numbers for recursive functions
 			}
 		}
 	}
@@ -518,7 +599,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 		// Only use call stacks that include the current root
 		if (!includeCallstack(*i)) continue;
 
-		double callstackCost = i->samplecount;
+		double callstackCost = getFilteredSampleCount(i->samples);
 
 		// Only include callstacks that have our symbol in.
 		for (size_t n=1;n<i->symbols.size();n++)
@@ -528,6 +609,7 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 				const Symbol *callee = i->symbols[n-1];
 				counts[callee] += callstackCost;
 				list.totalcount += callstackCost;
+				break; // Stop walking the stack to avoid getting funny numbers for recursive functions
 			}
 			if (i->symbols[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
 		}
@@ -544,6 +626,35 @@ Database::List Database::getCallees(const Database::Symbol *symbol) const
 	}
 
 	return list;
+}
+
+Database::SymbolSamples Database::getSymbolSamples(const Symbol *symbol) const
+{
+	SymbolSamples samples;
+	samples.symbol = symbol;
+
+	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
+	{
+		// Only use call stacks that include the current root
+		if (!includeCallstack(*i)) continue;
+
+		// Only include callstacks that have our symbol in.
+		for (size_t n = 0; n < i->symbols.size(); n++)
+		{
+			if (i->symbols[n] == symbol)
+			{
+				if (n == 0)
+					addSamplesInfo(samples.exclusive, i->samples, filterThreads);
+				addSamplesInfo(samples.inclusive, i->samples, filterThreads);
+				break; // Stop walking the stack to avoid getting funny numbers for recursive functions
+			}
+			if (i->symbols[n] == currentRoot) break;       // Stop handling the call stack if we encounter the root
+		}
+	}
+
+	samples.totalcount = getFilteredSampleCount(samples.inclusive);
+
+	return samples;
 }
 
 void Database::loadMinidump(wxInputStream &file)
@@ -575,9 +686,23 @@ std::vector<double> Database::getLineCounts(FileID sourcefile)
 		{
 			unsigned sourceline = pair.second.sourceline;
 			if (linecounts.size() <= size_t(sourceline))
-				linecounts.resize(sourceline+1);
-			linecounts[sourceline] += pair.second.count;
+				linecounts.resize(size_t(sourceline)+1);
+			double count = getSampleCount(pair.second.samples, filterThreads);
+			linecounts[sourceline] += count;
 		}
 
 	return linecounts;
 }
+
+double Database::getFilteredSampleCount(std::map<ThreadID, double> const &samples) const
+{
+	return getSampleCount(samples, filterThreads);
+}
+
+void Database::setFilterThreads(std::vector<ThreadID> const &threads)
+{
+	filterThreads = threads;
+	std::sort(filterThreads.begin(), filterThreads.end());
+	scanMainList();
+}
+

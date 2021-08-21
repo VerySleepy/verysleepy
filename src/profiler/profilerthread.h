@@ -88,9 +88,8 @@ private:
 	void beginProgress(std::wstring stage, int total=0);
 	bool updateProgress();
 
-	// DE: 20090325 callstacks and flatcounts are shared for all threads to profile
+	// DE: 20090325 callstacks are shared for all threads to profile
 	std::map<CallStack, SAMPLE_TYPE> callstacks;
-	std::map<PROFILER_ADDR, SAMPLE_TYPE> flatcounts;
 
 	// DE: 20090325 one Profiler instance per thread to profile
 	std::vector<Profiler> profilers;
@@ -105,6 +104,7 @@ private:
 	bool cancelled;
 	bool commit_suicide;
 	HANDLE target_process;
+	std::map<DWORD, std::wstring> thread_names;
 	std::wstring filename;
 	std::wstring minidump;
 	SymbolInfo *sym_info;

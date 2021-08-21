@@ -52,9 +52,9 @@ public:
 		dc.DrawText(label, 0,0);
 	}
 
-	void SetLabel(const wxString& label)
+	void SetLabel(const wxString& label_)
 	{
-		this->label = label;
+		this->label = label_;
 	}
 
 	void OnEraseBackground(wxEraseEvent& WXUNUSED(event))
@@ -131,11 +131,6 @@ CallstackView::~CallstackView(void)
 {
 }
 
-bool SortCalls(const Database::CallStack*a,const Database::CallStack*b)
-{
-	return a->samplecount > b->samplecount;
-}
-
 void CallstackView::showCallStack(const Database::Symbol *symbol)
 {
 	updateTools();
@@ -153,14 +148,23 @@ void CallstackView::showCallStack(const Database::Symbol *symbol)
 	}
 
 	callstacks = database->getCallstacksContaining(symbol);
-	std::sort(callstacks.begin(),callstacks.end(),SortCalls);
+	std::vector<std::pair<const Database::CallStack *, double>> callstackCosts(callstacks.size());
+	for (size_t i = 0; i < callstackCosts.size(); ++i)
+	{
+		callstackCosts[i].first = callstacks[i];
+		callstackCosts[i].second = database->getFilteredSampleCount(callstacks[i]->samples);
+	}
+
+	std::sort(callstackCosts.begin(), callstackCosts.end(), [this](std::pair<const Database::CallStack *, double> const &a, std::pair<const Database::CallStack *, double> const &b) {
+		return a.second > b.second;
+	});
 
 	callstackActive = 0;
 
 	for(size_t i=0;i<callstacks.size();i++)  {
+		callstacks[i] = callstackCosts[i].first;
 		if(callstacks[i] == pCallStackSelected) {
 			callstackActive = i;
-			break;
 		}
 	}
 	updateList();
@@ -193,8 +197,9 @@ void CallstackView::updateList()
 		now = callstacks[callstackActive];
 	if(now) {
 		double totalcount = database->getMainList().totalcount;
+		double nowCount = database->getFilteredSampleCount(now->samples);
 		callstackStats = wxString::Format("Call stack %d of %d | Accounted for %0.2fs (%0.2f%%)",
-			(int)(callstackActive+1),(int)callstacks.size(),now->samplecount,now->samplecount*100/totalcount);
+			(int)(callstackActive+1),(int)callstacks.size(),nowCount,nowCount*100/totalcount);
 	} else {
 		callstackStats = wxString("");
 	}

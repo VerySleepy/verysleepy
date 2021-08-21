@@ -29,6 +29,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include <string>
 
 bool hasThreadDescriptionAPI();
+std::wstring getThreadDescriptorName(HANDLE thread_handle);
 
 /*=====================================================================
 ThreadInfo
