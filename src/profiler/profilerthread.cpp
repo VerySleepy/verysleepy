@@ -137,6 +137,7 @@ void ProfilerThread::sampleLoop()
 		if (paused)
 		{
 			Sleep(100);
+			QueryPerformanceCounter(&prev);
 			continue;
 		}
 
