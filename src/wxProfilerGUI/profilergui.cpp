@@ -42,6 +42,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "aboutdlg.h"
 #include "../utils/except.h"
 #include "../appinfo.h"
+#include <limits>
 
 // DE: 20090325 Linking fails in debug target under visual studio 2005
 // RJM: works for me :-/
@@ -62,6 +63,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_OPTION, "a", "", "Attaches to a process (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "i", "", "Loads an existing profile from a file.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "d", "", "Waits N seconds before beginning capture.",				wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
 	{ wxCMD_LINE_OPTION, "t", "", "Stops capturing automatically after N seconds time.",	wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
 	{ wxCMD_LINE_SWITCH, "q", "", "Quiet mode (no error messages will be shown).",			wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_SWITCH, "", "wine", "Use Wine DbgHelp.",									wxCMD_LINE_VAL_NONE },
@@ -75,6 +77,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 
 wxIcon sleepy_icon;
 std::wstring cmdline_load, cmdline_save, cmdline_run, cmdline_attach;
+long cmdline_delay = 0;
 long cmdline_timeout = -1;  // -1 means profile until cancelled
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
@@ -203,16 +206,35 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 			if (timer.fired)
 			{
 				timer.fired = false;
-				if (!captureWin->UpdateProgress(profilerthread->getStatus(), profilerthread->getSampleProgress(), profilerthread->getNumThreadsRunning(), info->limit_profile_time))
+
+				const wchar_t *status = profilerthread->getStatus();
+				int numSamples = profilerthread->getSampleProgress();
+				int numThreads = profilerthread->getNumThreadsRunning();
+				int timeout = info->limit_profile_time;
+				double elapsed = profilerthread->getDuration();
+
+				wchar_t tmp[256];
+				if (!status)
+				{
+					if (timeout == -1)
+						swprintf(tmp, L"%i samples, %.1fs elapsed, %i threads running", numSamples, elapsed, numThreads);
+					else
+						swprintf(tmp, L"%i samples, %.1fs/%ds elapsed, %i threads running", numSamples, elapsed, timeout, numThreads);
+					status = tmp;
+				}
+
+				double progress = timeout == -1 ? std::numeric_limits<double>::quiet_NaN() : (elapsed / timeout);
+
+				if (!captureWin->UpdateProgress(status, progress))
+					break;
+
+				if (progress >= 1)
 					break;
 			}
 
 			profilerthread->setPaused(captureWin->Paused());
 
 			if (profilerthread->getNumThreadsRunning() <= 0)
-				break;
-
-			if (info->limit_profile_time >= 0 && stopwatch.Time() >= info->limit_profile_time*1000)
 				break;
 
 			WaitMessage(); // in lieu of a wxWaitForEvent
@@ -282,30 +304,6 @@ AttachInfo::~AttachInfo()
 		delete sym_info;
 }
 
-AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd)
-{
-	STARTUPINFO si = {sizeof(si)};
-	PROCESS_INFORMATION pi = {};
-
-	std::vector<wchar_t> run_cmd_dup(run_cmd.size() + 1); // CreateProcess lpCommandLine must be mutable
-	std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
-	wenforce(CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ), "CreateProcess");
-
-	if (!CanProfileProcess(pi.hProcess))
-	{
-		CloseHandle(pi.hThread);
-		CloseHandle(pi.hProcess);
-		throw SleepyException(L"Unsupported process. Cannot profile.");
-	}
-
-	std::unique_ptr<AttachInfo> output(new AttachInfo);
-	output->process_handle = pi.hProcess;
-	output->thread_handles.push_back(pi.hThread);
-	output->sym_info = new SymbolInfo;
-	TryLoadSymbols(output.get());
-	return output.release();
-}
-
 static HANDLE getMostBusyThread(ProcessInfo& process_info)
 {
 	int max = -1;
@@ -352,6 +350,63 @@ static std::vector<HANDLE> getThreadsByAttachMode(ProcessInfo& process_info)
 		}
 		return threadHandles;
 	}
+}
+
+AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstring &run_cwd)
+{
+	STARTUPINFO si = {sizeof(si)};
+	PROCESS_INFORMATION pi = {};
+
+	std::vector<wchar_t> run_cmd_dup(run_cmd.size() + 1); // CreateProcess lpCommandLine must be mutable
+	std::copy(run_cmd.begin(), run_cmd.end(), run_cmd_dup.begin());
+	wenforce(CreateProcess( NULL, &run_cmd_dup[0], NULL, NULL, FALSE, 0, NULL, run_cwd.size() ? run_cwd.c_str() : NULL, &si, &pi ), "CreateProcess");
+
+	if (!CanProfileProcess(pi.hProcess))
+	{
+		CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+		throw SleepyException(L"Unsupported process. Cannot profile.");
+	}
+
+	std::unique_ptr<AttachInfo> output(new AttachInfo);
+	output->process_handle = pi.hProcess;
+
+	if (cmdline_delay == 0)
+	{
+		output->thread_handles.push_back(pi.hThread); // Main thread only
+	}
+	else
+	{
+		wxProgressDialog progressdlg(APPNAME, "Waiting...",
+			cmdline_delay * 1000, theMainWin,
+			wxPD_APP_MODAL|wxPD_AUTO_HIDE|wxPD_CAN_SKIP|wxPD_CAN_ABORT);
+		int start = GetTickCount();
+		int total = cmdline_delay * 1000;
+
+		while (true)
+		{
+			wxYieldIfNeeded();
+			int now = GetTickCount();
+			int elapsed = now - start;
+			if (elapsed > cmdline_delay * 1000)
+				break;
+			int remaining = total - elapsed;
+			progressdlg.Update(elapsed);
+			if (progressdlg.WasCancelled())
+				throw SleepyException(L"User abort");
+			if (progressdlg.WasSkipped())
+				break;
+			Sleep(std::min(remaining, 100));
+		}
+
+		// Re-query process information to learn about new threads that have since spawned
+		ProcessInfo process_info = ProcessInfo::FindProcessById(pi.dwProcessId);
+		output->thread_handles = getThreadsByAttachMode(process_info);
+	}
+
+	output->sym_info = new SymbolInfo;
+	TryLoadSymbols(output.get());
+	return output.release();
 }
 
 AttachInfo * ProfilerGUI::AttachToProcess(const std::wstring& processId)
@@ -625,6 +680,8 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		cmdline_load = parser.GetParam(0);
 	if (parser.Found("o", &param))
 		cmdline_save = param.c_str();
+	if (!parser.Found("d", &cmdline_delay))
+		cmdline_delay = 0;
 	if (!parser.Found("t", &cmdline_timeout))
 		cmdline_timeout = -1;
 	if (parser.Found("r", &param))

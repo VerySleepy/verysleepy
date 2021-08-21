@@ -25,6 +25,11 @@ For the latest development version, you can download [the latest AppVeyor artifa
 
 ### History
 
+##### Version 0.92 (under development):
+
+* Do not include time while paused in sample durations
+* Add command-line switch `/d` to wait before starting profiler
+
 ##### Version 0.91 (2021-08-19):
 
 * Rename project back to Very Sleepy (this fork repository is now the official repository)

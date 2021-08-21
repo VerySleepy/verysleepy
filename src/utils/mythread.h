@@ -38,6 +38,7 @@ public:
 
 	virtual void run() = 0;
 	HANDLE launch(int priority);
+	bool launched() const { return !!thread_handle; }
 	void waitFor(DWORD dwMilliseconds) { WaitForSingleObject(thread_handle, dwMilliseconds); }
 	void join() { WaitForSingleObject(thread_handle, INFINITE); }
 	void setPriority(int priority) { SetThreadPriority(thread_handle, priority); }

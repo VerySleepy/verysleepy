@@ -68,6 +68,7 @@ public:
 	bool getDone() const { return done; }
 	bool getFailed() const { return failed; }
 	const wchar_t* getStatus() const { return status; }
+	SAMPLE_TYPE getDuration() const { return duration; }
 	int getSampleProgress() const { return numsamplessofar; }
 	void getSymbolsProgress(int *permille, std::wstring *stage) const { *permille = symbolsPermille; *stage = symbolsStage; }
 	const std::wstring &getFilename() const { return filename; }
@@ -93,7 +94,7 @@ private:
 
 	// DE: 20090325 one Profiler instance per thread to profile
 	std::vector<Profiler> profilers;
-	double duration;
+	SAMPLE_TYPE duration;
 	//int numsamples;
 	const wchar_t* status;
 	int numsamplessofar;
