@@ -33,6 +33,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "mainwin.h"
 #include "../utils/dbginterface.h"
 #include "../profiler/profilerthread.h"
+#include "../profiler/debugger.h"
 #include "../utils/stringutils.h"
 #include "../utils/osutils.h"
 #include <wx/stdpaths.h>
@@ -166,6 +167,15 @@ void ProfilerGUI::DestroyProgressWindow()
 /// if profiling was aborted by the user.
 std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 {
+	// AA: 20210822 if we're attaching to all threads, launch a debugger to update the threads
+	Debugger *debugger = NULL;
+	if (info->attach_all_threads)
+	{
+		DWORD processId = GetProcessId(info->process_handle);
+		if (processId)
+			debugger = new Debugger(processId);
+	}
+
 	//------------------------------------------------------------------------
 	//create the profiler thread
 	//------------------------------------------------------------------------
@@ -173,9 +183,9 @@ std::wstring ProfilerGUI::LaunchProfiler(const AttachInfo *info)
 	ProfilerThread* profilerthread = new ProfilerThread(
 		info->process_handle,
 		info->thread_handles,
-		info->sym_info
+		info->sym_info,
+		debugger
 		);
-
 
 	//------------------------------------------------------------------------
 	//start the profiler thread
@@ -321,6 +331,11 @@ static HANDLE getMostBusyThread(ProcessInfo& process_info)
 	return mostBusy;
 }
 
+static bool getAttachToAllThreads()
+{
+	return prefs.attachMode == ATTACH_ALL_THREAD;
+}
+
 static std::vector<HANDLE> getThreadsByAttachMode(ProcessInfo& process_info)
 {
 	std::vector<HANDLE> threadHandles;
@@ -402,6 +417,7 @@ AttachInfo *ProfilerGUI::RunProcess(const std::wstring &run_cmd, const std::wstr
 		// Re-query process information to learn about new threads that have since spawned
 		ProcessInfo process_info = ProcessInfo::FindProcessById(pi.dwProcessId);
 		output->thread_handles = getThreadsByAttachMode(process_info);
+		output->attach_all_threads = getAttachToAllThreads();
 	}
 
 	output->sym_info = new SymbolInfo;
@@ -421,9 +437,10 @@ AttachInfo * ProfilerGUI::AttachToProcess(const std::wstring& processId)
 		throw SleepyException("Not valid process id: "+ processId);
 	}
 	ProcessInfo process_info = ProcessInfo::FindProcessById(processId_dw);
-	AttachInfo* attach_info =new AttachInfo();
+	AttachInfo* attach_info = new AttachInfo();
 	attach_info->process_handle = process_info.getProcessHandle();
 	attach_info->thread_handles = getThreadsByAttachMode(process_info);
+	attach_info->attach_all_threads = getAttachToAllThreads();
 	attach_info->sym_info = new SymbolInfo();
 
 	TryLoadSymbols(attach_info);

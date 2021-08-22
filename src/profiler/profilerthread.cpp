@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html..
 #include "../wxprofilergui/profilergui.h"
 #include "profilerthread.h"
 #include "threadinfo.h"
+#include "debugger.h"
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/txtstrm.h>
@@ -41,18 +42,24 @@ http://www.gnu.org/copyleft/gpl.html..
 
 // DE: 20090325: Profiler has a list of threads to profile
 // RM: 20130614: Profiler time can now be limited (-1 = until cancelled)
-ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_)
+ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info_, Debugger *debugger_)
 :	profilers(),
 	target_process(target_process_),
-	sym_info(sym_info_)
+	sym_info(sym_info_),
+	debugger(debugger_)
 {
-	// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
-	profilers.reserve(target_threads.size());
-	for (HANDLE thread_h : target_threads)
+	// AA: 20210822: If we have a debugger, it will report all available threads
+	//               So, only use the passed vector when we have no debugger
+	if (!debugger)
 	{
-		DWORD thread_id = GetThreadId(thread_h);
-		profilers.push_back(Profiler(target_process_, thread_h, thread_id, callstacks));
-		thread_names[thread_id] = getThreadDescriptorName(thread_h);
+		// DE: 20090325: Profiler has a list of threads to profile, one Profiler instance per thread
+		profilers.reserve(target_threads.size());
+		for (HANDLE thread_h : target_threads)
+		{
+			DWORD thread_id = GetThreadId(thread_h);
+			profilers.push_back(Profiler(target_process_, thread_h, thread_id, callstacks));
+			thread_names[thread_id] = getThreadDescriptorName(thread_h);
+		}
 	}
 
 	numsamplessofar = 0;
@@ -72,6 +79,7 @@ ProfilerThread::ProfilerThread(HANDLE target_process_, const std::vector<HANDLE>
 
 ProfilerThread::~ProfilerThread()
 {
+	delete debugger;
 }
 
 
@@ -148,6 +156,9 @@ void ProfilerThread::sampleLoop()
 			QueryPerformanceCounter(&prev);
 			continue;
 		}
+
+		if (debugger)
+			debugger->update();
 
 		QueryPerformanceCounter(&now);
 
@@ -316,6 +327,14 @@ void ProfilerThread::run()
 {
 	wxLog::EnableLogging();
 
+	if (debugger)
+		debugger->attach([this](Debugger::NotifyData const &notification) {
+			if (notification.eventType != Debugger::NOTIFY_NEW_THREAD)
+				return;
+			profilers.push_back(Profiler(target_process, notification.threadHandle, notification.threadId, callstacks));
+			thread_names[notification.threadId] = getThreadDescriptorName(notification.threadHandle);
+		});
+
 	status = NULL;
 	try
 	{
@@ -337,6 +356,9 @@ void ProfilerThread::run()
 
 	status = L"Exiting";
 
+	if (debugger)
+		debugger->detach();
+
 	if (cancelled)
 		return;
 
@@ -346,7 +368,6 @@ void ProfilerThread::run()
 
 	done = true;
 }
-
 
 void ProfilerThread::error(const std::wstring& what)
 {

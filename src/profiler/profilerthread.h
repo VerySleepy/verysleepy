@@ -34,6 +34,8 @@ http://www.gnu.org/copyleft/gpl.html..
 // DE: 20090325 Profiler thread now has a vector of threads to profile
 #include <vector>
 
+class Debugger;
+
 /*=====================================================================
 ProfilerThread
 --------------
@@ -56,7 +58,7 @@ public:
 	=====================================================================*/
 	// DE: 20090325 Profiler thread now has a vector of threads to profile
 	// RM: 20130614 Profiler time can now be limited (-1 = until cancelled)
-	ProfilerThread(HANDLE target_process, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info);
+	ProfilerThread(HANDLE target_process, const std::vector<HANDLE>& target_threads, SymbolInfo *sym_info, Debugger *debugger);
 
 	virtual ~ProfilerThread();
 
@@ -94,6 +96,7 @@ private:
 
 	// DE: 20090325 one Profiler instance per thread to profile
 	std::vector<Profiler> profilers;
+	Debugger *debugger;
 	SAMPLE_TYPE duration;
 	//int numsamples;
 	const wchar_t* status;
