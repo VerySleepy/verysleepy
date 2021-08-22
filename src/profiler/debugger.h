@@ -25,8 +25,7 @@ http://www.gnu.org/copyleft/gpl.html..
 
 #include <windows.h>
 #include <functional>
-
-class DebuggerThread;
+#include <map>
 
 class Debugger
 {
@@ -49,15 +48,24 @@ public:
 	bool attach(std::function<void(NotifyData const &notification)> notifyFunc);
 	void detach();
 
+	void update();
 protected:
 	DWORD processId;
 	HANDLE processHandle;
 	std::function<void(NotifyData const &notification)> notifyFunc;
-	DebuggerThread *debuggerThread;
+	std::map<DWORD, bool> knownThreads;
+	bool debuggingActive;
+	bool attached;
 
 	void notifyNewThread(DWORD threadId, HANDLE threadHandle);
 
-	friend class DebuggerThread;
+	void finishAttaching();
+
+	void updateFromSnapshot();
+	void updateDebugging();
+
+	void deactivateDebugging();
+
 };
 
 #endif // __DEBUGGER_H_666_
