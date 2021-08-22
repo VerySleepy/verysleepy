@@ -93,10 +93,13 @@ void Debugger::update()
 {
 	if (debuggingActive)
 	{
+		// While debugger is attached, update it to detect new threads
 		updateDebugging();
 	}
 	else
 	{
+		// If debugging can't attach (e.g., if the target is already being debugged)
+		// or fails after that, fall back to polling a Toolhelp snapshot to detect threads
 		updateFromSnapshot();
 	}
 }
