@@ -225,10 +225,10 @@ void ProfilerThread::saveData()
 	for (auto i = callstacks.begin(); i != callstacks.end(); ++i)
 	{
 		const CallStack &callstack = i->first;
+		used_thread_ids[callstack.thread_id] = true;
 		for (size_t n=0;n<callstack.depth;n++)
 		{
 			used_addresses[callstack.addr[n]] = true;
-			used_thread_ids[callstack.thread_id] = true;
 		}
 	}
 
@@ -291,7 +291,8 @@ void ProfilerThread::saveData()
 
 	for (auto &tid : used_thread_ids)
 	{
-		txt << (unsigned)tid.first << " " << thread_names[tid.first] << "\n";
+		txt << (unsigned)tid.first << "\n";
+		txt << thread_names[tid.first] << "\n";
 
 		if (updateProgress())
 			return;
