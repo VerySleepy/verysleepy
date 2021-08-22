@@ -204,7 +204,6 @@ void Debugger::updateDebugging()
 				assert(!debugger->processHandle);
 				processHandle = dbgEvent.u.CreateProcessInfo.hProcess;
 				notifyNewThread(dbgEvent.dwThreadId, dbgEvent.u.CreateProcessInfo.hThread);
-				//notifyNewThread(dbgEvent.dwThreadId, OpenThread(THREAD_ALL_ACCESS, FALSE, dbgEvent.dwThreadId));
 				knownThreads.insert(std::make_pair(dbgEvent.dwThreadId, true));
 				// We're not using the image file, close the handle
 				CloseHandle(dbgEvent.u.CreateProcessInfo.hFile);
@@ -217,7 +216,6 @@ void Debugger::updateDebugging()
 			case CREATE_THREAD_DEBUG_EVENT:
 				knownThreads.insert(std::make_pair(dbgEvent.dwThreadId, true));
 				notifyNewThread(dbgEvent.dwThreadId, dbgEvent.u.CreateThread.hThread);
-				//notifyNewThread(dbgEvent.dwThreadId, OpenThread(THREAD_ALL_ACCESS, FALSE, dbgEvent.dwThreadId));
 				break;
 
 			case EXIT_THREAD_DEBUG_EVENT:
