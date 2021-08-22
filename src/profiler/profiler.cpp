@@ -78,6 +78,7 @@ Profiler& Profiler::operator=(const Profiler& iOther)
 	target_thread = iOther.target_thread;
 	target_thread_id = iOther.target_thread_id;
 	callstacks = iOther.callstacks;
+	assert(is64BitProcess == iOther.is64BitProcess);
 
 	return *this;
 }
