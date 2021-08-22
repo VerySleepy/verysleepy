@@ -107,16 +107,17 @@ void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 		std::swap( order[i], order[n] );
 	}
 
-	int numSuccessful = 0;
+	char *failedProfilers = (char *)alloca(count);
+	memset(failedProfilers, 0, count);
+
 	for (size_t n = 0;n < count; ++n)
 	{
 		Profiler& profiler = profilers[order[n]];
 		try {
 			if (profiler.sampleTarget(timeSpent, sym_info))
-			{
 				++numsamplessofar;
-				++numSuccessful;
-			}
+			else
+				failedProfilers[order[n]] = true;
 		}
 		catch (const ProfilerExcep& e)
 		{
@@ -125,7 +126,15 @@ void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 		}
 	}
 
-	numThreadsRunning = numSuccessful;
+	for (ptrdiff_t n = (ptrdiff_t)count; n >= 0; --n)
+	{
+		if (!failedProfilers[n] || !profilers[n].targetExited())
+			continue;
+		profilers[n] = profilers.back();
+		profilers.erase(std::prev(profilers.end()));
+	}
+
+	numThreadsRunning = (int)profilers.size();
 }
 
 class ProcPred

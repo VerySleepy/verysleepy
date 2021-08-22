@@ -324,7 +324,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 bool Profiler::targetExited() const
 {
 	DWORD code = WaitForSingleObject(target_thread, 0);
-	return (code == WAIT_OBJECT_0);
+	return code != WAIT_TIMEOUT;
 }
 
 
