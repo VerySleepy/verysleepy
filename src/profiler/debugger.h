@@ -24,30 +24,38 @@ http://www.gnu.org/copyleft/gpl.html..
 #define __DEBUGGER_H_666_
 
 #include <windows.h>
-#include <vector>
-#include "threadinfo.h"
-#include "processinfo.h"
+#include <functional>
 
 class DebuggerThread;
 
 class Debugger
 {
 public:
-	Debugger( DWORD processId );
+	enum NotifyEvent
+	{
+		NOTIFY_NEW_THREAD,
+	};
+
+	struct NotifyData
+	{
+		NotifyEvent eventType;
+		HANDLE threadHandle;
+		DWORD threadId;
+	};
+
+	Debugger(DWORD processId);
 	~Debugger();
 
-	bool Attach();
-	void Detach();
-
-	const ProcessInfo *getProcess() const { return process; }
-	void getThreads( std::vector<ThreadInfo> &output ) const;
+	bool attach(std::function<void(NotifyData const &notification)> notifyFunc);
+	void detach();
 
 protected:
 	DWORD processId;
-	HANDLE hProcess;
-	ProcessInfo *process;
-	std::vector<ThreadInfo> hThreads;
+	HANDLE processHandle;
+	std::function<void(NotifyData const &notification)> notifyFunc;
 	DebuggerThread *debuggerThread;
+
+	void notifyNewThread(DWORD threadId, HANDLE threadHandle);
 
 	friend class DebuggerThread;
 };

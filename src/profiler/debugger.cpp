@@ -22,158 +22,213 @@ http://www.gnu.org/copyleft/gpl.html..
 =====================================================================*/
 #include "debugger.h"
 #include "../utils/mythread.h"
-#include <map>
 #include <assert.h>
+#include <map>
+#include <tlhelp32.h>
 
 class DebuggerThread : public MyThread
 {
 public:
-	DebuggerThread( Debugger *debugger );
+	DebuggerThread(Debugger *debugger);
 	~DebuggerThread();
+
+	void finishAttaching();
+
+	void updateFromSnapshot();
+	void updateDebugger();
+
+	void deactivateDebugger();
 
 	virtual void run();
 
 	HANDLE readyEvent;
 	Debugger *debugger;
+	std::map<DWORD, bool> knownThreads;
+	bool debuggerActive;
+	bool attached;
+	bool commit_suicide;
 };
 
-HANDLE hMutex = NULL;
-
-Debugger::Debugger( DWORD processId )
+Debugger::Debugger(DWORD processId_)
+	: processId(processId_)
+	, processHandle(NULL)
+	, debuggerThread(NULL)
 {
-	if ( !hMutex )
-		hMutex = CreateMutex( NULL, FALSE, NULL );
-
-	this->processId = processId;
-	this->process = NULL;
-	this->hProcess = NULL;
-	this->debuggerThread = NULL;
 }
 
 Debugger::~Debugger()
 {
-	if ( process )
-		Detach();
+	if (processHandle)
+		detach();
 }
 
-bool Debugger::Attach()
+void Debugger::notifyNewThread(DWORD threadId, HANDLE threadHandle)
 {
-	assert( !process );
-	assert( !debuggerThread );
+	NotifyData data;
+	data.eventType = NOTIFY_NEW_THREAD;
+	data.threadHandle = threadHandle;
+	data.threadId = threadId;
+	notifyFunc(data);
+}
 
-	debuggerThread = new DebuggerThread( this );
-	debuggerThread->launch( false, THREAD_PRIORITY_TIME_CRITICAL );
+bool Debugger::attach(std::function<void(NotifyData const &notification)> notifyFunc_)
+{
+	assert(!processHandle);
+	assert(!debuggerThread);
+	assert(!notifyFunc);
+	assert(notifyFunc_);
+	assert(knownThreads.empty());
 
-	WaitForSingleObject( debuggerThread->readyEvent, INFINITE );
+	notifyFunc = notifyFunc_;
+	debuggerThread = new DebuggerThread(this);
+	debuggerThread->launch(THREAD_PRIORITY_TIME_CRITICAL);
 
-	process = new ProcessInfo( processId, hProcess, "" );
+	WaitForSingleObject(debuggerThread->readyEvent, INFINITE);
+
 	return true;
 }
 
-void Debugger::Detach()
+void Debugger::detach()
 {
-	assert( process );
+	assert( processHandle );
 
 	debuggerThread->commit_suicide = true;
-	debuggerThread->waitFor();
+	debuggerThread->waitFor(INFINITE);
 	delete debuggerThread;
 
-	hThreads.clear();
-	delete process;
-	process = NULL;
+	notifyFunc = nullptr;
+
+	processHandle = NULL;
 }
 
-void Debugger::getThreads( std::vector<ThreadInfo> &output ) const
+DebuggerThread::DebuggerThread(Debugger *debugger_)
+	: debugger(debugger_)
+	, debuggerActive(true)
+	, commit_suicide(false)
+	, attached(false)
 {
-	WaitForSingleObject( hMutex, INFINITE );
-	output = hThreads;
-	ReleaseMutex( hMutex );
-}
-
-DebuggerThread::DebuggerThread( Debugger *debugger_ )
-: debugger( debugger_ )
-{
-	readyEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+	readyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 }
 
 DebuggerThread::~DebuggerThread()
 {
-	CloseHandle( readyEvent );
+	CloseHandle(readyEvent);
 }
 
-void DebuggerThread::run()
+void DebuggerThread::finishAttaching()
 {
-	if ( !DebugActiveProcess( debugger->processId ) )
+	if (attached)
 		return;
 
-	DebugSetProcessKillOnExit( FALSE );
-	HANDLE hImageFile = NULL;
-	//bool go = false;
-	//HANDLE target_thread = 0;
-
-	while( !commit_suicide )
+	if (!debugger->processHandle)
 	{
-		DEBUG_EVENT dbgEvent;
-		if ( !WaitForDebugEvent( &dbgEvent, 100 ) )
+		debugger->processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, debugger->processId);
+
+		if (debuggerActive)
+			deactivateDebugger();
+	}
+
+	// make sure notifications for existing threads have fired at this point
+	if (!debuggerActive)
+		updateFromSnapshot();
+
+	attached = true;
+	SetEvent(readyEvent);
+}
+
+void DebuggerThread::updateFromSnapshot()
+{
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+
+	THREADENTRY32 thread;
+	thread.dwSize = sizeof(THREADENTRY32);
+
+	if (Thread32First(snapshot, &thread))
+	{
+		std::map<DWORD, bool> threads;
+		do
 		{
-			//if ( go )
-			//{
-			//	DWORD t0 = GetTickCount();
-			//	CONTEXT threadcontext;
-			//	threadcontext.ContextFlags = CONTEXT_i386 | CONTEXT_CONTROL;
+			if (thread.th32OwnerProcessID != debugger->processId)
+				continue;
 
-			//	HRESULT result = SuspendThread(target_thread);
+			threads.insert(std::make_pair(thread.th32ThreadID, true));
+			if (knownThreads.find(thread.th32ThreadID) != knownThreads.end())
+				continue;
 
-			//	if(result == 0xffffffff)
-			//		__asm int 3
+			HANDLE threadHandle = OpenThread(THREAD_ALL_ACCESS, FALSE, thread.th32ThreadID);
+			if (threadHandle)
+				debugger->notifyNewThread(thread.th32ThreadID, threadHandle);
 
-			//	SetThreadPriority( target_thread, THREAD_PRIORITY_TIME_CRITICAL );
-			//	result = GetThreadContext(target_thread, &threadcontext);
-			//	SetThreadPriority( target_thread, THREAD_PRIORITY_NORMAL );
+		} while (Thread32Next(snapshot, &thread));
 
-			//	ResumeThread(target_thread);
-			//
-			//	DWORD t1 = GetTickCount();
-			//	char buf[256];
-			//	sprintf(buf, "%08x - %ims\n", t1, t1 - t0);
-			//	OutputDebugString(buf);
-			//}
+		knownThreads = std::move(threads);
+	}
 
-			DWORD err = GetLastError();
-			continue;
+	CloseHandle(snapshot);
+}
+
+void DebuggerThread::updateDebugger()
+{
+	assert(debuggerActive);
+
+	DEBUG_EVENT dbgEvent;
+	if (!WaitForDebugEvent(&dbgEvent, 100))
+	{
+		DWORD err = GetLastError();
+		if (err != ERROR_SEM_TIMEOUT)
+		{
+			deactivateDebugger();
+			finishAttaching();
 		}
+		return;
+	}
 
-		WaitForSingleObject( hMutex, INFINITE );
-		switch (dbgEvent.dwDebugEventCode)
-		{
+	switch (dbgEvent.dwDebugEventCode)
+	{
 		case EXCEPTION_DEBUG_EVENT:
-			SetEvent( readyEvent );
-			//go = true;
+			switch (dbgEvent.u.Exception.ExceptionRecord.ExceptionCode)
+			{
+			case EXCEPTION_BREAKPOINT:
+				// Debugger attach flow follows the sequence
+				// CREATE_PROCESS_DEBUG_EVENT, where we get the process handle and the main thread,
+				// CREATE_THREAD_DEBUG_EVENT for every other thread in existence
+				// LOAD_DLL_DEBUG_EVENT for every loaded DLL
+				// finally, EXCEPTION_DEBUG_EVENT with code EXCEPTION_BREAKPOINT as the app is stopped by the OS
+				finishAttaching();
+				break;
+			}
 			break;
 
-		case CREATE_THREAD_DEBUG_EVENT:
-			debugger->hThreads.push_back( ThreadInfo( dbgEvent.dwThreadId, dbgEvent.u.CreateThread.hThread ) );
+		case RIP_EVENT:
+			// Debugging error
+			deactivateDebugger();
+			finishAttaching();
 			break;
 
 		case CREATE_PROCESS_DEBUG_EVENT:
-			debugger->hProcess = dbgEvent.u.CreateProcessInfo.hProcess;
-			hImageFile = dbgEvent.u.CreateProcessInfo.hFile;
-			debugger->hThreads.push_back( ThreadInfo( dbgEvent.dwThreadId, dbgEvent.u.CreateProcessInfo.hThread ) );
-			//target_thread = dbgEvent.u.CreateProcessInfo.hThread;
-			break;
-
-		case EXIT_THREAD_DEBUG_EVENT:
-			// Display the thread's exit code.
+			assert(!debugger->processHandle);
+			debugger->processHandle = dbgEvent.u.CreateProcessInfo.hProcess;
+			debugger->notifyNewThread(dbgEvent.dwThreadId, dbgEvent.u.CreateProcessInfo.hThread);
+			knownThreads.insert(std::make_pair(dbgEvent.dwThreadId, true));
+			// We're not using the image file, close the handle
+			CloseHandle(dbgEvent.u.CreateProcessInfo.hFile);
 			break;
 
 		case EXIT_PROCESS_DEBUG_EVENT:
 			// Display the process's exit code.
 			break;
 
+		case CREATE_THREAD_DEBUG_EVENT:
+			debugger->notifyNewThread(dbgEvent.dwThreadId, dbgEvent.u.CreateThread.hThread);
+			break;
+
+		case EXIT_THREAD_DEBUG_EVENT:
+			knownThreads.erase(dbgEvent.dwThreadId);
+			break;
+
 		case LOAD_DLL_DEBUG_EVENT:
-			// Read the debugging information included in the newly
-			// loaded DLL. Be sure to close the handle to the loaded DLL
-			// with CloseHandle.
+			// We're not using the dll file, close the handle
+			CloseHandle(dbgEvent.u.LoadDll.hFile);
 			break;
 
 		case UNLOAD_DLL_DEBUG_EVENT:
@@ -183,15 +238,44 @@ void DebuggerThread::run()
 		case OUTPUT_DEBUG_STRING_EVENT:
 			// Display the output debugging string.
 			break;
-
-		}
-
-		ReleaseMutex( hMutex );
-		ContinueDebugEvent( dbgEvent.dwProcessId, dbgEvent.dwThreadId, DBG_EXCEPTION_NOT_HANDLED );
 	}
 
-	if ( hImageFile )
-		CloseHandle( hImageFile );
+	ContinueDebugEvent(dbgEvent.dwProcessId, dbgEvent.dwThreadId, DBG_EXCEPTION_NOT_HANDLED);
+}
 
-	DebugActiveProcessStop( debugger->processId );
+void DebuggerThread::deactivateDebugger()
+{
+	assert(debuggerActive);
+	debuggerActive = false;
+	DebugActiveProcessStop(debugger->processId);
+}
+
+void DebuggerThread::run()
+{
+	if (DebugActiveProcess(debugger->processId))
+	{
+		DebugSetProcessKillOnExit(FALSE);
+	}
+	else
+	{
+		debuggerActive = false;
+		updateFromSnapshot();
+		SetEvent(readyEvent);
+	}
+
+	while (!commit_suicide)
+	{
+		if (debuggerActive)
+		{
+			updateDebugger();
+		}
+		else
+		{
+			updateFromSnapshot();
+			Sleep(100);
+		}
+	}
+
+	if (debuggerActive)
+		deactivateDebugger();
 }

@@ -246,6 +246,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\profiler\debugger.cpp" />
     <ClCompile Include="src\profiler\processinfo.cpp" />
     <ClCompile Include="src\profiler\profiler.cpp" />
     <ClCompile Include="src\profiler\profilerthread.cpp" />
@@ -277,6 +278,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\appinfo.h" />
+    <ClInclude Include="src\profiler\debugger.h" />
     <ClInclude Include="src\utils\container.h" />
     <ClInclude Include="src\wxProfilerGUI\aboutdlg.h" />
     <ClInclude Include="src\wxProfilerGUI\latesymbolinfo.h" />
