@@ -31,6 +31,7 @@ For the latest development version, you can download [the latest AppVeyor artifa
 * Add command-line switch `/d` to wait before starting profiler
 * Contributed by [aaalexandrov](https://github.com/aaalexandrov):
     * Add sample filtering by thread ([#86](https://github.com/VerySleepy/verysleepy/pull/86))
+    * Profile new threads as they are created ([#88](https://github.com/VerySleepy/verysleepy/pull/88))
 
 ##### Version 0.91 (2021-08-19):
 
