@@ -419,19 +419,17 @@ void Database::loadThreads(wxInputStream &file)
 
 	while (!file.Eof())
 	{
-		wxString line = str.ReadLine();
-		if (line.IsEmpty())
+		wxString lineTid = str.ReadLine();
+		wxString lineName = str.ReadLine();
+		if (lineTid.IsEmpty() || lineName.IsEmpty())
 			break;
 
-		std::wistringstream stream(line.c_str().AsWChar());
+		std::wistringstream streamTid(lineTid.c_str().AsWChar());
 
 		ThreadID tid;
-		stream >> tid;
+		streamTid >> tid;
 
-		std::wstring thread_name;
-		stream >> thread_name;
-
-		threadNames[tid] = thread_name;
+		threadNames[tid] = lineName;
 
 		wxFileOffset offset = file.TellI();
 		if (offset != wxInvalidOffset && offset != (wxFileOffset)filesize)

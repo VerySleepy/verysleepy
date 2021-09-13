@@ -78,6 +78,7 @@ Profiler& Profiler::operator=(const Profiler& iOther)
 	target_thread = iOther.target_thread;
 	target_thread_id = iOther.target_thread_id;
 	callstacks = iOther.callstacks;
+	assert(is64BitProcess == iOther.is64BitProcess);
 
 	return *this;
 }
@@ -323,7 +324,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 bool Profiler::targetExited() const
 {
 	DWORD code = WaitForSingleObject(target_thread, 0);
-	return (code == WAIT_OBJECT_0);
+	return code != WAIT_TIMEOUT;
 }
 
 
