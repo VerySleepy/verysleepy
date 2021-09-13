@@ -1,7 +1,7 @@
 ﻿Very Sleepy [![Build status](https://ci.appveyor.com/api/projects/status/5gf55tjd7mc80b05/branch/master?svg=true)](https://ci.appveyor.com/project/CyberShadow/verysleepy/branch/master)
 -----------
 
-This is [Very Sleepy](http://www.codersnotes.com/sleepy), a polling Windows CPU profiler with a wxWidgets-based GUI.
+This is [Very Sleepy](http://www.codersnotes.com/sleepy), a sampling CPU profiler for Windows with a wxWidgets-based GUI.
 
 ![Very Sleepy screenshot](https://dump.thecybershadow.net/12df19e403014f88f368da4c2d2482a2/1.png)
 
