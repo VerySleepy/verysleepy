@@ -52,7 +52,7 @@ void Debugger::notifyNewThread(DWORD threadId, HANDLE threadHandle)
 bool Debugger::attach(std::function<void(NotifyData const &notification)> notifyFunc_)
 {
 	assert(!processHandle);
-	assert(!debuggerThread);
+	//assert(!debuggerThread);
 	assert(!notifyFunc);
 	assert(notifyFunc_);
 	assert(knownThreads.empty());
@@ -66,7 +66,7 @@ bool Debugger::attach(std::function<void(NotifyData const &notification)> notify
 	else
 	{
 		finishAttaching();
-		assert(!debuggerActive);
+		//assert(!debuggerActive);
 	}
 
 	while (!attached)
@@ -106,7 +106,7 @@ void Debugger::update()
 
 void Debugger::deactivateDebugging()
 {
-	assert(debuggerActive);
+	//assert(debuggerActive);
 	debuggingActive = false;
 	DebugActiveProcessStop(processId);
 }

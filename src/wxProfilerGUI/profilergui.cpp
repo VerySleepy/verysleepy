@@ -62,6 +62,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_SWITCH, "h", "", "Displays help on the command line parameters.",			wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 	{ wxCMD_LINE_OPTION, "r", "", "Runs an executable and profiles it.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "a", "", "Attaches to a process (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "thread", "", "Profiles the specified thread(s) in the process, multiple threads must be in a comma-delimited list (See -a for specifying the process ID).",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "i", "", "Loads an existing profile from a file.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "d", "", "Waits N seconds before beginning capture.",				wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
@@ -80,6 +81,7 @@ wxIcon sleepy_icon;
 std::wstring cmdline_load, cmdline_save, cmdline_run, cmdline_attach;
 long cmdline_delay = 0;
 long cmdline_timeout = -1;  // -1 means profile until cancelled
+std::vector<DWORD> cmdline_thread_ids;
 std::vector<std::wstring> tmp_files;
 Prefs prefs;
 wxConfig config(_T(APPNAME), _T(VENDOR));
@@ -637,6 +639,26 @@ bool ProfilerGUI::Run()
 	else if (!cmdline_attach.empty())
 	{
 		std::unique_ptr<AttachInfo> info(AttachToProcess(cmdline_attach));
+		if (!cmdline_thread_ids.empty()) {
+			std::cout << "(Orig) Profiling Threads: ";
+			for (auto hwnd : info->thread_handles)
+				std::cout << " " << (uintptr_t)hwnd;
+			std::vector<HANDLE> profile_threads;
+			for (auto tid_h : info->thread_handles) {
+				DWORD test_tid = GetThreadId(tid_h);
+				std::cout << "Checking thread handle: " << (uintptr_t)tid_h << "/" << test_tid << "\n";
+				if (std::find(cmdline_thread_ids.begin(),cmdline_thread_ids.end(),test_tid)
+					!= cmdline_thread_ids.end()) {
+					std::cout << "  Match!\n";
+					profile_threads.push_back(tid_h);
+				}
+			}
+			info->thread_handles = profile_threads;
+			std::cout << "Profiling Threads: ";
+			for (auto hwnd : info->thread_handles)
+				std::cout << " " << (uintptr_t)hwnd;
+			std::cout << "\n";
+		}
 		filename = LaunchProfiler(info.get());
 	}
 	else if (!cmdline_load.empty())
@@ -705,6 +727,20 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		cmdline_run = param.c_str();
 	if (parser.Found("a", &param))
 		cmdline_attach = param.c_str();
+	if (parser.Found("thread", &param)) {
+		std::cout << "-thread found (" << param << ")\n";
+		auto tids_str = wxSplit(param,',');
+		for (size_t i=0; i<tids_str.GetCount(); i++) {
+			long tid;
+			if (tids_str[i].ToLong(&tid)) {
+				cmdline_thread_ids.push_back(tid);
+			}
+		}
+		std::cout << "  Threads to attach to (";
+		for (auto& tid : cmdline_thread_ids)
+			std::cout << " " << tid;
+		std::cout << " )\n";
+	}
 	if (parser.Found("wine"))
 		prefs.useWineSwitch = true;
 	if (parser.Found("mingw"))

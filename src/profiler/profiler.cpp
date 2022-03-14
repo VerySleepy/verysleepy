@@ -112,7 +112,7 @@ void applyHacks(HANDLE process_handle, CONTEXT32 &context)
 
 	// First, skip over any stub functions (a useless push/mov/pop header, followed by a jump).
 	// Move instead to the jump target.
-	if (ReadProcessMemory(process_handle, (LPCVOID)context.Eip, tmp, 16, &numRead) && numRead >= 16)
+	if (ReadProcessMemory(process_handle, reinterpret_cast<LPCVOID>((uintptr_t)context.Eip), tmp, 16, &numRead) && numRead >= 16)
 	{
 		int n = 0;
 
@@ -136,13 +136,13 @@ void applyHacks(HANDLE process_handle, CONTEXT32 &context)
 	}
 
 	// Skip over any jmp [__imp__blah] thunks.
-	if (ReadProcessMemory(process_handle, (LPCVOID)context.Eip, tmp, 16, &numRead) && numRead >= 16)
+	if (ReadProcessMemory(process_handle, reinterpret_cast<LPCVOID>((uintptr_t)context.Eip), tmp, 16, &numRead) && numRead >= 16)
 	{
 		// Look for "jmp [foo]", and move the IP forward to '[foo]'.
 		if (tmp[0] == 0xff && tmp[1] == 0x25)
 		{
 			DWORD ptr = (tmp[5] << 24) | (tmp[4] << 16) | (tmp[3] << 8) | (tmp[2] << 0);
-			if (ReadProcessMemory(process_handle, (LPCVOID)ptr, tmp, 4, &numRead) && numRead >= 4)
+			if (ReadProcessMemory(process_handle, reinterpret_cast<LPCVOID>((uintptr_t)ptr), tmp, 4, &numRead) && numRead >= 4)
 			{
 				context.Eip = (tmp[3] << 24) | (tmp[2] << 16) | (tmp[1] << 8) | (tmp[0] << 0);
 			}
@@ -279,7 +279,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 			stack.addr[stack.depth++] = ip;
 		first = false;
 
-		BOOL result = dbgHelp->StackWalk64(
+		BOOL result2 = dbgHelp->StackWalk64(
 			machine,
 			target_process,
 			target_thread,
@@ -291,7 +291,7 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 			NULL
 		);
 
-		if (!result || stack.depth >= MAX_CALLSTACK_LEVELS)
+		if (!result2 || stack.depth >= MAX_CALLSTACK_LEVELS)
 			break;
 
 		ip = (PROFILER_ADDR)frame.AddrPC.Offset;
