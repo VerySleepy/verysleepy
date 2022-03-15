@@ -658,6 +658,11 @@ bool ProfilerGUI::Run()
 			for (auto hwnd : info->thread_handles)
 				std::cout << " " << (uintptr_t)hwnd;
 			std::cout << "\n";
+
+			info->attach_all_threads = false;
+		}
+		else {
+			info->attach_all_threads = true;
 		}
 		filename = LaunchProfiler(info.get());
 	}
