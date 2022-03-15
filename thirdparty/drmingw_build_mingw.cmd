@@ -21,6 +21,7 @@ set MINGW64_FN=x86_64-6.3.0-release-win32-seh-rt_v5-rev1.7z
 set MINGW32_URL=https://sourceforge.net/projects/mingw-w64/files/Toolchains%%20targetting%%20Win32/Personal%%20Builds/mingw-builds/6.3.0/threads-win32/dwarf/%MINGW32_FN%/download
 set MINGW64_URL=https://sourceforge.net/projects/mingw-w64/files/Toolchains%%20targetting%%20Win64/Personal%%20Builds/mingw-builds/6.3.0/threads-win32/seh/%MINGW64_FN%/download
 
+REM  I downloaded these manually.
 for %%t in (32 64) do (
 	set FN=!MINGW%%t_FN!
 	set URL=!MINGW%%t_URL!
@@ -28,6 +29,7 @@ for %%t in (32 64) do (
 	if not exist "%~dp0\mingw\!FN!" (
 		echo Downloading !FN!...
 		set DEST=%~dp0/mingw/!FN!
+                REM If the automagic download fails, download the files manually and put them in this directory.
 		call :download
 		if errorlevel 1 exit /b 1
 	)
@@ -80,6 +82,9 @@ goto :eof
 
 rem Download !URL! to !DEST!.
 rem Note: Positional parameters don't work here, as the percent signs in URLs are eagerly interpreted despite quoting.
+
+@echo Downloading %URL%
+@echo   %DEST%
 
 for %%a in (powershell.exe) do if not [%%~$PATH:a] == [] powershell -Command "(New-Object Net.WebClient).DownloadFile('!URL!', '!DEST!')" & goto :eof
 for %%a in (curl.exe) do if not [%%~$PATH:a] == [] curl "!URL!" -O "!DEST!" --location & goto :eof
