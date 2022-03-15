@@ -728,7 +728,6 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 	if (parser.Found("a", &param))
 		cmdline_attach = param.c_str();
 	if (parser.Found("thread", &param)) {
-		std::cout << "-thread found (" << param << ")\n";
 		auto tids_str = wxSplit(param,',');
 		for (size_t i=0; i<tids_str.GetCount(); i++) {
 			long tid;
@@ -736,10 +735,6 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 				cmdline_thread_ids.push_back(tid);
 			}
 		}
-		std::cout << "  Threads to attach to (";
-		for (auto& tid : cmdline_thread_ids)
-			std::cout << " " << tid;
-		std::cout << " )\n";
 	}
 	if (parser.Found("wine"))
 		prefs.useWineSwitch = true;
