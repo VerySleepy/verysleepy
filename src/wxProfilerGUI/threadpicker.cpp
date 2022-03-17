@@ -355,6 +355,7 @@ void ThreadPicker::AttachToProcess(bool allThreads)
 	assert(IsModal());
 
 	attach_info = new AttachInfo;
+	attach_info->attach_all_threads = allThreads;
 
 	const ProcessInfo* processInfo = processlist->getSelectedProcess();
 	enforce(processInfo, "No process selected");
