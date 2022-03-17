@@ -126,7 +126,7 @@ void ProfilerThread::sample(const SAMPLE_TYPE timeSpent)
 		}
 	}
 
-	for (ptrdiff_t n = (ptrdiff_t)count; n >= 0; --n)
+	for (ptrdiff_t n = (ptrdiff_t)count-1; n >= 0; --n)
 	{
 		if (!failedProfilers[n] || !profilers[n].targetExited())
 			continue;
