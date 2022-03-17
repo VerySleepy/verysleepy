@@ -642,25 +642,15 @@ bool ProfilerGUI::Run()
 	{
 		std::unique_ptr<AttachInfo> info(AttachToProcess(cmdline_attach));
 		if (!cmdline_thread_ids.empty()) {
-			std::cout << "(Orig) Profiling Threads: ";
-			for (auto hwnd : info->thread_handles)
-				std::cout << " " << (uintptr_t)hwnd;
 			std::vector<HANDLE> profile_threads;
 			for (auto tid_h : info->thread_handles) {
 				DWORD test_tid = GetThreadId(tid_h);
-				std::cout << "Checking thread handle: " << (uintptr_t)tid_h << "/" << test_tid << "\n";
-				if (std::find(cmdline_thread_ids.begin(),cmdline_thread_ids.end(),test_tid)
-					!= cmdline_thread_ids.end()) {
-					std::cout << "  Match!\n";
+				if (std::find(cmdline_thread_ids.begin(),cmdline_thread_ids.end(),test_tid) != cmdline_thread_ids.end()) {
 					profile_threads.push_back(tid_h);
 				}
 			}
 			info->thread_handles = profile_threads;
-			std::cout << "Profiling Threads: ";
-			for (auto hwnd : info->thread_handles)
-				std::cout << " " << (uintptr_t)hwnd;
-			std::cout << "\n";
-
+			// Is there a threshold we should use to set this? (currently: attach_count < total_count)
 			info->attach_all_threads = false;
 		}
 		else {
