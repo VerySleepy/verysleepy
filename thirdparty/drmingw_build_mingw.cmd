@@ -82,8 +82,8 @@ goto :eof
 rem Download !URL! to !DEST!.
 rem Note: Positional parameters don't work here, as the percent signs in URLs are eagerly interpreted despite quoting.
 
-@echo Downloading %URL%
-@echo   %DEST%
+@echo Downloading !URL!
+@echo   !DEST!
 
 for %%a in (powershell.exe) do if not [%%~$PATH:a] == [] powershell -Command "(New-Object Net.WebClient).DownloadFile('!URL!', '!DEST!')" & goto :eof
 for %%a in (curl.exe) do if not [%%~$PATH:a] == [] curl "!URL!" -O "!DEST!" --location & goto :eof
