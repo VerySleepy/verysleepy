@@ -306,7 +306,6 @@ AttachInfo::AttachInfo()
 	process_handle = NULL;
 	attach_all_threads = true;
 	sym_info = NULL;
-	delay_profile = 0; // unused?
 	limit_profile_time = cmdline_timeout;
 }
 
