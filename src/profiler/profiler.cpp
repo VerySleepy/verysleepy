@@ -223,16 +223,16 @@ bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 	machine = IMAGE_FILE_MACHINE_I386;
 
 	// Can fail occasionally, for example if you have a debugger attached to the process.
-	HRESULT result = SuspendThread(target_thread);
-	if(result == 0xffffffff)
+	HRESULT hresult = SuspendThread(target_thread);
+	if(hresult == 0xffffffff)
 		return false;
 
 	int prev_priority = GetThreadPriority(target_thread);
 	SetThreadPriority(target_thread, THREAD_PRIORITY_TIME_CRITICAL);
-	result = GetThreadContext(target_thread, &threadcontext32);
+	hresult = GetThreadContext(target_thread, &threadcontext32);
 	SetThreadPriority(target_thread, prev_priority);
 
-	if(!result){
+	if(!hresult){
 		// DE: 20090325: If GetThreadContext fails we must be sure to resume thread again
 		ResumeThread(target_thread);
 		return false;
