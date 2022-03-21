@@ -649,7 +649,6 @@ bool ProfilerGUI::Run()
 				}
 			}
 			info->thread_handles = profile_threads;
-			// Is there a threshold we should use to set this? (currently: attach_count < total_count)
 			info->attach_all_threads = false;
 		}
 		else {
