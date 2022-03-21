@@ -62,7 +62,7 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_SWITCH, "h", "", "Displays help on the command line parameters.",			wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 	{ wxCMD_LINE_OPTION, "r", "", "Runs an executable and profiles it.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "a", "", "Attaches to a process (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
-	{ wxCMD_LINE_OPTION, "thread", "", "Profiles the specified thread(s) in the process, multiple threads must be in a comma-delimited list (See -a for specifying the process ID).",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "thread", "", "Profiles the specified thread(s) in the process, multiple threads must be in a comma-delimited list without spaces (See /a for specifying the process ID). Examples: `/thread:2124` or `/thread:8086,24601,42`",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "i", "", "Loads an existing profile from a file.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "d", "", "Waits N seconds before beginning capture.",				wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
