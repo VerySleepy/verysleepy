@@ -61,7 +61,6 @@ struct AttachInfo
 	std::vector<HANDLE> thread_handles;
 	bool attach_all_threads;
 	SymbolInfo *sym_info;
-	int delay_profile;
 	int limit_profile_time;
 };
 
