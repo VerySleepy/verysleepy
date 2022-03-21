@@ -28,6 +28,7 @@ for %%t in (32 64) do (
 	if not exist "%~dp0\mingw\!FN!" (
 		echo Downloading !FN!...
 		set DEST=%~dp0/mingw/!FN!
+		REM If the automagic download fails, download the files manually and put them in this directory.
 		call :download
 		if errorlevel 1 exit /b 1
 	)
@@ -80,6 +81,9 @@ goto :eof
 
 rem Download !URL! to !DEST!.
 rem Note: Positional parameters don't work here, as the percent signs in URLs are eagerly interpreted despite quoting.
+
+@echo Downloading !URL!
+@echo   !DEST!
 
 for %%a in (powershell.exe) do if not [%%~$PATH:a] == [] powershell -Command "(New-Object Net.WebClient).DownloadFile('!URL!', '!DEST!')" & goto :eof
 for %%a in (curl.exe) do if not [%%~$PATH:a] == [] curl "!URL!" -O "!DEST!" --location & goto :eof

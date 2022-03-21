@@ -107,10 +107,12 @@ if not %CONFIGURATION% == Release goto :eof
 rem Find InnoSetup
 
 if not defined INNOSETUP for %%a in (ISCC.exe) do if not [%%~$PATH:a] == [] set INNOSETUP="%%~$PATH:a"
-if not defined INNOSETUP if exist "%ProgramFiles%\Inno Setup 5\ISCC.exe" set INNOSETUP="%ProgramFiles%\Inno Setup 5\ISCC.exe"
-if not defined INNOSETUP if exist "%ProgramFiles(x86)%\Inno Setup 5\ISCC.exe" set INNOSETUP="%ProgramFiles(x86)%\Inno Setup 5\ISCC.exe"
-if not defined INNOSETUP if exist "%ProgramW6432%\Inno Setup 5\ISCC.exe" set INNOSETUP="%ProgramW6432%\Inno Setup 5\ISCC.exe"
-if not defined INNOSETUP if exist "%SystemDrive%\Inno Setup 5\ISCC.exe" set INNOSETUP="%SystemDrive%\Inno Setup 5\ISCC.exe"
+for %%v in (5 6) do (
+    if not defined INNOSETUP if exist "%ProgramFiles%\Inno Setup %%~v\ISCC.exe" set INNOSETUP="%ProgramFiles%\Inno Setup %%~v\ISCC.exe"
+    if not defined INNOSETUP if exist "%ProgramFiles(x86)%\Inno Setup %%~v\ISCC.exe" set INNOSETUP="%ProgramFiles(x86)%\Inno Setup %%~v\ISCC.exe"
+    if not defined INNOSETUP if exist "%ProgramW6432%\Inno Setup %%~v\ISCC.exe" set INNOSETUP="%ProgramW6432%\Inno Setup %%~v\ISCC.exe"
+    if not defined INNOSETUP if exist "%SystemDrive%\Inno Setup %%~v\ISCC.exe" set INNOSETUP="%SystemDrive%\Inno Setup %%~v\ISCC.exe"
+)
 if not defined INNOSETUP echo build.cmd: Can't find InnoSetup! & exit /b 1
 echo build.cmd: Found InnoSetup at: %INNOSETUP%
 
