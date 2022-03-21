@@ -21,7 +21,6 @@ set MINGW64_FN=x86_64-6.3.0-release-win32-seh-rt_v5-rev1.7z
 set MINGW32_URL=https://sourceforge.net/projects/mingw-w64/files/Toolchains%%20targetting%%20Win32/Personal%%20Builds/mingw-builds/6.3.0/threads-win32/dwarf/%MINGW32_FN%/download
 set MINGW64_URL=https://sourceforge.net/projects/mingw-w64/files/Toolchains%%20targetting%%20Win64/Personal%%20Builds/mingw-builds/6.3.0/threads-win32/seh/%MINGW64_FN%/download
 
-REM  I downloaded these manually.
 for %%t in (32 64) do (
 	set FN=!MINGW%%t_FN!
 	set URL=!MINGW%%t_URL!
