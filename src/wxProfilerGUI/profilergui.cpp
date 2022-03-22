@@ -26,6 +26,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/mstream.h>
 #include <wx/apptrait.h>
 #include <wx/msw/apptrait.h>
+#include <wx/msgdlg.h>
 #include <memory>
 
 #include "threadpicker.h"
@@ -726,6 +727,10 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 			long tid;
 			if (tids_str[i].ToLong(&tid)) {
 				cmdline_thread_ids.push_back(tid);
+			} else {
+				wxMessageBox(wxString::Format(wxT("Ignoring malformed thread ID in /thread option: %s"), tids_str[i]),
+							 APPNAME,
+							 wxICON_WARNING);
 			}
 		}
 	}
