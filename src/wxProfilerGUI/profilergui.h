@@ -76,6 +76,14 @@ public:
 		throttle = 100;
 		useWinePref = useWineSwitch = useMingwSwitch = false;
 		attachMode = ATTACH_ALL_THREAD;
+
+		// The default behavior is to save them.
+		saveMinidump_nosave = 
+			throttle_nosave = 
+			symSearchPath_nosave = 
+			useSymServer_nosave =
+			symCacheDir_nosave =
+			symServer_nosave = false;
 	}
 
 	wxString symSearchPath;
@@ -84,6 +92,16 @@ public:
 	wxString symServer;
 	int saveMinidump; // Save minidump after X seconds. -1 = disabled
 	int throttle;
+
+	// Because the above settings are saved to persistent storage, provide a
+	// 	 means to specify them for a particular run (e.g. command line) without
+	// 	 saving them.
+	bool symSearchPath_nosave;
+	bool useSymServer_nosave;
+	bool symCacheDir_nosave;
+	bool symServer_nosave;
+	bool saveMinidump_nosave;
+	bool throttle_nosave; 
 
 	bool useWinePref, useWineSwitch, useMingwSwitch;
 	AttachMode attachMode;
@@ -115,6 +133,13 @@ public:
 			if ( download )
 				sympath += std::wstring(L"*") + symServer;
 		}
+	}
+
+	void ValidateThrottle() {
+		if (throttle < 1)
+			throttle = 1;
+		if (throttle > 100)
+			throttle = 100;
 	}
 };
 
