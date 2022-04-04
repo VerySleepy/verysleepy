@@ -63,16 +63,24 @@ static const wxCmdLineEntryDesc g_cmdLineDesc[] =
 	{ wxCMD_LINE_SWITCH, "h", "", "Displays help on the command line parameters.",			wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 	{ wxCMD_LINE_OPTION, "r", "", "Runs an executable and profiles it.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "a", "", "Attaches to a process (by its PID) and profiles it.",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
-	{ wxCMD_LINE_OPTION, "thread", "", "Profiles the specified thread(s) in the process, multiple threads must be in a comma-delimited list without spaces (See /a for specifying the process ID). Examples: `/thread:2124` or `/thread:8086,24601,42`",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "i", "", "Loads an existing profile from a file.",					wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "o", "", "Saves the captured profile to the given file.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
 	{ wxCMD_LINE_OPTION, "d", "", "Waits N seconds before beginning capture.",				wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
 	{ wxCMD_LINE_OPTION, "t", "", "Stops capturing automatically after N seconds time.",	wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
 	{ wxCMD_LINE_SWITCH, "q", "", "Quiet mode (no error messages will be shown).",			wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_SWITCH, "", "wine", "Use Wine DbgHelp.",									wxCMD_LINE_VAL_NONE },
-	{ wxCMD_LINE_SWITCH, "", "mingw", "Use Dr. MinGW DbgHelp.",							wxCMD_LINE_VAL_NONE },
-	{ wxCMD_LINE_SWITCH, "mt", "", "When attaching a process, profiles only main thread.",			wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_SWITCH, "", "mingw", "Use Dr. MinGW DbgHelp.",								wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_SWITCH, "mt", "", "When attaching a process, profiles only main thread.",	wxCMD_LINE_VAL_NONE },
 	{ wxCMD_LINE_SWITCH, "mbt", "", "When attaching a process, profiles only most busy thread.",	wxCMD_LINE_VAL_NONE },
+	{ wxCMD_LINE_OPTION, "thread", "", "Profiles the specified thread(s) in the process, multiple threads must be in a comma-delimited list without spaces (See /a for specifying the process ID). Examples: `/thread:2124` or `/thread:8086,24601,42`",	wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+
+	{ wxCMD_LINE_OPTION, "minidump", "", "capture a minidump after N seconds time.",	    wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
+	{ wxCMD_LINE_OPTION, "samplerate", "", "set the sample rate speed",	    				wxCMD_LINE_VAL_NUMBER, wxCMD_LINE_PARAM_OPTIONAL },
+	{ wxCMD_LINE_OPTION, "symsearchpath", "", "Specify the symbol search path.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_OPTION, "symcachedir", "", "Specify the directory to use for the symbol cache.", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+	{ wxCMD_LINE_SWITCH, "usesymserver", "", "Use a symbol server.",						wxCMD_LINE_VAL_NONE, wxCMD_LINE_SWITCH_NEGATABLE },
+	{ wxCMD_LINE_OPTION, "symserver", "", "Specify the symbol server path/URL.",			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL|wxCMD_LINE_NEEDS_SEPARATOR },
+
 	{ wxCMD_LINE_PARAM, NULL, NULL, "Loads an existing profile from a file.",				wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL},
 
 	{ wxCMD_LINE_NONE }
@@ -566,10 +574,7 @@ bool ProfilerGUI::OnInit()
 		prefs.useWinePref = config.Read("UseWine", (long)0) != 0;
 		prefs.saveMinidump = config.Read("SaveMinidump", -1);
 		prefs.throttle = config.Read("SpeedThrottle", 100);
-		if (prefs.throttle < 1)
-			prefs.throttle = 1;
-		if (prefs.throttle > 100)
-			prefs.throttle = 100;
+		prefs.ValidateThrottle();
 
 		return true;
 	}
@@ -676,13 +681,19 @@ bool ProfilerGUI::Run()
 
 int ProfilerGUI::OnExit()
 {
-	config.Write("SymbolSearchPath", prefs.symSearchPath);
-	config.Write("UseSymbolServer", prefs.useSymServer);
-	config.Write("SymbolServer", prefs.symServer);
-	config.Write("SymbolCache", prefs.symCacheDir);
+	if (! prefs.symSearchPath_nosave)
+		config.Write("SymbolSearchPath", prefs.symSearchPath);
+	if (! prefs.useSymServer_nosave)
+		config.Write("UseSymbolServer", prefs.useSymServer);
+	if (! prefs.symServer_nosave)
+		config.Write("SymbolServer", prefs.symServer);
+	if (! prefs.symCacheDir_nosave)
+		config.Write("SymbolCache", prefs.symCacheDir);
 	config.Write("UseWine", prefs.useWinePref);
-	config.Write("SaveMinidump", prefs.saveMinidump);
-	config.Write("SpeedThrottle", prefs.throttle);
+	if (! prefs.saveMinidump_nosave)
+		config.Write("SaveMinidump", prefs.saveMinidump);
+	if (! prefs.throttle_nosave)
+		config.Write("SpeedThrottle", prefs.throttle);
 
 	return wxApp::OnExit();
 }
@@ -697,6 +708,10 @@ void ProfilerGUI::OnInitCmdLine(wxCmdLineParser& parser)
 bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 {
 	wxString param;
+	long long_param;
+
+	// Command line options that override saved setting, will not replace
+	//   the data in the saved config.
 
 	if (parser.Found("q"))
 		wxLog::EnableLogging(false);
@@ -734,6 +749,15 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 			}
 		}
 	}
+	if (parser.Found("minidump",&long_param)) {
+		prefs.saveMinidump = long_param;
+		prefs.saveMinidump_nosave = true;
+	}
+	if (parser.Found("samplerate",&long_param)) {
+		prefs.throttle = long_param;
+		prefs.ValidateThrottle();
+		prefs.throttle_nosave = true;
+	}
 	if (parser.Found("wine"))
 		prefs.useWineSwitch = true;
 	if (parser.Found("mingw"))
@@ -742,6 +766,23 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		prefs.attachMode = ATTACH_MAIN_THREAD;
 	if (parser.Found("mbt", &param))
 		prefs.attachMode = ATTACH_MOST_BUSY_THREAD;
+
+	if (parser.Found("symsearchpath", &param)) {
+		prefs.symSearchPath = param;
+		prefs.symSearchPath_nosave = true;
+	}
+	if (parser.Found("symcachedir", &param)) {
+		prefs.symCacheDir = param;
+		prefs.symCacheDir_nosave = true;
+	}
+	if (auto state = parser.FoundSwitch("usesymserver")) {
+		prefs.useSymServer = state == wxCMD_SWITCH_ON;
+		prefs.useSymServer_nosave = true;
+	}
+	if (parser.Found("symserver", &param)) {
+		prefs.symServer = param;
+		prefs.symServer_nosave = true;
+	}
 
 	return true;
 }
