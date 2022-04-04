@@ -142,18 +142,48 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 	wxZipInputStream zip(input);
 	enforce(zip.IsOk(), "ZIP error opening profile data.");
 
+	// Get all the entries in the archive.
+	std::map<wxString, wxZipEntry*> entries;
 	while (wxZipEntry *entry = zip.GetNextEntry())
 	{
 		wxString name = entry->GetInternalName();
+		entries.emplace(name,entry);
+	}
 
-			 if (name == "Symbols.txt")		loadSymbols(zip);
-		else if (name == "Callstacks.txt")	loadCallstacks(zip,collapseOSCalls);
-		else if (name == "Threads.txt")     loadThreads(zip);
-		else if (name == "Stats.txt")		loadStats(zip);
-		else if (name == "minidump.dmp")	{ has_minidump = true; if(loadMinidump) this->loadMinidump(zip); }
-		else if (name.Left(8) == "Version ") {}
-		else
-			wxLogWarning("Other fluff found in capture file (%s)\n", name.c_str());
+	// Process the entries in order.
+	{
+		enforce(zip.OpenEntry(*entries["Symbols.txt"]), ".sleepy file is missing symbol data");
+		loadSymbols(zip);
+	}
+	{
+		enforce(zip.OpenEntry(*entries["Callstacks.txt"]), ".sleepy file is missing callstack data");
+		loadCallstacks(zip,collapseOSCalls);
+	}
+	{
+		enforce(zip.OpenEntry(*entries["Threads.txt"]), ".sleepy file is missing thread data");
+		loadThreads(zip);
+	}
+	{
+		enforce(zip.OpenEntry(*entries["Stats.txt"]), ".sleepy file is missing capture metadata");
+		loadStats(zip);
+	}
+	{
+		if (zip.OpenEntry(*entries["minidump.dmp"])) {
+			has_minidump = true;
+			if (loadMinidump) this->loadMinidump(zip);
+		}
+	}
+	zip.CloseEntry();
+
+
+	// Warn the user about extra entries.
+	std::set<wxString> standard_entries { "Symbols.txt", "Callstacks.txt", "Threads.txt", "Stats.txt", "minidump.dmp" };
+	for ( auto item : entries ) {
+		auto& name = item.first;
+		if ( standard_entries.find(name) != standard_entries.end() ) continue;
+		else if (name.Left(8) == "Version ") continue;
+
+		wxLogWarning("Other fluff found in capture file (%s)\n", name.c_str());
 	}
 
 	setRoot(NULL);
