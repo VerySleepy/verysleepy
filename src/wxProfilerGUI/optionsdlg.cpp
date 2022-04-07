@@ -219,7 +219,7 @@ void OptionsDlg::OnOk(wxCommandEvent& WXUNUSED(event))
 		prefs.symServer = symServer->GetValue();
 		prefs.useWinePref = mingwWine->GetValue();
 		prefs.saveMinidump = saveMinidump->GetValue() ? saveMinidumpTimeValue : -1;
-		prefs.throttle = throttle->GetValue();
+		prefs.throttle = prefs.ValidateThrottle(throttle->GetValue());
 		EndModal(wxID_OK);
 	}
 }
