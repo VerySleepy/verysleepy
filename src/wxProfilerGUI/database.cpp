@@ -168,9 +168,11 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 		loadStats(zip);
 	}
 	{
-		if (zip.OpenEntry(*entries["minidump.dmp"])) {
-			has_minidump = true;
-			if (loadMinidump) this->loadMinidump(zip);
+		if (entries.find("minidump.dmp") != entries.end()) {
+			if (zip.OpenEntry(*entries["minidump.dmp"])) {
+				has_minidump = true;
+				if (loadMinidump) this->loadMinidump(zip);
+			}
 		}
 	}
 	zip.CloseEntry();
