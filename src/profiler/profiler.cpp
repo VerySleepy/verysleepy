@@ -88,6 +88,8 @@ Profiler::~Profiler()
 
 }
 
+#if !defined(_WIN64)
+
 // There are a couple of things than can cause StackWalk64 to not produce a correct callstack,
 // if we happen to have stopped the process in an unfortunate place.
 //
@@ -149,6 +151,7 @@ void applyHacks(HANDLE process_handle, CONTEXT32 &context)
 		}
 	}
 }
+#endif
 
 bool Profiler::sampleTarget(SAMPLE_TYPE timeSpent, SymbolInfo *syminfo)
 {

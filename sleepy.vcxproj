@@ -256,6 +256,7 @@
     <ClCompile Include="src\utils\mythread.cpp" />
     <ClCompile Include="src\utils\osutils.cpp" />
     <ClCompile Include="src\utils\sortlist.cpp" />
+	<ClCompile Include="src\utils\stringconversion.cpp" />
     <ClCompile Include="src\utils\stringutils.cpp" />
     <ClCompile Include="src\utils\WoW64.cpp" />
     <ClCompile Include="src\wxProfilerGUI\aboutdlg.cpp" />
@@ -280,6 +281,7 @@
     <ClInclude Include="src\appinfo.h" />
     <ClInclude Include="src\profiler\debugger.h" />
     <ClInclude Include="src\utils\container.h" />
+	<ClInclude Include="src\utils\stringconversion.h" />
     <ClInclude Include="src\wxProfilerGUI\aboutdlg.h" />
     <ClInclude Include="src\wxProfilerGUI\latesymbolinfo.h" />
     <ClInclude Include="src\profiler\processinfo.h" />

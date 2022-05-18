@@ -134,6 +134,7 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 				wxString ver = name.Mid(8, name.Length()-(8+9));
 				enforce(ver == FORMAT_VERSION, wxString::Format("Cannot load capture file: %s", name.c_str()).c_str());
 			}
+			delete entry;
 		}
 
 		enforce(versionFound, "Unrecognized capture file");
@@ -186,6 +187,10 @@ void Database::loadFromPath(const std::wstring& _profilepath, bool collapseOSCal
 		else if (name.Left(8) == "Version ") continue;
 
 		wxLogWarning("Other fluff found in capture file (%s)\n", name.c_str());
+	}
+	
+	for (auto item : entries) {
+		delete item.second;
 	}
 
 	setRoot(NULL);

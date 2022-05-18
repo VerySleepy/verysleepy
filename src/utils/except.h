@@ -25,6 +25,7 @@ http://www.gnu.org/copyleft/gpl.html..
 
 #include <stdexcept>
 #include <string>
+#include "stringconversion.h"
 
 class SleepyException : public std::runtime_error
 {
@@ -37,8 +38,7 @@ class SleepyException : public std::runtime_error
 		// it will always be initialized after the superclass.
 		// Can't use _what here because it is still not initialized
 		// and contains junk.
-		std::wstring ws(what);
-		return std::string(ws.begin(), ws.end());
+		return toANSI(what);		
 	}
 
 public:
@@ -46,7 +46,7 @@ public:
 		: std::runtime_error(what), _what(std::wstring(what.begin(), what.end())) {}
 
 	SleepyException(const std::wstring &what)
-		: std::runtime_error(std::string(what.begin(), what.end())), _what(what) {}
+		: std::runtime_error(toANSI(what.c_str())), _what(what) {}
 
 	SleepyException(const wchar_t *what)
 		: std::runtime_error(helper(what)), _what(what) {}
