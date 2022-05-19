@@ -116,15 +116,6 @@ public:
 	{
 		return config_value;
 	}
-	T GetOverrideValue() const
-	{
-		return override_value;
-	}
-
-	bool IsOverridden() const
-	{
-		return is_overridden;
-	}
 
 protected:
 	T config_value;
