@@ -175,7 +175,7 @@ void ProfilerThread::sampleLoop()
 		double t = (double)diff / (double)freq.QuadPart;
 
 		__int64 elapsed = now.QuadPart - start.QuadPart;
-		if (!minidump_saved && prefs.saveMinidump>=0 && elapsed >= prefs.saveMinidump * freq.QuadPart)
+		if (!minidump_saved && prefs.saveMinidump.GetValue()>=0 && elapsed >= prefs.saveMinidump.GetValue() * freq.QuadPart)
 		{
 			minidump_saved = true;
 			status = L"Saving minidump";
@@ -186,7 +186,7 @@ void ProfilerThread::sampleLoop()
 
 		sample(t);
 
-		int ms = 100 / prefs.throttle;
+		int ms = 100 / prefs.throttle.GetValue();
 		Sleep(ms);
 
 		prev = now;

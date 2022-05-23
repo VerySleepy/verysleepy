@@ -564,13 +564,13 @@ bool ProfilerGUI::OnInit()
 		// Make a default cache in their user directory.
 		wxString symCache = wxStandardPaths::Get().GetUserLocalDataDir();
 
-		prefs.symSearchPath = config.Read("SymbolSearchPath", "");
-		prefs.useSymServer = config.Read("UseSymbolServer", 1) != 0;
-		prefs.symServer = config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols");
-		prefs.symCacheDir = config.Read("SymbolCache", symCache);
+		prefs.symSearchPath.SetConfigValue(config.Read("SymbolSearchPath", ""));
+		prefs.useSymServer.SetConfigValue(config.Read("UseSymbolServer", 1) != 0);
+		prefs.symServer.SetConfigValue(config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols"));
+		prefs.symCacheDir.SetConfigValue(config.Read("SymbolCache", symCache));
 		prefs.useWinePref = config.Read("UseWine", (long)0) != 0;
-		prefs.saveMinidump = config.Read("SaveMinidump", -1);
-		prefs.throttle = prefs.ValidateThrottle(config.Read("SpeedThrottle", 100));
+		prefs.saveMinidump.SetConfigValue(config.Read("SaveMinidump", -1));
+		prefs.throttle.SetConfigValue(prefs.ValidateThrottle(config.Read("SpeedThrottle", 100)));
 
 		if (!wxApp::OnInit())
 			return false;

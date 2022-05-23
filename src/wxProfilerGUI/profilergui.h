@@ -93,19 +93,19 @@ public:
 		override_value = ovr_value;
 	}
 
-	// Using this replaces an override value.
-	T& operator =( const T& new_value )
-	{
-		is_overridden = false;
-		config_value = new_value;
-		return config_value;
-	}
+	// // Using this replaces an override value.
+	// T& operator =( const T& new_value )
+	// {
+	// 	is_overridden = false;
+	// 	config_value = new_value;
+	// 	return config_value;
+	// }
 
 	// getters
-	operator T() const
-	{
-		return GetValue();
-	}
+	// operator T() const
+	// {
+	// 	return GetValue();
+	// }
 
 	T GetValue() const
 	{
@@ -115,6 +115,10 @@ public:
 	T GetConfigValue() const
 	{
 		return config_value;
+	}
+
+	bool IsOverridden() const {
+		return is_overridden;
 	}
 
 protected:
@@ -161,7 +165,7 @@ public:
 			sympath += symSearchPath.GetValue();
 		}
 
-		if (useSymServer)
+		if (useSymServer.GetValue())
 		{
 			if (!sympath.empty())
 				sympath += L";";

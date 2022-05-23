@@ -120,9 +120,9 @@ OptionsDlg::OptionsDlg()
 	symPathSizer->Add(symPathButtonSizer, FromDIP(1), wxSHRINK);
 
 	useSymServer = new wxCheckBox(this, Options_UseSymServer, "Use symbol server");
-	symCacheDir = new wxDirPickerCtrl(this, -1, prefs.symCacheDir, "Select a directory to store local symbols in:",
+	symCacheDir = new wxDirPickerCtrl(this, -1, prefs.symCacheDir.GetConfigValue(), "Select a directory to store local symbols in:",
 		wxDefaultPosition, wxDefaultSize, wxDIRP_USE_TEXTCTRL);
-	symServer = new wxTextCtrl(this, -1, prefs.symServer);
+	symServer = new wxTextCtrl(this, -1, prefs.symServer.GetValue());
 
 	wxBoxSizer *minGwDbgHelpSizer = new wxBoxSizer(wxHORIZONTAL);
 	minGwDbgHelpSizer->Add(new wxStaticText(this, -1, "MinGW DbgHelp engine:   "));
@@ -147,7 +147,7 @@ OptionsDlg::OptionsDlg()
 		"then examining the profile results on a developer machine with symbols.");
 	saveMinidumpSizer->Add(saveMinidump);
 
-	saveMinidumpTimeValue = prefs.saveMinidump < 0 ? 0 : prefs.saveMinidump;
+	saveMinidumpTimeValue = prefs.saveMinidump.GetConfigValue() < 0 ? 0 : prefs.saveMinidump.GetValue();
 	saveMinidumpTime = new wxTextCtrl(
 		this, -1,
 		wxEmptyString, wxDefaultPosition,
@@ -158,15 +158,15 @@ OptionsDlg::OptionsDlg()
 		"Saving a minidump at the very start of a profiling session\n"
 		"may not work as expected, as not all DLLs may be loaded yet.\n"
 		"You can set a delay after which a minidump will be saved.");
-	saveMinidumpTime->Enable(prefs.saveMinidump >= 0);
+	saveMinidumpTime->Enable(prefs.saveMinidump.GetValue() >= 0);
 	saveMinidumpSizer->Add(saveMinidumpTime, 0, wxTOP, FromDIP(-3));
 	saveMinidumpSizer->Add(new wxStaticText(this, -1, " seconds"));
 
-	symPaths->Append(wxSplit(prefs.symSearchPath, ';', 0));
-	useSymServer->SetValue(prefs.useSymServer);
-	symCacheDir->Enable(prefs.useSymServer);
-	symServer->Enable(prefs.useSymServer);
-	saveMinidump->SetValue(prefs.saveMinidump >= 0);
+	symPaths->Append(wxSplit(prefs.symSearchPath.GetValue(), ';', 0));
+	useSymServer->SetValue(prefs.useSymServer.GetValue());
+	symCacheDir->Enable(prefs.useSymServer.GetValue());
+	symServer->Enable(prefs.useSymServer.GetValue());
+	saveMinidump->SetValue(prefs.saveMinidump.GetValue() >= 0);
 
 	symdirsizer->Add(symPathSizer, 0, wxALL|wxEXPAND, FromDIP(5));
 
@@ -182,7 +182,7 @@ OptionsDlg::OptionsDlg()
 	symsizer->Add(saveMinidumpSizer, 0, wxALL, FromDIP(5));
 
 	wxStaticBoxSizer *throttlesizer = new wxStaticBoxSizer(wxVERTICAL, this, "Sample rate control");
-	throttle = new wxPercentSlider(this, Options_Throttle, prefs.throttle, 1, 100, wxDefaultPosition, wxDefaultSize,
+	throttle = new wxPercentSlider(this, Options_Throttle, prefs.throttle.GetValue(), 1, 100, wxDefaultPosition, wxDefaultSize,
 		wxSL_HORIZONTAL|wxSL_TICKS|wxSL_TOP|wxSL_LABELS);
 	throttle->SetTickFreq(10);
 	throttlesizer->Add(new wxStaticText(this, -1,
@@ -201,6 +201,28 @@ OptionsDlg::OptionsDlg()
 	rootsizer->SetSizeHints(this);
 	SetAutoLayout(TRUE);
 
+	// Attempt to resolve the dissonance between the config value and the (possibly different) override value.
+	//   Disable any GUI controls corresponding to values that have been overridden.
+	if (prefs.symSearchPath.IsOverridden()) {
+		symPaths       ->Disable();
+		symPathAdd     ->Disable();
+		symPathRemove  ->Disable();
+		symPathMoveUp  ->Disable();
+		symPathMoveDown->Disable();
+	}
+	if (prefs.useSymServer.IsOverridden())
+		useSymServer->Disable();
+	if (prefs.symServer.IsOverridden())
+		symServer->Disable();
+	if (prefs.symCacheDir.IsOverridden())
+		symCacheDir->Disable();
+	if (prefs.saveMinidump.IsOverridden()) {
+		saveMinidump->Disable();
+		saveMinidumpTime->Disable();
+	}
+	if (prefs.throttle.IsOverridden())
+		throttle->Disable();
+
 	SetSize(FromDIP(wxSize(400, -1)));
 	Centre();
 }
@@ -213,13 +235,24 @@ void OptionsDlg::OnOk(wxCommandEvent& WXUNUSED(event))
 {
 	if ( Validate() && TransferDataFromWindow() )
 	{
-		prefs.symSearchPath = wxJoin(symPaths->GetStrings(), ';', 0);
-		prefs.useSymServer = useSymServer->GetValue();
-		prefs.symCacheDir = symCacheDir->GetPath();
-		prefs.symServer = symServer->GetValue();
+		// Attempt to resolve the dissonance between the config value and the (possibly different) override value.
+		//   Do not use any values that have been overridden.
+		if (!prefs.symSearchPath.IsOverridden())
+			prefs.symSearchPath.SetConfigValue(wxJoin(symPaths->GetStrings(), ';', 0));
+		// useSymServer affects whether the cache or the sym server are available.
+		//   If it's overridden, don't use/save the values for cache/server.
+		if (!prefs.useSymServer.IsOverridden()) {
+			prefs.useSymServer.SetConfigValue(useSymServer->GetValue());
+			if (!prefs.symCacheDir.IsOverridden())
+				prefs.symCacheDir.SetConfigValue(symCacheDir->GetPath());
+			if (!prefs.symServer.IsOverridden())
+				prefs.symServer.SetConfigValue(symServer->GetValue());
+		}
 		prefs.useWinePref = mingwWine->GetValue();
-		prefs.saveMinidump = saveMinidump->GetValue() ? saveMinidumpTimeValue : -1;
-		prefs.throttle = prefs.ValidateThrottle(throttle->GetValue());
+		if (!prefs.saveMinidump.IsOverridden())
+			prefs.saveMinidump.SetConfigValue(saveMinidump->GetValue() ? saveMinidumpTimeValue : -1);
+		if (!prefs.throttle.IsOverridden())
+			prefs.throttle.SetConfigValue(prefs.ValidateThrottle(throttle->GetValue()));
 		EndModal(wxID_OK);
 	}
 }
