@@ -93,20 +93,6 @@ public:
 		override_value = ovr_value;
 	}
 
-	// // Using this replaces an override value.
-	// T& operator =( const T& new_value )
-	// {
-	// 	is_overridden = false;
-	// 	config_value = new_value;
-	// 	return config_value;
-	// }
-
-	// getters
-	// operator T() const
-	// {
-	// 	return GetValue();
-	// }
-
 	T GetValue() const
 	{
 		return is_overridden ? override_value : config_value;

@@ -515,7 +515,7 @@ std::wstring ProfilerGUI::ObtainProfileData()
 
 		case ThreadPicker::ATTACH:
 			{
-				std::unique_ptr<AttachInfo> ai(threadpicker->attach_info);
+				std::unique_ptr<AttachInfo> ai(threadpicker->attach_info);
 				threadpicker->attach_info = NULL;
 				threadpicker.reset();
 				return LaunchProfiler(ai.get());
