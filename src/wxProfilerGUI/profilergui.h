@@ -66,24 +66,69 @@ struct AttachInfo
 
 wxBitmap LoadPngResource(const wchar_t *szName, const wxWindowBase* w);
 
+// Encapsulate a (config) value that can be overridden.
+//   `T` must be copyable and have a (sensible) default constructor.
+template<typename T>
+class OverridableOption
+{
+public:
+	OverridableOption()
+		: is_overridden(false)
+	{}
+	
+	OverridableOption( const T& config_value )
+		: config_value(config_value), is_overridden(false)
+	{}
+
+	// setters
+	void SetConfigValue( const T& new_value )
+	{
+		is_overridden = false;
+		config_value = new_value;
+	}
+	
+	void Override( const T& ovr_value )
+	{
+		is_overridden = true;
+		override_value = ovr_value;
+	}
+
+	T GetValue() const
+	{
+		return is_overridden ? override_value : config_value;
+	}
+
+	T GetConfigValue() const
+	{
+		return config_value;
+	}
+
+	bool IsOverridden() const {
+		return is_overridden;
+	}
+
+protected:
+	T config_value;
+	bool is_overridden;
+	T override_value;
+};
+
 class Prefs
 {
 public:
 	Prefs()
+		: useSymServer(false), saveMinidump(-1), throttle(100)
 	{
-		useSymServer = false;
-		saveMinidump = -1;
-		throttle = 100;
 		useWinePref = useWineSwitch = useMingwSwitch = false;
 		attachMode = ATTACH_ALL_THREAD;
 	}
 
-	wxString symSearchPath;
-	bool useSymServer;
-	wxString symCacheDir;
-	wxString symServer;
-	int saveMinidump; // Save minidump after X seconds. -1 = disabled
-	int throttle;
+	OverridableOption<wxString> symSearchPath;
+	OverridableOption<bool> useSymServer;
+	OverridableOption<wxString> symCacheDir;
+	OverridableOption<wxString> symServer;
+	OverridableOption<int> saveMinidump; // Save minidump after X seconds. -1 = disabled
+	OverridableOption<int> throttle;
 
 	bool useWinePref, useWineSwitch, useMingwSwitch;
 	AttachMode attachMode;
@@ -99,22 +144,31 @@ public:
 	// Add any configured search paths, and the symbol server if enabled.
 	void AdjustSymbolPath(std::wstring &sympath, bool download)
 	{
-		if (!symSearchPath.empty())
+		if (!symSearchPath.GetValue().empty())
 		{
 			if (!sympath.empty())
 				sympath += L";";
-			sympath += symSearchPath;
+			sympath += symSearchPath.GetValue();
 		}
 
-		if (useSymServer)
+		if (useSymServer.GetValue())
 		{
 			if (!sympath.empty())
 				sympath += L";";
 			sympath += L"SRV*";
-			sympath += symCacheDir;
+			sympath += symCacheDir.GetValue();
 			if ( download )
-				sympath += std::wstring(L"*") + symServer;
+				sympath += std::wstring(L"*") + symServer.GetValue();
 		}
+	}
+
+	static int ValidateThrottle( int value )
+	{
+		if (value < 1)
+			return 1;
+		if (value > 100)
+			return 100;
+		return value;
 	}
 };
 
