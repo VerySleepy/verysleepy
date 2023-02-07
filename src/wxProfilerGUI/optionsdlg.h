@@ -52,6 +52,7 @@ private:
 	wxButton *symPathAdd, *symPathRemove, *symPathMoveUp, *symPathMoveDown;
 	wxCheckBox *useSymServer;
 	wxDirPickerCtrl *symCacheDir;
+	wxDirPickerCtrl *moduleIgnoreFile;
 	wxTextCtrl *symServer;
 	wxCheckBox *saveMinidump;
 	wxTextCtrl *saveMinidumpTime;

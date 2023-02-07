@@ -26,6 +26,8 @@ http://www.gnu.org/copyleft/gpl.html.
 #include <wx/valnum.h>
 #include <wx/slider.h>
 #include <wx/stattext.h>
+#include <fstream>
+#include "../profiler/symbolinfo.h"
 
 class wxPercentSlider : public wxSlider
 {
@@ -122,6 +124,10 @@ OptionsDlg::OptionsDlg()
 	useSymServer = new wxCheckBox(this, Options_UseSymServer, "Use symbol server");
 	symCacheDir = new wxDirPickerCtrl(this, -1, prefs.symCacheDir.GetConfigValue(), "Select a directory to store local symbols in:",
 		wxDefaultPosition, wxDefaultSize, wxDIRP_USE_TEXTCTRL);
+
+	moduleIgnoreFile = new wxDirPickerCtrl(this, -1, prefs.moduleIgnoreFile.GetConfigValue(), "Select a file with ignore dbghelp modules:",
+		wxDefaultPosition, wxDefaultSize, wxDIRP_USE_TEXTCTRL);
+
 	symServer = new wxTextCtrl(this, -1, prefs.symServer.GetValue());
 
 	wxBoxSizer *minGwDbgHelpSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -146,6 +152,12 @@ OptionsDlg::OptionsDlg()
 		"which allows profiling an application on a user machine without symbols,\n"
 		"then examining the profile results on a developer machine with symbols.");
 	saveMinidumpSizer->Add(saveMinidump);
+
+
+	moduleIgnoreFile->Enable(true);
+	saveMinidumpSizer->Add(new wxStaticText(this, -1, "Module blacklist file:"), 0, wxLEFT | wxTOP, FromDIP(5));
+	saveMinidumpSizer->Add(moduleIgnoreFile, 0, wxALL | wxEXPAND, FromDIP(5));
+
 
 	saveMinidumpTimeValue = prefs.saveMinidump.GetConfigValue() < 0 ? 0 : prefs.saveMinidump.GetValue();
 	saveMinidumpTime = new wxTextCtrl(
@@ -245,6 +257,8 @@ void OptionsDlg::OnOk(wxCommandEvent& WXUNUSED(event))
 			prefs.useSymServer.SetConfigValue(useSymServer->GetValue());
 			if (!prefs.symCacheDir.IsOverridden())
 				prefs.symCacheDir.SetConfigValue(symCacheDir->GetPath());
+			if (!prefs.moduleIgnoreFile.IsOverridden())
+				prefs.moduleIgnoreFile.SetConfigValue(moduleIgnoreFile->GetPath());
 			if (!prefs.symServer.IsOverridden())
 				prefs.symServer.SetConfigValue(symServer->GetValue());
 		}
@@ -253,6 +267,23 @@ void OptionsDlg::OnOk(wxCommandEvent& WXUNUSED(event))
 			prefs.saveMinidump.SetConfigValue(saveMinidump->GetValue() ? saveMinidumpTimeValue : -1);
 		if (!prefs.throttle.IsOverridden())
 			prefs.throttle.SetConfigValue(prefs.ValidateThrottle(throttle->GetValue()));
+
+		std::wifstream in(moduleIgnoreFile->GetPath());
+		if (!in.bad())
+		{
+			dbhhelp_ignore_modules.clear();
+			std::wstring str;
+			// Read the next line from File untill it reaches the end.
+			while (std::getline(in, str))
+			{
+				// Line contains string of length > 0 then save it in vector
+				if (str.size() > 0)
+				{
+					dbhhelp_ignore_modules.push_back(str);
+				}
+			}
+		}
+
 		EndModal(wxID_OK);
 	}
 }

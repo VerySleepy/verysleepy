@@ -34,6 +34,8 @@ typedef void SymLogFn(const wchar_t *text);
 
 struct DbgHelp;
 
+extern std::vector<std::wstring> dbhhelp_ignore_modules;
+
 class Module
 {
 public:
