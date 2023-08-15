@@ -27,7 +27,48 @@ http://www.gnu.org/copyleft/gpl.html..
 #include "../utils/osutils.h"
 #include "../utils/except.h"
 #include <windows.h>
+#include <winternl.h>
 #include <tlhelp32.h>
+
+#ifndef STATUS_SUCCESS
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#endif
+
+static std::wstring GetProcessCommandLine(HANDLE processHandle)
+{
+	std::wstring commandLine;
+	do {
+		// NtQueryInformationProcess is an internal function, So, we need to get the address of the function from ntdll
+		auto pNtQueryInformationProcess = reinterpret_cast<decltype(&::NtQueryInformationProcess)>(
+			GetProcAddress(GetModuleHandle(L"ntdll"), "NtQueryInformationProcess"));
+		if (!pNtQueryInformationProcess) break;
+
+		PROCESS_BASIC_INFORMATION pbi;
+		if (pNtQueryInformationProcess(processHandle, ProcessBasicInformation, &pbi, sizeof(pbi), nullptr) != STATUS_SUCCESS)
+		{
+			break;
+		}
+
+		// Reading the PEB structure of the process
+		PEB peb;
+		if (!ReadProcessMemory(processHandle, pbi.PebBaseAddress, &peb, sizeof(peb), nullptr))
+		{
+			break;
+		}
+
+		// Reading the process parameters structure
+		RTL_USER_PROCESS_PARAMETERS upp;
+		if (!ReadProcessMemory(processHandle, peb.ProcessParameters, &upp, sizeof(upp), nullptr))
+		{
+			break;
+		}
+
+		commandLine.resize(upp.CommandLine.Length);
+		ReadProcessMemory(processHandle, upp.CommandLine.Buffer, &commandLine[0], upp.CommandLine.Length, nullptr);
+	} while (0);
+
+	return commandLine;
+}
 
 ProcessInfo::ProcessInfo(DWORD id_, const std::wstring& name_, HANDLE process_handle_)
 :	id(id_),
@@ -40,6 +81,7 @@ ProcessInfo::ProcessInfo(DWORD id_, const std::wstring& name_, HANDLE process_ha
 #ifdef _WIN64
 	is64Bits = Is64BitProcess(process_handle);
 #endif
+	commandLine = GetProcessCommandLine(process_handle);
 }
 
 ProcessInfo::~ProcessInfo()
