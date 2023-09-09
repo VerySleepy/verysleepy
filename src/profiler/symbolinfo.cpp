@@ -37,6 +37,8 @@ http://www.gnu.org/copyleft/gpl.html..
 
 SymLogFn *g_symLog = NULL;
 
+std::vector<std::wstring> dbhhelp_ignore_modules;
+
 struct SymbolInfoContext
 {
 	SymbolInfo* syminfo;
@@ -349,6 +351,21 @@ const std::wstring SymbolInfo::getProcForAddr(PROFILER_ADDR addr,
 
 	DWORD64 displacement = 0;
 	BOOL result = dbgHelp->SymFromAddrW(process_handle, (DWORD64)addr, &displacement, symbol_info);
+
+	//if (mod->hide_from_dbghelp)
+	if (mod && std::find(dbhhelp_ignore_modules.begin(), dbhhelp_ignore_modules.end(), mod->name) != dbhhelp_ignore_modules.end())
+	{
+		wchar_t buf[256];
+#if defined(_WIN64)
+		if (is64BitProcess)
+			swprintf(buf, 256, L"[%s+0x%014llX]", mod->name.c_str(), addr - mod->base_addr);
+		else
+			swprintf(buf, 256, L"[%s+0x%06X]", mod->name.c_str(), unsigned __int32(addr - mod->base_addr));
+#else
+		swprintf(buf, 256, L"[%s+0x%06X]", mod->name.c_str(), addr - mod->base_addr);
+#endif
+		return buf;
+	}
 
 	if(!result)
 	{

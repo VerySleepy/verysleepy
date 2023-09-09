@@ -126,6 +126,7 @@ public:
 	OverridableOption<wxString> symSearchPath;
 	OverridableOption<bool> useSymServer;
 	OverridableOption<wxString> symCacheDir;
+	OverridableOption<wxString> moduleIgnoreFile;
 	OverridableOption<wxString> symServer;
 	OverridableOption<int> saveMinidump; // Save minidump after X seconds. -1 = disabled
 	OverridableOption<int> throttle;

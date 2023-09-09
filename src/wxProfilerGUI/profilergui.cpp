@@ -45,6 +45,7 @@ http://www.gnu.org/copyleft/gpl.html.
 #include "../utils/except.h"
 #include "../appinfo.h"
 #include <limits>
+#include <fstream>
 
 // DE: 20090325 Linking fails in debug target under visual studio 2005
 // RJM: works for me :-/
@@ -568,9 +569,26 @@ bool ProfilerGUI::OnInit()
 		prefs.useSymServer.SetConfigValue(config.Read("UseSymbolServer", 1) != 0);
 		prefs.symServer.SetConfigValue(config.Read("SymbolServer", "http://msdl.microsoft.com/download/symbols"));
 		prefs.symCacheDir.SetConfigValue(config.Read("SymbolCache", symCache));
+		prefs.moduleIgnoreFile.SetConfigValue(config.Read("moduleIgnoreFile", "module_blacklist.txt"));
 		prefs.useWinePref = config.Read("UseWine", (long)0) != 0;
 		prefs.saveMinidump.SetConfigValue(config.Read("SaveMinidump", -1));
 		prefs.throttle.SetConfigValue(prefs.ValidateThrottle(config.Read("SpeedThrottle", 100)));
+
+		std::wifstream in(prefs.moduleIgnoreFile.GetValue());
+		if (!in.bad())
+		{
+			dbhhelp_ignore_modules.clear();
+			std::wstring str;
+			// Read the next line from File untill it reaches the end.
+			while (std::getline(in, str))
+			{
+				// Line contains string of length > 0 then save it in vector
+				if (str.size() > 0)
+				{
+					dbhhelp_ignore_modules.push_back(str);
+				}
+			}
+		}
 
 		if (!wxApp::OnInit())
 			return false;
@@ -684,6 +702,7 @@ int ProfilerGUI::OnExit()
 	config.Write("UseSymbolServer", prefs.useSymServer.GetConfigValue());
 	config.Write("SymbolServer", prefs.symServer.GetConfigValue());
 	config.Write("SymbolCache", prefs.symCacheDir.GetConfigValue());
+	config.Write("moduleIgnoreFile", prefs.moduleIgnoreFile.GetConfigValue());
 	config.Write("UseWine", prefs.useWinePref);
 	config.Write("SaveMinidump", prefs.saveMinidump.GetConfigValue());
 	config.Write("SpeedThrottle", prefs.throttle.GetConfigValue());
@@ -767,6 +786,7 @@ bool ProfilerGUI::OnCmdLineParsed(wxCmdLineParser& parser)
 		prefs.useSymServer.Override(state == wxCMD_SWITCH_ON);
 	if (parser.Found("symserver", &param))
 		prefs.symServer.Override(param);
-
+	if (parser.Found("blacklist", &param))
+		prefs.moduleIgnoreFile.Override(param);
 	return true;
 }
