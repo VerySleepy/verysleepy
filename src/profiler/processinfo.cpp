@@ -70,6 +70,40 @@ static std::wstring GetProcessCommandLine(HANDLE processHandle)
 	return commandLine;
 }
 
+static bool IsMainWindow(HWND hWnd)
+{
+	return GetWindow(hWnd, GW_OWNER) == nullptr && IsWindowVisible(hWnd);
+}
+
+struct EnumWindowInfo
+{
+	DWORD pid;
+	HWND hWndFound;
+};
+
+static BOOL CALLBACK EnumWindowsCallback(HWND hWnd, LPARAM lParam)
+{
+	EnumWindowInfo* info = reinterpret_cast<EnumWindowInfo*>(lParam);
+	DWORD pid = 0;
+	GetWindowThreadProcessId(hWnd, &pid);
+
+	if (pid != info->pid) return TRUE;
+	if (!IsMainWindow(hWnd)) return TRUE;
+	info->hWndFound = hWnd;
+	return FALSE;
+}
+
+std::wstring GetProcessMainWindowTitle(DWORD pid)
+{
+	EnumWindowInfo info = {pid, nullptr};
+	EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&info));
+	if (info.hWndFound == nullptr) return {};
+	std::wstring title(256, '\0');
+	int len = GetWindowTextW(info.hWndFound, &title[0], static_cast<int>(title.size()));
+	title.resize(len);
+	return title;
+}
+
 ProcessInfo::ProcessInfo(DWORD id_, const std::wstring& name_, HANDLE process_handle_)
 :	id(id_),
 	name(name_),
@@ -81,6 +115,7 @@ ProcessInfo::ProcessInfo(DWORD id_, const std::wstring& name_, HANDLE process_ha
 #ifdef _WIN64
 	is64Bits = Is64BitProcess(process_handle);
 #endif
+	title = GetProcessMainWindowTitle(id);
 	commandLine = GetProcessCommandLine(process_handle);
 }
 

@@ -67,6 +67,7 @@ public:
 #ifdef _WIN64
 	void sortByType();
 #endif
+	void sortByTitle();
 	void sortByCommandLine();
 	void reloadSymbols(bool download);
 
@@ -83,6 +84,7 @@ private:
 		COL_CPUUSAGE,
 		COL_TOTALCPU,
 		COL_PID,
+		COL_TITLE,
 		COL_COMMANDLINE,
 		NUM_COLUMNS
 	};
