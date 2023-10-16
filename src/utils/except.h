@@ -23,6 +23,8 @@ http://www.gnu.org/copyleft/gpl.html..
 
 #pragma once
 
+#include <codecvt>
+#include <locale>
 #include <stdexcept>
 #include <string>
 
@@ -30,15 +32,20 @@ class SleepyException : public std::runtime_error
 {
 	std::wstring _what;
 
-	std::string helper(const wchar_t *what)
+	std::string helper(const std::wstring& what)
 	{
 		// Need a temporary to build std::string.
 		// Can't use _what in initialization-list because
 		// it will always be initialized after the superclass.
 		// Can't use _what here because it is still not initialized
 		// and contains junk.
-		std::wstring ws(what);
-		return std::string(ws.begin(), ws.end());
+
+		// setup converter
+		using convert_type = std::codecvt_utf8<wchar_t>;
+		std::wstring_convert<convert_type, wchar_t> converter;
+
+		// use converter (.to_bytes: wstr->str, .from_bytes: str->wstr)
+		return converter.to_bytes(what);;
 	}
 
 public:
@@ -46,7 +53,7 @@ public:
 		: std::runtime_error(what), _what(std::wstring(what.begin(), what.end())) {}
 
 	SleepyException(const std::wstring &what)
-		: std::runtime_error(std::string(what.begin(), what.end())), _what(what) {}
+		: std::runtime_error(helper(what)), _what(what) {}
 
 	SleepyException(const wchar_t *what)
 		: std::runtime_error(helper(what)), _what(what) {}

@@ -63,6 +63,10 @@ ProcessList::ProcessList(wxWindow *parent, const wxPoint& pos,
 	InsertColumn(COL_TOTALCPU, itemCol);
 	itemCol.m_text = _T("PID");
 	InsertColumn(COL_PID, itemCol);
+	itemCol.m_text = _T("Title");
+	InsertColumn(COL_TITLE, itemCol);
+	itemCol.m_text = _T("Command Line");
+	InsertColumn(COL_COMMANDLINE, itemCol);
 
 	SetColumnWidth(COL_NAME, FromDIP(270));
 #ifdef _WIN64
@@ -71,6 +75,8 @@ ProcessList::ProcessList(wxWindow *parent, const wxPoint& pos,
 	SetColumnWidth(COL_CPUUSAGE, FromDIP(50));
 	SetColumnWidth(COL_TOTALCPU, FromDIP(70));
 	SetColumnWidth(COL_PID, FromDIP(50));
+	SetColumnWidth(COL_TITLE, FromDIP(200));
+	SetColumnWidth(COL_COMMANDLINE, FromDIP(500));
 
 	sort_column = COL_CPUUSAGE;
 	sort_dir = SORT_DOWN;
@@ -232,6 +238,30 @@ struct TypeDescPred { bool operator () (const ProcessInfo &a, const ProcessInfo 
 } };
 #endif
 
+struct TitleAscPred {
+	bool operator () (const ProcessInfo& a, const ProcessInfo& b) {
+		return wcsicmp(a.getTitle().c_str(), b.getTitle().c_str()) < 0;
+	}
+};
+
+struct TitleDescPred {
+	bool operator () (const ProcessInfo& a, const ProcessInfo& b) {
+		return wcsicmp(a.getTitle().c_str(), b.getTitle().c_str()) > 0;
+	}
+};
+
+struct CommandLineAscPred {
+	bool operator () (const ProcessInfo& a, const ProcessInfo& b) {
+		return wcsicmp(a.getCommandLine().c_str(), b.getCommandLine().c_str()) < 0;
+	}
+};
+
+struct CommandLineDescPred {
+	bool operator () (const ProcessInfo& a, const ProcessInfo& b) {
+		return wcsicmp(a.getCommandLine().c_str(), b.getCommandLine().c_str()) > 0;
+	}
+};
+
 void ProcessList::sortByName()
 {
 	if (sort_dir == SORT_UP)
@@ -273,6 +303,23 @@ void ProcessList::sortByType()
 		std::stable_sort(processes.begin(), processes.end(), TypeDescPred());
 }
 #endif
+
+void ProcessList::sortByTitle()
+{
+	if (sort_dir == SORT_UP)
+		std::stable_sort(processes.begin(), processes.end(), TitleAscPred());
+	else
+		std::stable_sort(processes.begin(), processes.end(), TitleDescPred());
+}
+
+void ProcessList::sortByCommandLine()
+{
+	if (sort_dir == SORT_UP)
+		std::stable_sort(processes.begin(), processes.end(), CommandLineAscPred());
+	else
+		std::stable_sort(processes.begin(), processes.end(), CommandLineDescPred());
+}
+
 void ProcessList::OnSort(wxListEvent& event)
 {
 	SetSortImage(sort_column, SORT_NONE);
@@ -301,6 +348,8 @@ void ProcessList::updateSorting()
 #ifdef _WIN64
 		case COL_TYPE: sortByType(); break;
 #endif
+		case COL_TITLE: sortByTitle(); break;
+		case COL_COMMANDLINE: sortByCommandLine(); break;
 	}
 	fillList();
 }
@@ -334,6 +383,8 @@ void ProcessList::fillList()
 			SetItem(i,COL_TYPE,"32-bit");
 		}
 #endif
+		this->SetItem(i, COL_TITLE, processes[i].getTitle());
+		this->SetItem(i, COL_COMMANDLINE, processes[i].getCommandLine());
 	}
 	Thaw();
 }

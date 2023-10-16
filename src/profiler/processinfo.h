@@ -58,6 +58,8 @@ public:
 #ifdef _WIN64
 	bool getIs64Bits() const { return is64Bits; }
 #endif
+	const std::wstring& getTitle() const { return title; }
+	const std::wstring& getCommandLine() const { return commandLine; }
   FILETIME prevKernelTime, prevUserTime;
   int cpuUsage;
   __int64 totalCpuTimeMs;
@@ -69,6 +71,8 @@ private:
 #ifdef _WIN64
 	bool is64Bits;
 #endif
+	std::wstring title;
+	std::wstring commandLine;
 };
 
 

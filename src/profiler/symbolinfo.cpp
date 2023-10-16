@@ -157,7 +157,7 @@ void SymbolInfo::loadSymbolsUsing(DbgHelp* dbgHelp, const std::wstring& sympath)
 		{
 			// This is a secondary dbgHelp, so just complement debug
 			// information for modules that have none.
-			
+
 			for (size_t m=0;m<modules.size();m++)
 			{
 				Module &mod = modules[m];
